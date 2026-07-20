@@ -1386,6 +1386,50 @@ class AppController {
     document.getElementById("btn-animate-kanji").addEventListener("click", () => {
       this.animateKanjiStrokes();
     });
+
+    const checkBtn = document.getElementById("btn-check-kanji");
+    if (checkBtn) {
+      checkBtn.addEventListener("click", () => {
+        if (!this.selectedKanji) return;
+        
+        const banner = document.getElementById("kanji-feedback-banner");
+        
+        if (!this.canvasController.hasDrawing()) {
+          banner.style.display = "block";
+          banner.style.backgroundColor = "rgba(255, 150, 0, 0.15)";
+          banner.style.color = "var(--text-main)";
+          banner.innerText = "Please draw something first!";
+          return;
+        }
+
+        const score = this.canvasController.checkDrawing(this.selectedKanji.strokes);
+        
+        banner.style.display = "block";
+        if (score > 75) {
+          soundSynth.playSuccess && soundSynth.playSuccess();
+          banner.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+          banner.style.color = "#10b981"; // Emerald green
+          banner.innerText = `Excellent! Score: ${score}%`;
+        } else if (score > 40) {
+          banner.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
+          banner.style.color = "#f59e0b"; // Amber
+          banner.innerText = `Good attempt! Score: ${score}%. Try to be more accurate.`;
+        } else {
+          soundSynth.playError && soundSynth.playError();
+          banner.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
+          banner.style.color = "#ef4444"; // Red
+          banner.innerText = `Needs work! Score: ${score}%. Keep practicing!`;
+        }
+      });
+    }
+
+    // Hide feedback banner when user clears canvas
+    if (clearBtn) {
+      clearBtn.addEventListener("click", () => {
+        const banner = document.getElementById("kanji-feedback-banner");
+        if (banner) banner.style.display = "none";
+      });
+    }
   }
 
   populateCanvasPalette() {

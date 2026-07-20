@@ -142,5 +142,88 @@ export class TracingCanvas {
       });
     }
   }
+
+  // ─── Check Accuracy ────────────────────────────────────────────
+  // Renders guide strokes on a hidden offscreen canvas, then compares
+  // how much of the user's drawn pixels land on top of those guide pixels.
+  // Returns a score 0-100 (percentage overlap).
+  checkDrawing(strokePaths) {
+    const rect = this.canvas.getBoundingClientRect();
+    const w = Math.round(rect.width)  || 320;
+    const h = Math.round(rect.height) || 320;
+    const dpr = window.devicePixelRatio || 1;
+
+    // ── 1. Build reference canvas with the guide strokes ──
+    const refCanvas = document.createElement("canvas");
+    refCanvas.width  = w * dpr;
+    refCanvas.height = h * dpr;
+    const refCtx = refCanvas.getContext("2d");
+    refCtx.scale(dpr, dpr);
+    refCtx.clearRect(0, 0, w, h);
+
+    // Draw each SVG path string as a canvas path
+    const scaleX = w / 100;
+    const scaleY = h / 100;
+
+    refCtx.strokeStyle = "#000";
+    refCtx.lineWidth   = Math.max(10, w * 0.08); // generous tolerance band
+    refCtx.lineCap     = "round";
+    refCtx.lineJoin    = "round";
+
+    for (const d of strokePaths) {
+      refCtx.beginPath();
+      this._parseSVGPath(refCtx, d, scaleX, scaleY);
+      refCtx.stroke();
+    }
+
+    // ── 2. Get pixel data from both canvases ──
+    const refData  = refCtx.getImageData(0, 0, refCanvas.width, refCanvas.height).data;
+    const userData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
+
+    let refInked   = 0; // pixels with ink in the reference
+    let overlap    = 0; // pixels inked in both
+
+    for (let i = 3; i < refData.length; i += 4) {
+      if (refData[i] > 30) {          // reference pixel is opaque
+        refInked++;
+        if (userData[i] > 30) overlap++; // user also drew here
+      }
+    }
+
+    if (refInked === 0) return 0;
+    return Math.round((overlap / refInked) * 100);
+  }
+
+  // Minimal SVG path parser supporting M, L, C, Z commands
+  _parseSVGPath(ctx, d, sx, sy) {
+    const tokens = d.trim().split(/(?=[MLCZ])/);
+    for (const token of tokens) {
+      const cmd  = token[0];
+      const nums = token.slice(1).trim().split(/[\s,]+/).map(Number);
+
+      if (cmd === "M") {
+        ctx.moveTo(nums[0] * sx, nums[1] * sy);
+      } else if (cmd === "L") {
+        ctx.lineTo(nums[0] * sx, nums[1] * sy);
+      } else if (cmd === "C") {
+        ctx.bezierCurveTo(
+          nums[0] * sx, nums[1] * sy,
+          nums[2] * sx, nums[3] * sy,
+          nums[4] * sx, nums[5] * sy
+        );
+      } else if (cmd === "Z") {
+        ctx.closePath();
+      }
+    }
+  }
+
+  // Returns true if user drew something (any non-transparent pixels)
+  hasDrawing() {
+    const data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] > 10) return true;
+    }
+    return false;
+  }
 }
 export default TracingCanvas;
