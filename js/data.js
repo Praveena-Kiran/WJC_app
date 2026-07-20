@@ -901,238 +901,551 @@ export function conjugateVerb(verbObj) {
 
 // 4. Kanji Dataset (N5/N4 level with stroke path vectors)
 export const kanjiData = [
-  // Level N5
+  // ── N5 KANJI ────────────────────────────────────────────────────
   {
-    char: "一",
-    level: "N5",
-    meaning: "One",
-    onyomi: "イチ (ichi), イツ (itsu)",
-    kunyomi: "ひと-つ (hito-tsu)",
+    char: "一", level: "N5", meaning: "One",
+    onyomi: "イチ (ichi), イツ (itsu)", kunyomi: "ひと-つ (hito-tsu)",
+    strokes: ["M 18,50 L 82,50"]
+  },
+  {
+    char: "二", level: "N5", meaning: "Two",
+    onyomi: "ニ (ni)", kunyomi: "ふた-つ (futa-tsu)",
+    strokes: ["M 28,35 L 72,35", "M 18,65 L 82,65"]
+  },
+  {
+    char: "三", level: "N5", meaning: "Three",
+    onyomi: "サン (san)", kunyomi: "みっ-つ (mit-tsu)",
+    strokes: ["M 22,25 L 78,25", "M 28,50 L 72,50", "M 18,75 L 82,75"]
+  },
+  {
+    char: "四", level: "N5", meaning: "Four",
+    onyomi: "シ (shi)", kunyomi: "よっ-つ (yot-tsu)",
     strokes: [
-      "M 20,50 L 80,50"
+      "M 22,18 L 78,18",
+      "M 22,18 L 22,82",
+      "M 78,18 L 78,82",
+      "M 38,35 C 38,55 36,70 30,80",
+      "M 58,32 C 60,52 62,68 65,80",
+      "M 22,82 L 78,82"
     ]
   },
   {
-    char: "二",
-    level: "N5",
-    meaning: "Two",
-    onyomi: "ニ (ni), ジ (ji)",
-    kunyomi: "ふた-つ (futa-tsu)",
+    char: "五", level: "N5", meaning: "Five",
+    onyomi: "ゴ (go)", kunyomi: "いつ-つ (itsu-tsu)",
     strokes: [
-      "M 30,35 L 70,35",
-      "M 20,65 L 80,65"
+      "M 22,22 L 78,22",
+      "M 32,22 L 32,55",
+      "M 32,52 L 68,52",
+      "M 68,52 C 75,65 72,80 55,82 C 38,84 28,76 25,68"
     ]
   },
   {
-    char: "三",
-    level: "N5",
-    meaning: "Three",
-    onyomi: "サン (san)",
-    kunyomi: "みっ-つ (mit-tsu)",
+    char: "六", level: "N5", meaning: "Six",
+    onyomi: "ロク (roku)", kunyomi: "むっ-つ (mut-tsu)",
     strokes: [
-      "M 30,25 L 70,25",
-      "M 35,50 L 65,50",
-      "M 20,75 L 80,75"
-    ]
-  },
-  {
-    char: "四",
-    level: "N5",
-    meaning: "Four",
-    onyomi: "シ (shi)",
-    kunyomi: "よっ-つ (yot-tsu), よん (yon)",
-    strokes: [
-      "M 30,20 L 30,85",
-      "M 30,20 L 72,20 L 72,85",
-      "M 42,38 C 45,55 42,70 34,80",
-      "M 56,36 C 60,44 64,55 68,76",
-      "M 30,85 L 72,85"
-    ]
-  },
-  {
-    char: "五",
-    level: "N5",
-    meaning: "Five",
-    onyomi: "ゴ (go)",
-    kunyomi: "いつ-つ (itsu-tsu)",
-    strokes: [
-      "M 28,25 L 72,25",
-      "M 48,25 L 40,55",
-      "M 40,55 L 70,55",
-      "M 22,85 L 78,85"
-    ]
-  },
-  {
-    char: "六",
-    level: "N5",
-    meaning: "Six",
-    onyomi: "ロク (roku)",
-    kunyomi: "むっ-つ (mut-tsu)",
-    strokes: [
-      "M 50,15 L 50,30",
-      "M 22,38 L 78,38",
-      "M 38,50 C 35,62 30,75 20,85",
-      "M 62,48 C 65,58 72,75 80,85"
-    ]
-  },
-  {
-    char: "日",
-    level: "N5",
-    meaning: "Sun, day, Japan",
-    onyomi: "ニチ (nichi), ジツ (jitsu)",
-    kunyomi: "ひ (hi), -び (-bi)",
-    strokes: [
-      "M 30,20 L 30,80",
-      "M 30,20 L 70,20 L 70,80",
-      "M 30,50 L 70,50",
-      "M 30,80 L 70,80"
-    ]
-  },
-  {
-    char: "月",
-    level: "N5",
-    meaning: "Moon, month",
-    onyomi: "ゲツ (getsu), ガツ (gatsu)",
-    kunyomi: "つき (tsuki)",
-    strokes: [
-      "M 32,18 C 32,45 30,70 18,88",
-      "M 32,20 L 68,20 L 68,88",
-      "M 32,44 L 68,44",
-      "M 32,66 L 68,66"
-    ]
-  },
-  {
-    char: "木",
-    level: "N5",
-    meaning: "Tree, wood",
-    onyomi: "モク (moku), ボク (boku)",
-    kunyomi: "き (ki)",
-    strokes: [
-      "M 20,42 L 80,42",
-      "M 50,15 L 50,88",
-      "M 50,42 C 43,58 30,75 18,85",
-      "M 50,42 C 57,58 70,75 82,85"
-    ]
-  },
-  {
-    char: "山",
-    level: "N5",
-    meaning: "Mountain",
-    onyomi: "サン (san)",
-    kunyomi: "やま (yama)",
-    strokes: [
-      "M 50,20 L 50,85",
-      "M 28,48 L 28,82 L 72,82",
-      "M 72,45 L 72,82"
-    ]
-  },
-  {
-    char: "川",
-    level: "N5",
-    meaning: "River",
-    onyomi: "セン (sen)",
-    kunyomi: "かわ (kawa)",
-    strokes: [
-      "M 30,28 C 30,48 28,68 20,80",
-      "M 50,28 L 50,75",
-      "M 70,20 L 70,85"
-    ]
-  },
-  {
-    char: "田",
-    level: "N5",
-    meaning: "Rice field",
-    onyomi: "デン (den)",
-    kunyomi: "た (ta)",
-    strokes: [
-      "M 28,25 L 28,80",
-      "M 28,25 L 72,25 L 72,80",
-      "M 50,25 L 50,80",
-      "M 28,52 L 72,52",
-      "M 28,80 L 72,80"
-    ]
-  },
-  {
-    char: "人",
-    level: "N5",
-    meaning: "Person",
-    onyomi: "ジン (jin), ニン (nin)",
-    kunyomi: "ひと (hito)",
-    strokes: [
-      "M 52,18 C 50,42 38,68 18,88",
-      "M 45,45 C 55,60 68,75 84,88"
-    ]
-  },
-  {
-    char: "口",
-    level: "N5",
-    meaning: "Mouth",
-    onyomi: "コウ (kou), ク (ku)",
-    kunyomi: "くち (kuchi)",
-    strokes: [
-      "M 28,28 L 28,80",
-      "M 28,28 L 72,28 L 72,80",
-      "M 28,80 L 72,80"
-    ]
-  },
-  // Level N4
-  {
-    char: "会",
-    level: "N4",
-    meaning: "To meet, society",
-    onyomi: "カイ (kai), エ (e)",
-    kunyomi: "あ-う (a-u)",
-    strokes: [
-      "M 50,15 C 40,28 28,45 18,55",
-      "M 52,15 C 62,28 75,45 84,55",
-      "M 35,48 L 68,48",
-      "M 42,65 C 45,65 50,65 65,65 L 65,82",
-      "M 25,82 L 78,82"
-    ]
-  },
-  {
-    char: "社",
-    level: "N4",
-    meaning: "Company, shrine",
-    onyomi: "シャ (sha)",
-    kunyomi: "やしろ (yashiro)",
-    strokes: [
-      "M 32,15 L 32,28",
-      "M 18,34 C 25,34 32,32 40,28 C 38,38 30,55 20,65",
-      "M 30,52 L 30,90",
-      "M 42,42 C 45,55 45,75 48,90",
-      "M 50,22 L 78,22",
-      "M 64,22 L 64,62",
-      "M 48,62 L 82,62",
-      "M 48,88 L 84,88"
-    ]
-  },
-  {
-    char: "車",
-    level: "N4",
-    meaning: "Car, vehicle",
-    onyomi: "シャ (sha)",
-    kunyomi: "くるま (kuruma)",
-    strokes: [
-      "M 25,25 L 75,25",
+      "M 50,15 C 52,25 50,32 48,38",
       "M 22,42 L 78,42",
-      "M 30,42 L 30,68 L 70,68 L 70,42 Z",
-      "M 22,68 L 78,68",
-      "M 50,12 L 50,88"
+      "M 35,52 C 30,65 22,78 15,88",
+      "M 65,52 C 70,65 78,78 85,88"
     ]
   },
   {
-    char: "門",
-    level: "N4",
-    meaning: "Gate",
-    onyomi: "モン (mon)",
-    kunyomi: "かど (kado)",
+    char: "七", level: "N5", meaning: "Seven",
+    onyomi: "シチ (shichi)", kunyomi: "なな (nana)",
     strokes: [
-      "M 26,18 L 26,88",
-      "M 26,18 L 45,18 L 45,50",
-      "M 26,45 L 45,45",
-      "M 56,18 L 56,50 L 74,50",
-      "M 56,18 L 75,18 L 75,88"
+      "M 18,35 L 82,35",
+      "M 58,35 C 58,55 52,72 38,85"
+    ]
+  },
+  {
+    char: "八", level: "N5", meaning: "Eight",
+    onyomi: "ハチ (hachi)", kunyomi: "やっ-つ (yat-tsu)",
+    strokes: [
+      "M 42,20 C 38,40 28,65 15,82",
+      "M 58,20 C 62,40 72,65 85,82"
+    ]
+  },
+  {
+    char: "九", level: "N5", meaning: "Nine",
+    onyomi: "キュウ (kyuu), ク (ku)", kunyomi: "ここの-つ (kokono-tsu)",
+    strokes: [
+      "M 35,22 C 55,22 72,35 72,55 C 72,72 58,82 42,78 C 28,74 22,62 28,50",
+      "M 62,35 C 65,55 68,72 75,88"
+    ]
+  },
+  {
+    char: "十", level: "N5", meaning: "Ten",
+    onyomi: "ジュウ (juu)", kunyomi: "とお (too)",
+    strokes: ["M 50,15 L 50,85", "M 18,48 L 82,48"]
+  },
+  {
+    char: "日", level: "N5", meaning: "Sun, day, Japan",
+    onyomi: "ニチ (nichi)", kunyomi: "ひ (hi)",
+    strokes: [
+      "M 28,18 L 28,82",
+      "M 28,18 L 72,18",
+      "M 72,18 L 72,82",
+      "M 28,82 L 72,82",
+      "M 28,50 L 72,50"
+    ]
+  },
+  {
+    char: "月", level: "N5", meaning: "Moon, month",
+    onyomi: "ゲツ (getsu)", kunyomi: "つき (tsuki)",
+    strokes: [
+      "M 30,18 C 28,45 26,68 18,85",
+      "M 30,18 L 72,18",
+      "M 72,18 L 72,85",
+      "M 28,45 L 72,45",
+      "M 28,65 L 72,65"
+    ]
+  },
+  {
+    char: "火", level: "N5", meaning: "Fire",
+    onyomi: "カ (ka)", kunyomi: "ひ (hi)",
+    strokes: [
+      "M 50,15 C 50,40 48,58 42,72",
+      "M 28,48 C 32,38 42,28 50,25",
+      "M 72,48 C 68,38 58,28 50,25",
+      "M 35,65 C 28,75 22,85 18,90",
+      "M 65,65 C 72,75 78,85 82,90"
+    ]
+  },
+  {
+    char: "水", level: "N5", meaning: "Water",
+    onyomi: "スイ (sui)", kunyomi: "みず (mizu)",
+    strokes: [
+      "M 50,15 L 50,85",
+      "M 28,35 C 35,32 42,30 50,28",
+      "M 72,35 C 65,32 58,30 50,28",
+      "M 22,62 C 30,58 40,55 50,55",
+      "M 78,62 C 70,58 60,55 50,55"
+    ]
+  },
+  {
+    char: "木", level: "N5", meaning: "Tree, wood",
+    onyomi: "モク (moku)", kunyomi: "き (ki)",
+    strokes: [
+      "M 50,15 L 50,85",
+      "M 18,42 L 82,42",
+      "M 50,55 C 40,65 28,76 15,85",
+      "M 50,55 C 60,65 72,76 85,85"
+    ]
+  },
+  {
+    char: "金", level: "N5", meaning: "Gold, money, Friday",
+    onyomi: "キン (kin), コン (kon)", kunyomi: "かね (kane)",
+    strokes: [
+      "M 50,12 C 42,22 30,35 18,45",
+      "M 50,12 C 58,22 70,35 82,45",
+      "M 28,38 L 72,38",
+      "M 50,38 L 50,65",
+      "M 28,55 L 72,55",
+      "M 35,72 C 28,80 22,88 18,92",
+      "M 65,72 C 72,80 78,88 82,92"
+    ]
+  },
+  {
+    char: "土", level: "N5", meaning: "Earth, soil, Saturday",
+    onyomi: "ド (do), ト (to)", kunyomi: "つち (tsuchi)",
+    strokes: [
+      "M 28,38 L 72,38",
+      "M 50,38 L 50,82",
+      "M 18,82 L 82,82"
+    ]
+  },
+  {
+    char: "山", level: "N5", meaning: "Mountain",
+    onyomi: "サン (san)", kunyomi: "やま (yama)",
+    strokes: [
+      "M 28,55 L 28,85",
+      "M 28,85 L 72,85",
+      "M 72,55 L 72,85",
+      "M 50,18 L 50,85"
+    ]
+  },
+  {
+    char: "川", level: "N5", meaning: "River",
+    onyomi: "セン (sen)", kunyomi: "かわ (kawa)",
+    strokes: [
+      "M 25,22 C 25,48 22,68 15,82",
+      "M 50,18 L 50,82",
+      "M 75,15 C 75,42 75,65 72,85"
+    ]
+  },
+  {
+    char: "田", level: "N5", meaning: "Rice field",
+    onyomi: "デン (den)", kunyomi: "た (ta)",
+    strokes: [
+      "M 22,22 L 22,82",
+      "M 22,22 L 78,22",
+      "M 78,22 L 78,82",
+      "M 22,82 L 78,82",
+      "M 50,22 L 50,82",
+      "M 22,52 L 78,52"
+    ]
+  },
+  {
+    char: "人", level: "N5", meaning: "Person",
+    onyomi: "ジン (jin), ニン (nin)", kunyomi: "ひと (hito)",
+    strokes: [
+      "M 50,15 C 46,38 35,62 18,85",
+      "M 46,42 C 55,58 68,75 82,88"
+    ]
+  },
+  {
+    char: "口", level: "N5", meaning: "Mouth",
+    onyomi: "コウ (kou)", kunyomi: "くち (kuchi)",
+    strokes: [
+      "M 28,28 L 28,78",
+      "M 28,28 L 72,28",
+      "M 72,28 L 72,78",
+      "M 28,78 L 72,78"
+    ]
+  },
+  {
+    char: "大", level: "N5", meaning: "Big, large",
+    onyomi: "ダイ (dai), タイ (tai)", kunyomi: "おお-きい (oo-kii)",
+    strokes: [
+      "M 50,15 L 50,85",
+      "M 15,42 L 85,42",
+      "M 50,55 C 38,68 22,78 10,88",
+      "M 50,55 C 62,68 78,78 90,88"
+    ]
+  },
+  {
+    char: "小", level: "N5", meaning: "Small, little",
+    onyomi: "ショウ (shou)", kunyomi: "ちい-さい (chii-sai)",
+    strokes: [
+      "M 50,15 L 50,85",
+      "M 25,42 C 22,55 18,68 15,80",
+      "M 75,42 C 78,55 82,68 85,80"
+    ]
+  },
+  {
+    char: "上", level: "N5", meaning: "Up, above",
+    onyomi: "ジョウ (jou)", kunyomi: "うえ (ue)",
+    strokes: [
+      "M 50,15 L 50,82",
+      "M 22,82 L 78,82",
+      "M 30,45 L 70,45"
+    ]
+  },
+  {
+    char: "下", level: "N5", meaning: "Down, below",
+    onyomi: "カ (ka), ゲ (ge)", kunyomi: "した (shita)",
+    strokes: [
+      "M 50,18 L 50,85",
+      "M 22,18 L 78,18",
+      "M 35,62 C 38,72 44,80 50,85 C 56,80 62,72 65,62"
+    ]
+  },
+  {
+    char: "中", level: "N5", meaning: "Middle, inside",
+    onyomi: "チュウ (chuu)", kunyomi: "なか (naka)",
+    strokes: [
+      "M 50,12 L 50,88",
+      "M 22,28 L 22,72",
+      "M 22,28 L 78,28",
+      "M 78,28 L 78,72",
+      "M 22,72 L 78,72"
+    ]
+  },
+  {
+    char: "左", level: "N5", meaning: "Left",
+    onyomi: "サ (sa)", kunyomi: "ひだり (hidari)",
+    strokes: [
+      "M 22,35 L 60,35",
+      "M 36,18 C 36,42 35,62 28,80",
+      "M 25,55 L 82,55",
+      "M 58,55 C 65,65 72,75 82,85"
+    ]
+  },
+  {
+    char: "右", level: "N5", meaning: "Right",
+    onyomi: "ウ (u), ユウ (yuu)", kunyomi: "みぎ (migi)",
+    strokes: [
+      "M 40,18 L 78,18",
+      "M 58,18 C 58,42 56,62 48,80",
+      "M 18,55 L 75,55",
+      "M 42,55 C 35,65 28,75 18,85"
+    ]
+  },
+  {
+    char: "年", level: "N5", meaning: "Year",
+    onyomi: "ネン (nen)", kunyomi: "とし (toshi)",
+    strokes: [
+      "M 35,18 C 38,28 40,38 40,50",
+      "M 22,32 L 78,32",
+      "M 50,32 L 50,88",
+      "M 22,55 L 78,55",
+      "M 22,72 L 78,72"
+    ]
+  },
+  {
+    char: "時", level: "N5", meaning: "Time, hour",
+    onyomi: "ジ (ji)", kunyomi: "とき (toki)",
+    strokes: [
+      "M 22,28 L 22,82",
+      "M 22,28 L 48,28 L 48,82 L 22,82",
+      "M 22,50 L 48,50",
+      "M 58,18 L 88,18",
+      "M 72,18 L 72,85",
+      "M 58,42 L 88,42",
+      "M 58,62 L 88,62"
+    ]
+  },
+  {
+    char: "間", level: "N5", meaning: "Between, interval, time",
+    onyomi: "カン (kan)", kunyomi: "あいだ (aida)",
+    strokes: [
+      "M 22,15 L 22,88",
+      "M 22,15 L 78,15",
+      "M 78,15 L 78,88",
+      "M 22,88 L 78,88",
+      "M 50,15 L 50,88",
+      "M 35,42 L 65,42",
+      "M 35,62 L 65,62"
+    ]
+  },
+  {
+    char: "子", level: "N5", meaning: "Child",
+    onyomi: "シ (shi), ス (su)", kunyomi: "こ (ko)",
+    strokes: [
+      "M 25,32 C 38,32 55,30 65,25",
+      "M 50,18 C 50,42 48,62 40,78",
+      "M 18,65 C 30,62 48,65 62,72 C 72,78 80,72 80,60"
+    ]
+  },
+  {
+    char: "女", level: "N5", meaning: "Woman, female",
+    onyomi: "ジョ (jo), ニョ (nyo)", kunyomi: "おんな (onna)",
+    strokes: [
+      "M 15,52 C 30,45 55,45 85,52",
+      "M 50,18 C 50,45 48,68 42,82",
+      "M 28,82 C 40,75 62,72 78,75"
+    ]
+  },
+  {
+    char: "男", level: "N5", meaning: "Man, male",
+    onyomi: "ダン (dan), ナン (nan)", kunyomi: "おとこ (otoko)",
+    strokes: [
+      "M 25,22 L 25,55",
+      "M 25,22 L 75,22",
+      "M 75,22 L 75,55",
+      "M 25,55 L 75,55",
+      "M 50,22 L 50,55",
+      "M 25,38 L 75,38",
+      "M 50,55 L 50,88",
+      "M 25,72 L 75,72"
+    ]
+  },
+  {
+    char: "学", level: "N5", meaning: "Study, learn",
+    onyomi: "ガク (gaku)", kunyomi: "まな-ぶ (mana-bu)",
+    strokes: [
+      "M 35,18 L 48,30",
+      "M 65,18 L 52,30",
+      "M 30,30 L 70,30",
+      "M 50,30 L 50,50",
+      "M 28,50 L 72,50",
+      "M 38,62 L 38,88",
+      "M 38,75 L 62,75",
+      "M 62,62 L 62,88"
+    ]
+  },
+  {
+    char: "先", level: "N5", meaning: "Before, ahead, previous",
+    onyomi: "セン (sen)", kunyomi: "さき (saki)",
+    strokes: [
+      "M 38,18 L 38,55",
+      "M 22,38 L 78,38",
+      "M 60,18 L 60,55",
+      "M 22,55 L 78,55",
+      "M 50,55 C 50,68 48,78 42,88"
+    ]
+  },
+  {
+    char: "生", level: "N5", meaning: "Life, birth, raw",
+    onyomi: "セイ (sei), ショウ (shou)", kunyomi: "い-きる (i-kiru)",
+    strokes: [
+      "M 50,15 L 50,85",
+      "M 22,35 L 78,35",
+      "M 28,55 L 72,55",
+      "M 18,75 L 82,75"
+    ]
+  },
+  {
+    char: "本", level: "N5", meaning: "Book, origin, root",
+    onyomi: "ホン (hon)", kunyomi: "もと (moto)",
+    strokes: [
+      "M 50,15 L 50,85",
+      "M 18,42 L 82,42",
+      "M 35,62 C 25,72 18,82 12,90",
+      "M 65,62 C 75,72 82,82 88,90",
+      "M 32,75 L 68,75"
+    ]
+  },
+  {
+    char: "語", level: "N5", meaning: "Language, word",
+    onyomi: "ゴ (go)", kunyomi: "かた-る (kata-ru)",
+    strokes: [
+      "M 18,22 L 42,22",
+      "M 30,22 L 30,82",
+      "M 18,52 L 42,52",
+      "M 52,18 L 88,18",
+      "M 52,18 L 52,88",
+      "M 52,38 L 88,38",
+      "M 52,55 L 88,55",
+      "M 52,72 L 88,72",
+      "M 52,88 L 88,88"
+    ]
+  },
+  {
+    char: "何", level: "N5", meaning: "What, how many",
+    onyomi: "カ (ka)", kunyomi: "なに (nani), なん (nan)",
+    strokes: [
+      "M 18,22 C 18,50 15,72 10,88",
+      "M 38,18 L 38,88",
+      "M 28,42 L 50,42",
+      "M 55,22 C 65,22 78,20 85,15",
+      "M 68,15 C 68,42 65,65 58,85",
+      "M 52,42 L 88,42",
+      "M 52,62 L 88,62"
+    ]
+  },
+  // ── N4 KANJI ────────────────────────────────────────────────────
+  {
+    char: "会", level: "N4", meaning: "Meeting, to meet",
+    onyomi: "カイ (kai)", kunyomi: "あ-う (a-u)",
+    strokes: [
+      "M 50,12 C 42,25 28,38 15,48",
+      "M 50,12 C 58,25 72,38 85,48",
+      "M 32,42 L 68,42",
+      "M 50,42 L 50,62",
+      "M 35,62 L 65,62 L 65,82",
+      "M 22,82 L 78,82"
+    ]
+  },
+  {
+    char: "社", level: "N4", meaning: "Company, shrine",
+    onyomi: "シャ (sha)", kunyomi: "やしろ (yashiro)",
+    strokes: [
+      "M 30,18 L 30,30",
+      "M 16,35 C 22,35 30,32 38,28 C 36,38 28,55 18,65",
+      "M 30,52 L 30,88",
+      "M 52,22 L 82,22",
+      "M 65,22 L 65,82",
+      "M 52,55 L 82,55",
+      "M 52,82 L 82,82"
+    ]
+  },
+  {
+    char: "車", level: "N4", meaning: "Car, vehicle",
+    onyomi: "シャ (sha)", kunyomi: "くるま (kuruma)",
+    strokes: [
+      "M 22,25 L 78,25",
+      "M 50,12 L 50,88",
+      "M 25,45 L 75,45",
+      "M 28,45 L 28,68 L 72,68 L 72,45",
+      "M 22,68 L 78,68"
+    ]
+  },
+  {
+    char: "門", level: "N4", meaning: "Gate",
+    onyomi: "モン (mon)", kunyomi: "かど (kado)",
+    strokes: [
+      "M 22,15 L 22,88",
+      "M 22,15 L 42,15",
+      "M 42,15 L 42,52",
+      "M 22,42 L 42,42",
+      "M 30,52 L 35,52",
+      "M 58,15 L 78,15",
+      "M 58,15 L 58,52",
+      "M 78,15 L 78,88",
+      "M 58,42 L 78,42",
+      "M 62,52 L 68,52"
+    ]
+  },
+  {
+    char: "食", level: "N4", meaning: "Food, eat",
+    onyomi: "ショク (shoku)", kunyomi: "た-べる (ta-beru)",
+    strokes: [
+      "M 50,12 C 42,22 28,35 15,45",
+      "M 50,12 C 58,22 72,35 85,45",
+      "M 28,38 L 72,38",
+      "M 50,38 L 50,55",
+      "M 28,55 L 72,55",
+      "M 35,65 L 35,88",
+      "M 65,65 L 65,88",
+      "M 22,88 L 78,88"
+    ]
+  },
+  {
+    char: "飲", level: "N4", meaning: "Drink",
+    onyomi: "イン (in)", kunyomi: "の-む (no-mu)",
+    strokes: [
+      "M 15,22 C 20,22 28,20 35,15",
+      "M 25,15 L 25,85",
+      "M 15,45 L 42,45",
+      "M 15,65 L 42,65",
+      "M 52,18 L 88,18",
+      "M 70,18 L 70,42",
+      "M 52,42 L 88,42",
+      "M 55,55 C 62,65 72,78 85,90",
+      "M 80,55 C 72,68 62,80 52,90"
+    ]
+  },
+  {
+    char: "見", level: "N4", meaning: "See, look, watch",
+    onyomi: "ケン (ken)", kunyomi: "み-る (mi-ru)",
+    strokes: [
+      "M 22,22 L 78,22",
+      "M 22,22 L 22,52",
+      "M 78,22 L 78,52",
+      "M 22,52 L 78,52",
+      "M 50,52 C 50,65 48,75 42,85",
+      "M 22,72 C 32,68 50,70 65,72 C 75,74 82,68 80,58"
+    ]
+  },
+  {
+    char: "聞", level: "N4", meaning: "Listen, ask",
+    onyomi: "ブン (bun), モン (mon)", kunyomi: "き-く (ki-ku)",
+    strokes: [
+      "M 22,15 L 22,88",
+      "M 22,15 L 78,15",
+      "M 78,15 L 78,88",
+      "M 22,88 L 78,88",
+      "M 38,30 L 62,30 L 62,55 L 38,55 L 38,30",
+      "M 50,55 L 50,75",
+      "M 38,75 L 62,75"
+    ]
+  },
+  {
+    char: "書", level: "N4", meaning: "Write",
+    onyomi: "ショ (sho)", kunyomi: "か-く (ka-ku)",
+    strokes: [
+      "M 28,18 C 35,18 55,15 72,12",
+      "M 50,12 L 50,55",
+      "M 22,30 L 78,30",
+      "M 22,45 L 78,45",
+      "M 28,58 L 72,58 L 72,88 L 28,88 L 28,58",
+      "M 28,72 L 72,72"
+    ]
+  },
+  {
+    char: "話", level: "N4", meaning: "Speak, talk, story",
+    onyomi: "ワ (wa)", kunyomi: "はな-す (hana-su)",
+    strokes: [
+      "M 18,22 L 42,22",
+      "M 30,22 L 30,82",
+      "M 18,52 L 42,52",
+      "M 55,15 C 65,15 78,12 85,8",
+      "M 68,8 C 68,35 65,58 58,80",
+      "M 52,35 L 85,35",
+      "M 52,52 L 85,52",
+      "M 52,70 L 85,70"
     ]
   }
 ];
+
