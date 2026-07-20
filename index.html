@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zengo - Premium Japanese Learning Suite</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom Styling System -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-zen has-banner">
+
+  <!-- lazy AudioContext Permission gesture banner -->
+  <div id="sound-permission-banner">
+    <i class="fa-solid fa-volume-high"></i>
+    <span>🔊 Sound is muted. Tap here to enable audio feedback, speech synthesis, and chimes.</span>
+  </div>
+
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <button class="btn-mobile-nav" id="mobile-nav-toggle" aria-label="Open navigation menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <h1>ZENGO</h1>
+    <div style="width: 24px;"></div> <!-- placeholder for spacing alignment -->
+  </header>
+
+  <div id="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar">
+      <div>
+        <div class="logo-container">
+          <h1>禅郷 <span style="font-weight:300; font-size:1.6rem; color:var(--accent-secondary);">ZENGO</span></h1>
+          <div class="logo-sub">Woxsen Japanese Centre</div>
+        </div>
+
+        <!-- USER ROLE SWITCHER -->
+        <div style="margin-bottom: 25px; padding: 0 5px;">
+          <div class="mode-control-label">User Portal</div>
+          <select class="search-input" id="user-role-select" style="padding: 10px; font-size: 0.9rem; font-weight: 600; width: 100%; margin-top: 6px; background: var(--panel-active); border: 1px solid var(--card-border); color: var(--text-main); border-radius: var(--border-radius-sm);">
+            <option value="external">External Student (Zengo)</option>
+            <option value="woxsen-student">Woxsen Student</option>
+            <option value="teacher">WJC Instructor (Teacher)</option>
+          </select>
+        </div>
+
+        <nav class="nav-links" id="sidebar-nav-container">
+          <button class="nav-item active" data-view="dashboard">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-view="kana-trainer" id="nav-kana-trainer">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Kana Trainer</span>
+          </button>
+          <button class="nav-item" data-view="dictionary">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Dictionary & Conjugator</span>
+          </button>
+          <button class="nav-item" data-view="kanji-board" id="nav-kanji-board">
+            <i class="fa-solid fa-brush"></i>
+            <span>Kanji Board</span>
+          </button>
+          <button class="nav-item" data-view="quiz" id="nav-kana-quiz">
+            <i class="fa-solid fa-gamepad"></i>
+            <span>Kana Quiz</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Mode & Theme Selection Panel -->
+      <div class="sidebar-footer">
+        <div class="controls-group">
+          <div>
+            <div class="mode-control-label">Study Mode</div>
+            <div class="toggle-button-group" id="study-mode-toggle">
+              <button class="toggle-opt active" data-mode="zen">Zen</button>
+              <button class="toggle-opt" data-mode="cyber">Cyber</button>
+            </div>
+          </div>
+
+          <div id="cyber-theme-row" style="display: none;">
+            <div class="mode-control-label">Workspace theme</div>
+            <div class="toggle-button-group" id="cyber-theme-toggle">
+              <button class="toggle-opt active" data-theme="dark">Dark</button>
+              <button class="toggle-opt" data-theme="light">Light</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Panels -->
+    <main id="main-content">
+      
+      <!-- INTERFACE 1: EXTERNAL STUDENT ZEN DASHBOARD -->
+      <section id="zen-dashboard-view" class="view-section active">
+        <div class="header-row">
+          <div class="welcome-msg">
+            <h2>こんにちわ, Learner</h2>
+            <p>Welcome to Zengo. Take a deep breath and start your mindful study journey.</p>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Lesson timeline pebble path -->
+          <div class="content-card">
+            <div class="card-title">
+              <i class="fa-solid fa-mountain-sun"></i>
+              <span>Lesson Stepping Stones</span>
+            </div>
+            <div class="pebble-timeline-wrapper">
+              <svg class="pebble-timeline-svg" id="pebble-timeline-svg" xmlns="http://www.w3.org/2000/svg">
+                <!-- Connected lines will be injected dynamically -->
+              </svg>
+              <div class="pebbles-path-container" id="pebbles-container">
+                <!-- Pebble stones will be rendered dynamically -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Side panels: Lesson active details & Bonsai growth progress -->
+          <div>
+            <div class="content-card" id="lesson-detail-card">
+              <div class="card-title">
+                <i class="fa-solid fa-feather"></i>
+                <span id="active-lesson-title">Select a Lesson</span>
+              </div>
+              <div class="lesson-detail-content">
+                <p id="active-lesson-desc" style="color:var(--text-muted); font-size:0.95rem;">Click on any unlocked stepping stone to view details and syllabus items.</p>
+                <ul class="lesson-syllabus-list" id="active-lesson-syllabus">
+                  <!-- syllabus entries -->
+                </ul>
+                <button class="lesson-btn-start" id="active-lesson-start-btn" style="display:none;">Start Practice</button>
+              </div>
+            </div>
+
+            <div class="content-card">
+              <div class="card-title">
+                <i class="fa-solid fa-seedling"></i>
+                <span>Bonsai Garden Progress</span>
+              </div>
+              <div class="bonsai-container">
+                <div class="bonsai-svg-wrapper">
+                  <div class="bonsai-glow-bg"></div>
+                  <!-- Dynamic Growing Bonsai SVG -->
+                  <svg id="bonsai-svg" viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Tree container pot -->
+                    <rect x="65" y="160" width="70" height="20" rx="3" fill="var(--bonsai-pot)" />
+                    <rect x="75" y="180" width="50" height="10" rx="2" fill="var(--bonsai-pot)" />
+                    <!-- Trunk -->
+                    <path d="M100,160 C90,130 92,100 100,80 C103,72 108,60 110,48" stroke="var(--bonsai-trunk)" stroke-width="12" stroke-linecap="round" fill="none" />
+                    <!-- Dynamic Branches & Leaves -->
+                    <g id="bonsai-dynamic-grow"></g>
+                  </svg>
+                </div>
+                <p id="bonsai-label" style="font-weight: 600; font-size: 1rem;"></p>
+                <p id="bonsai-sub" style="font-size: 0.85rem; color:var(--text-muted); margin-top: 5px;"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERFACE 1 (SECONDARY Theme): CYBER-ZEN DASHBOARD -->
+      <section id="cyber-zen-dashboard-view" class="view-section">
+        <div class="header-row">
+          <div class="welcome-msg">
+            <h2>こんにちわ, Cyber Learner</h2>
+            <p>Ready to sync? Optimize your Japanese mastery metrics today.</p>
+          </div>
+          <div class="streak-badge">
+            <i class="fa-solid fa-fire flame-icon"></i>
+            <span id="streak-count-display">0 Days Streak</span>
+          </div>
+        </div>
+
+        <!-- Quick Stats Row -->
+        <div class="stats-row">
+          <div class="stat-item-card">
+            <div class="stat-label">Kana Mastery</div>
+            <div class="stat-value" id="stats-kana-mastery">0%</div>
+          </div>
+          <div class="stat-item-card">
+            <div class="stat-label">Kanji Read Ratio</div>
+            <div class="stat-value" id="stats-kanji-read">0/0</div>
+          </div>
+          <div class="stat-item-card">
+            <div class="stat-label">Starred Dictionary</div>
+            <div class="stat-value" id="stats-bookmarks">0</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Starred Vocabularies -->
+          <div class="content-card">
+            <div class="card-title">
+              <i class="fa-solid fa-star"></i>
+              <span>Starred Vocabulary Vault</span>
+            </div>
+            <p id="no-starred-vocab-msg" style="color:var(--text-muted);">No vocabulary starred yet. Add stars inside the Dictionary tab!</p>
+            <div class="vocab-list-container" id="starred-vocab-grid" style="display:grid; grid-template-columns:1fr; gap:12px;">
+              <!-- starred cards -->
+            </div>
+          </div>
+
+          <!-- Shortcuts Panel -->
+          <div>
+            <div class="content-card">
+              <div class="card-title">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Quick Modules</span>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <button class="btn-utility" style="width:100%; justify-content:flex-start;" data-go-view="kana-trainer">
+                  <i class="fa-solid fa-graduation-cap"></i>
+                  <span>Launch Kana Trainer</span>
+                </button>
+                <button class="btn-utility" style="width:100%; justify-content:flex-start;" data-go-view="dictionary">
+                  <i class="fa-solid fa-book-open"></i>
+                  <span>Dictionary Conjugator</span>
+                </button>
+                <button class="btn-utility" style="width:100%; justify-content:flex-start;" data-go-view="kanji-board">
+                  <i class="fa-solid fa-brush"></i>
+                  <span>Kanji Practice Board</span>
+                </button>
+                <button class="btn-utility" style="width:100%; justify-content:flex-start;" data-go-view="quiz">
+                  <i class="fa-solid fa-gamepad"></i>
+                  <span>Start Multiple Choice Quiz</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERFACE 2: WOXSEN STUDENT DASHBOARD -->
+      <section id="woxsen-student-dashboard-view" class="view-section">
+        <div class="header-row">
+          <div class="welcome-msg">
+            <h2>こんにちわ, Woxsen Student</h2>
+            <p>Welcome to the Woxsen Japanese Centre (WJC) Student Portal. Track your grades and classes.</p>
+          </div>
+        </div>
+
+        <!-- Quick Stats Row -->
+        <div class="stats-row">
+          <div class="stat-item-card">
+            <div class="stat-label">Your Attendance</div>
+            <div class="stat-value" id="woxsen-attendance-pct">0%</div>
+          </div>
+          <div class="stat-item-card">
+            <div class="stat-label">Classes Attended</div>
+            <div class="stat-value" id="woxsen-attendance-ratio">0/0</div>
+          </div>
+          <div class="stat-item-card">
+            <div class="stat-label">Course Documents</div>
+            <div class="stat-value" id="woxsen-documents-count">0</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Calendar History Card -->
+          <div class="content-card">
+            <div class="card-title">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span>Attendance History</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">Visual summary of dates marked by WJC instructors.</p>
+            <div class="calendar-list" id="woxsen-attendance-calendar">
+              <!-- Render calendar items -->
+            </div>
+          </div>
+
+          <!-- Classroom Download Resource File List -->
+          <div class="content-card">
+            <div class="card-title">
+              <i class="fa-solid fa-folder-open"></i>
+              <span>Course Vault Downloads</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">Download curriculum guides, homework PDFs and slides uploaded by your teacher.</p>
+            <div id="no-woxsen-files-msg" style="color:var(--text-muted); font-style:italic;">No files uploaded by instructor yet.</div>
+            <div class="classroom-files-list" id="woxsen-student-files-container">
+              <!-- Files listed here dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERFACE 3: WOXSEN TEACHER PORTAL DASHBOARD -->
+      <section id="teacher-dashboard-view" class="view-section">
+        <div class="header-row">
+          <div class="welcome-msg">
+            <h2>WJC Faculty Dashboard</h2>
+            <p>Admin portal for Woxsen Japanese Centre (WJC) instructors. Manage rosters, files, and attendance.</p>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="stat-item-card">
+            <div class="stat-label">Class Average Attendance</div>
+            <div class="stat-value" id="teacher-avg-attendance">0%</div>
+          </div>
+          <div class="stat-item-card">
+            <div class="stat-label">Total Roster Students</div>
+            <div class="stat-value">5</div>
+          </div>
+          <div class="stat-item-card">
+            <div class="stat-label">Shared Classroom Files</div>
+            <div class="stat-value" id="teacher-files-count">0</div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Attendance Marker -->
+          <div class="content-card">
+            <div class="card-title">
+              <i class="fa-solid fa-calendar-check"></i>
+              <span>Class Attendance Marker</span>
+            </div>
+            <div class="search-container" style="align-items: center; margin-bottom:20px;">
+              <span style="font-weight:600; font-size:0.9rem; color:var(--text-muted);">Select Class Date:</span>
+              <input type="date" id="teacher-attendance-date" class="search-input" style="max-width:200px;">
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px;" id="teacher-roster-container">
+              <!-- Student checklist dynamically loaded -->
+            </div>
+
+            <button class="lesson-btn-start" id="btn-save-attendance" style="margin-top:20px; width:100%; justify-content:center;">
+              <i class="fa-solid fa-floppy-disk"></i> Save Attendance Record
+            </button>
+          </div>
+
+          <!-- File Upload Panel -->
+          <div class="content-card">
+            <div class="card-title">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Study Resource</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">Upload a lecture file or vocabulary deck to share with the WJC student portal.</p>
+            
+            <div style="background-color: var(--panel-active); border: 2px dashed var(--card-border); border-radius: var(--border-radius-md); padding:30px 15px; text-align:center; margin-bottom:20px; cursor:pointer;" id="teacher-drag-zone">
+              <i class="fa-solid fa-file-pdf" style="font-size:2.5rem; color:var(--accent); margin-bottom:10px;"></i>
+              <p style="font-weight:600; font-size:0.95rem;">Drag & drop study file here</p>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">or click to select from file explorer</p>
+              <input type="file" id="teacher-file-input" style="display:none;">
+            </div>
+
+            <div class="classroom-files-list" id="teacher-files-list-container">
+              <!-- Uploaded files list -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE B: KANA TRAINER -->
+      <section id="kana-trainer-view" class="view-section">
+        <div class="header-row">
+          <div class="welcome-msg">
+            <h2>Kana Trainer Workspace</h2>
+            <p>Select Hiragana or Katakana. Click any card to launch pronunciation and stroke guide tracing.</p>
+          </div>
+        </div>
+
+        <div class="content-card trainer-layout">
+          <!-- trainer view select -->
+          <div class="trainer-options-row">
+            <div class="btn-group" id="kana-type-select">
+              <button class="btn-tab active" data-type="hiragana">Hiragana (平仮名)</button>
+              <button class="btn-tab" data-type="katakana">Katakana (片仮名)</button>
+            </div>
+            
+            <div class="toggle-switch-container">
+              <span>Show Romaji guides</span>
+              <label class="switch">
+                <input type="checkbox" id="toggle-romaji" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Kanas Grid -->
+          <div class="kana-grid" id="kanas-grid-container">
+            <!-- Dynamic Kanas elements -->
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE C: ENGLISH-JAPANESE DICTIONARY & CONJUGATOR -->
+      <section id="dictionary-view" class="view-section">
+        <div class="header-row">
+          <div class="welcome-msg">
+            <h2>Premium Dictionary & Conjugator Workspace</h2>
+            <p>Lookup vocabulary with native audio speech synthesis, or conjugate Japanese verbs instantly.</p>
+          </div>
+        </div>
+
+        <div class="vocab-layout">
+          <!-- Searchable Vocabulary -->
+          <div class="content-card" style="padding: 24px;">
+            <div class="card-title" style="margin-bottom:15px;">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <span>Vocabulary Registry</span>
+            </div>
+            <div class="search-container">
+              <input type="text" class="search-input" id="dictionary-search-input" placeholder="Search by English, Romaji, or Japanese...">
+            </div>
+
+            <!-- Visual Category Chips -->
+            <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;" id="dictionary-category-chips">
+              <button class="btn-tab active" data-category="all" style="padding:6px 14px; font-size:0.8rem;">All</button>
+              <button class="btn-tab" data-category="Noun" style="padding:6px 14px; font-size:0.8rem;">Nouns</button>
+              <button class="btn-tab" data-category="Verb" style="padding:6px 14px; font-size:0.8rem;">Verbs</button>
+              <button class="btn-tab" data-category="Adjective" style="padding:6px 14px; font-size:0.8rem;">Adjectives</button>
+            </div>
+
+            <div class="vocab-list-container" id="dictionary-words-container" style="max-height: 480px;">
+              <!-- words rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Verb Conjugator -->
+          <div class="content-card conjugator-panel" style="padding: 24px;">
+            <div class="card-title">
+              <i class="fa-solid fa-layer-group"></i>
+              <span>Dynamic Verb Conjugator</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.95rem;">Select any Japanese verb below to dynamically generate conjugation forms.</p>
+            
+            <div class="conjugator-select-row">
+              <select class="conjugator-select" id="conjugator-verb-selector">
+                <!-- Verbs options populated dynamically -->
+              </select>
+            </div>
+
+            <div class="conjugations-grid" id="conjugations-display-grid">
+              <div class="conj-card">
+                <div class="conj-label">Polite Form (-masu)</div>
+                <div class="conj-value" id="conj-polite">-</div>
+              </div>
+              <div class="conj-card">
+                <div class="conj-label">Negative Form (-nai)</div>
+                <div class="conj-value" id="conj-negative">-</div>
+              </div>
+              <div class="conj-card">
+                <div class="conj-label">Past Form (-ta)</div>
+                <div class="conj-value" id="conj-past">-</div>
+              </div>
+              <div class="conj-card">
+                <div class="conj-label">Te-Form (-te)</div>
+                <div class="conj-value" id="conj-te">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE D: KANJI PRACTICE BOARD -->
+      <section id="kanji-board-view" class="view-section">
+        <div class="header-row">
+          <div class="welcome-msg">
+            <h2>Kanji Practice Board</h2>
+            <p>Filter by level (N5/N4), select a Kanji, animate its strokes, and draw it on the tracing canvas.</p>
+          </div>
+        </div>
+
+        <div class="kanji-layout">
+          <!-- Kanji selector grid -->
+          <div class="kanji-left-panel">
+            <div class="content-card" style="margin-bottom:0;">
+              <div class="card-title" style="margin-bottom:15px;">
+                <i class="fa-solid fa-filter"></i>
+                <span>Level Filter</span>
+              </div>
+              <div class="btn-group" id="kanji-level-select" style="margin-bottom:20px; width:100%;">
+                <button class="btn-tab active" data-level="N5" style="flex:1;">N5 (Basic)</button>
+                <button class="btn-tab" data-level="N4" style="flex:1;">N4 (Intermediate)</button>
+              </div>
+
+              <div class="kanji-grid" id="kanji-select-grid">
+                <!-- dynamic kanji elements -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Drawing block and description info -->
+          <div class="content-card workspace-grid" style="margin-bottom:0;">
+            <!-- Tracing drawing workspace -->
+            <div class="kanji-drawing-block">
+              <!-- Grid Guide lines background -->
+              <svg class="kanji-notebook-grid" viewBox="0 0 100 100">
+                <line x1="0" y1="50" x2="100" y2="50" />
+                <line x1="50" y1="0" x2="50" y2="100" />
+                <line x1="0" y1="0" x2="100" y2="100" />
+                <line x1="100" y1="0" x2="0" y2="100" />
+              </svg>
+
+              <!-- Dynamic SVG Kanji Guide Path Layer -->
+              <svg class="kanji-svg-trace-guide" id="kanji-guide-svg" viewBox="0 0 100 100">
+                <!-- path lines injected here -->
+              </svg>
+
+              <!-- canvas drawing layer -->
+              <canvas class="drawing-canvas" id="kanji-draw-canvas"></canvas>
+            </div>
+
+            <!-- Kanji Info details & brush controls -->
+            <div class="kanji-info-panel">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <h3 id="kanji-info-char" style="font-size: 2.8rem; font-weight:700;">-</h3>
+                <button class="btn-utility" id="btn-speak-kanji" style="padding:10px; border-radius:50%; width:44px; height:44px; justify-content:center; align-items:center;">
+                  <i class="fa-solid fa-volume-high"></i>
+                </button>
+              </div>
+              <p id="kanji-info-meaning" style="font-weight:600; font-size:1.1rem; color:var(--accent);"></p>
+              
+              <div class="kanji-jp-meta">
+                <div>
+                  <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase;">Kun'yomi (Japanese):</span>
+                  <p id="kanji-info-kunyomi" style="font-size:0.95rem; margin-top:2px;">-</p>
+                </div>
+                <div style="margin-top:10px;">
+                  <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase;">On'yomi (Chinese):</span>
+                  <p id="kanji-info-onyomi" style="font-size:0.95rem; margin-top:2px;">-</p>
+                </div>
+              </div>
+
+              <div class="drawing-controls-panel">
+                <div class="control-row">
+                  <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Brush Size</span>
+                  <input type="range" class="brush-slider" id="brush-size-slider" min="2" max="15" value="5">
+                </div>
+
+                <div class="control-row" style="margin-top: 10px;">
+                  <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">Color Palette</span>
+                  <div class="color-dots-palette" id="canvas-color-palette">
+                    <!-- Dynamic colors dots inside app.js -->
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                  <button class="btn-utility" id="btn-animate-kanji" style="flex:1;">
+                    <i class="fa-solid fa-play"></i> Animate
+                  </button>
+                  <button class="btn-utility" id="btn-clear-canvas" style="flex:1;">
+                    <i class="fa-solid fa-eraser"></i> Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MODULE E: KANA QUIZ -->
+      <section id="quiz-view" class="view-section">
+        <div class="header-row">
+          <div class="welcome-msg">
+            <h2>Multiple-Choice Kana Quiz</h2>
+            <p>Test your Hiragana and Katakana visual comprehension with retroactive sounds.</p>
+          </div>
+        </div>
+
+        <div class="quiz-container">
+          <!-- 1. Selection Lobby -->
+          <div class="content-card" id="quiz-lobby-card">
+            <div class="card-title">
+              <i class="fa-solid fa-gear"></i>
+              <span>Quiz Settings</span>
+            </div>
+            <p style="color:var(--text-muted); margin-bottom:20px;">Choose the character deck and length to begin your practice test.</p>
+            
+            <div style="display:flex; flex-direction:column; gap:20px;">
+              <div>
+                <label style="font-weight:600; font-size:0.9rem; color:var(--text-muted); text-transform:uppercase;">Character Deck</label>
+                <div class="toggle-button-group" id="quiz-deck-toggle" style="margin-top:8px;">
+                  <button class="toggle-opt active" data-deck="hiragana">Hiragana Only</button>
+                  <button class="toggle-opt" data-deck="katakana">Katakana Only</button>
+                  <button class="toggle-opt" data-deck="mixed">Mixed Deck</button>
+                </div>
+              </div>
+
+              <div>
+                <label style="font-weight:600; font-size:0.9rem; color:var(--text-muted); text-transform:uppercase;">Questions Count</label>
+                <div class="toggle-button-group" id="quiz-length-toggle" style="margin-top:8px;">
+                  <button class="toggle-opt active" data-length="10">10 Questions</button>
+                  <button class="toggle-opt" data-length="20">20 Questions</button>
+                  <button class="toggle-opt" data-length="40">40 Questions</button>
+                </div>
+              </div>
+
+              <button class="lesson-btn-start" id="btn-start-quiz" style="width:100%; justify-content:center;">
+                <i class="fa-solid fa-play"></i> Start Quiz Challenge
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Interactive Game Area -->
+          <div class="quiz-game-panel" id="quiz-game-panel" style="display:none;">
+            <div class="quiz-progress-bar-outer">
+              <div class="quiz-progress-bar-inner" id="quiz-progress-fill"></div>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; font-weight:600;">
+              <span id="quiz-progress-text">Question 1 of 10</span>
+              <span id="quiz-score-live">Score: 0</span>
+            </div>
+
+            <div class="quiz-question-box">
+              <div class="quiz-kana-display" id="quiz-target-char">-</div>
+              <div class="quiz-prompt-text">What is the correct Romaji transcription of this character?</div>
+            </div>
+
+            <div class="quiz-choices-grid" id="quiz-options-container">
+              <button class="choice-button">-</button>
+              <button class="choice-button">-</button>
+              <button class="choice-button">-</button>
+              <button class="choice-button">-</button>
+            </div>
+          </div>
+
+          <!-- 3. Final Scoreboard Summary -->
+          <div class="content-card quiz-completed-card" id="quiz-summary-card" style="display:none;">
+            <i class="fa-solid fa-trophy" style="font-size:3.5rem; color:var(--accent-secondary); margin-bottom:15px;"></i>
+            <h2>Challenge Completed!</h2>
+            <p style="color:var(--text-muted); margin-top:5px;">Fantastic effort. Your Zengo score is ready.</p>
+            
+            <div class="quiz-results-score" id="quiz-final-score">0 / 0</div>
+            <p id="quiz-feedback-msg" style="font-weight:600; margin-bottom:30px;"></p>
+            
+            <button class="lesson-btn-start" id="btn-quiz-retry" style="margin:0 auto;">
+              <i class="fa-solid fa-rotate-right"></i> Try Another Challenge
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- KANA DETAILS DIALOG MODAL -->
+  <div class="modal-overlay" id="kana-detail-modal">
+    <div class="modal-content-wrapper">
+      <button class="modal-close-btn" id="btn-close-modal" aria-label="Close modal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <h3 style="font-size: 1.4rem; font-weight: 600; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-graduation-cap"></i> Character Details
+      </h3>
+
+      <div class="modal-grid-layout">
+        <!-- character cell with dynamic path trace -->
+        <div class="modal-kana-char-box">
+          <!-- Background SVG stroke guide lines -->
+          <svg class="kanji-notebook-grid" viewBox="0 0 100 100">
+            <line x1="0" y1="50" x2="100" y2="50" />
+            <line x1="50" y1="0" x2="50" y2="100" />
+            <line x1="0" y1="0" x2="100" y2="100" />
+            <line x1="100" y1="0" x2="0" y2="100" />
+          </svg>
+          <div class="modal-kana-char" id="modal-char-display">-</div>
+          <svg class="modal-svg-stroke-layer" id="modal-kana-guide-svg" viewBox="0 0 100 100">
+            <!-- stroke guides -->
+          </svg>
+        </div>
+
+        <!-- description fields -->
+        <div style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+              <span class="vocab-tag" id="modal-kana-type" style="margin:0;">Hiragana</span>
+              <span style="font-weight:600; font-size:1.1rem; color:var(--accent);" id="modal-romaji-display">Romaji: -</span>
+              <button class="btn-utility" id="btn-speak-kana" style="padding:6px; border-radius:50%; width:32px; height:32px; justify-content:center; align-items:center;">
+                <i class="fa-solid fa-volume-high"></i>
+              </button>
+            </div>
+            
+            <p id="modal-desc-pronunciation" style="font-size:0.9rem; color:var(--text-muted); line-height:1.4; margin-bottom:12px;">-</p>
+            
+            <div style="background-color: var(--panel-active); padding:12px; border-radius:var(--border-radius-md);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.75rem; font-weight:600; color:var(--text-muted); text-transform:uppercase;">Vocabulary Example:</span>
+                <i class="fa-solid fa-volume-high speak-btn" id="btn-speak-vocab" style="cursor:pointer; color:var(--accent); font-size:0.9rem;"></i>
+              </div>
+              <p style="font-weight:700; font-size:1rem; margin-top:3px;" id="modal-vocab-japanese">-</p>
+              <p style="font-size:0.85rem; color:var(--text-muted);" id="modal-vocab-english">-</p>
+            </div>
+          </div>
+
+          <label class="modal-checkbox-row">
+            <input type="checkbox" id="modal-mastery-checkbox" style="width:18px; height:18px; accent-color:var(--accent);">
+            <span>Mark as Mastered</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Footer prev/next selectors -->
+      <div class="modal-nav-row">
+        <button class="btn-utility" id="btn-modal-prev">
+          <i class="fa-solid fa-chevron-left"></i> Previous
+        </button>
+        <button class="btn-utility" id="btn-modal-animate">
+          <i class="fa-solid fa-play"></i> Animate
+        </button>
+        <button class="btn-utility" id="btn-modal-next">
+          Next <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core JavaScript Modular Application Loading -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
