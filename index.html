@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Custom Styling System -->
-  <link rel="stylesheet" href="css/style.css?v=2.3">
+  <link rel="stylesheet" href="css/style.css?v=2.4">
 </head>
 <body class="theme-zen has-banner">
 
@@ -412,12 +412,14 @@
               <input type="text" class="search-input" id="dictionary-search-input" placeholder="Search by English, Romaji, or Japanese...">
             </div>
 
-            <!-- Visual Category Chips -->
-            <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;" id="dictionary-category-chips">
+            <!-- Visual Category Chips + Favorites + CSV Export -->
+            <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; align-items:center;" id="dictionary-category-chips">
               <button class="btn-tab active" data-category="all" style="padding:6px 14px; font-size:0.8rem;">All</button>
               <button class="btn-tab" data-category="Noun" style="padding:6px 14px; font-size:0.8rem;">Nouns</button>
               <button class="btn-tab" data-category="Verb" style="padding:6px 14px; font-size:0.8rem;">Verbs</button>
               <button class="btn-tab" data-category="Adjective" style="padding:6px 14px; font-size:0.8rem;">Adjectives</button>
+              <button class="btn-tab" data-category="starred" style="padding:6px 14px; font-size:0.8rem;"><i class="fa-solid fa-star" style="color:#c29547; margin-right:4px;"></i>Favorites</button>
+              <button id="btn-export-csv" style="margin-left:auto; padding:6px 14px; font-size:0.8rem; background:var(--accent); color:#fff; border:none; border-radius:var(--border-radius-sm); cursor:pointer; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
             </div>
 
             <div class="vocab-list-container" id="dictionary-words-container" style="max-height: 480px;">
@@ -717,7 +719,7 @@
   </div>
 
   <!-- Core JavaScript Modular Application Loading -->
-  <script type="module" src="js/app.js?v=2.3"></script>
+  <script type="module" src="js/app.js?v=2.4"></script>
 
 </body>
 </html>

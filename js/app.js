@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=2.3';
-import { soundSynth } from './sound.js?v=2.3';
-import { TracingCanvas } from './canvas.js?v=2.3';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=2.4';
+import { soundSynth } from './sound.js?v=2.4';
+import { TracingCanvas } from './canvas.js?v=2.4';
 
 class AppController {
   constructor() {
@@ -705,6 +705,54 @@ class AppController {
     this.saveState();
   }
 
+  // ─── CSV EXPORT ─────────────────────────────────────────────────
+  setupCSVExportBtn() {
+    const btn = document.getElementById("btn-export-csv");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      this.exportDictionaryCSV();
+    });
+  }
+
+  exportDictionaryCSV() {
+    const rows = [["Word", "Reading", "Romaji", "English", "Category", "Lesson"]];
+    dictionary.forEach(item => {
+      rows.push([item.word, item.reading, item.romaji, item.english, item.tag, item.lesson]);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "zengo_dictionary.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    soundSynth.playSuccess && soundSynth.playSuccess();
+  }
+
+  // ─── SPACED REPETITION ────────────────────────────────────────
+  getKanaDifficulty(kanaId) {
+    return this.state.kanaScores?.[kanaId] ?? 0;
+  }
+
+  updateKanaDifficulty(kanaId, correct) {
+    if (!this.state.kanaScores) this.state.kanaScores = {};
+    const cur = this.state.kanaScores[kanaId] ?? 0;
+    // Increase difficulty on wrong, decrease on correct (floor 0)
+    this.state.kanaScores[kanaId] = correct ? Math.max(0, cur - 1) : cur + 2;
+    this.saveState();
+  }
+
+  getSpacedRepetitionKanas(allKanas) {
+    // Sort: most difficult kana first, then random for equal difficulty
+    return [...allKanas].sort((a, b) => {
+      const da = this.getKanaDifficulty(a.id);
+      const db = this.getKanaDifficulty(b.id);
+      if (db !== da) return db - da;
+      return Math.random() - 0.5;
+    });
+  }
+
   // ==========================================
   // PORTAL: WOXSEN STUDENT INTERFACE
   // ==========================================
@@ -1222,6 +1270,9 @@ class AppController {
     if (verbs.length > 0) {
       this.conjugateSelectedVerb();
     }
+
+    // Setup CSV export button
+    this.setupCSVExportBtn();
   }
 
   renderDictionary() {
@@ -1246,7 +1297,11 @@ class AppController {
         item.english.toLowerCase().includes(query)
       );
       
-      const matchesCategory = (category === "all" || item.tag === category);
+      const matchesCategory = (
+        category === "all" ||
+        (category === "starred" && this.state.starredVocab.includes(item.word)) ||
+        item.tag === category
+      );
 
       return matchesSearch && matchesCategory;
     });
