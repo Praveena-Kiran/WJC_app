@@ -481,13 +481,15 @@ class AppController {
     svg.setAttribute("width", wrapperRect.width);
     svg.setAttribute("height", wrapperRect.height);
 
+    const svgRect = svg.getBoundingClientRect();
+
     let pathData = "";
     const points = [];
 
     pebbles.forEach((pebble) => {
       const pebbleRect = pebble.getBoundingClientRect();
-      const x = pebbleRect.left - wrapperRect.left + pebbleRect.width / 2;
-      const y = pebbleRect.top - wrapperRect.top + pebbleRect.height / 2;
+      const x = pebbleRect.left - svgRect.left + pebbleRect.width / 2;
+      const y = pebbleRect.top - svgRect.top + pebbleRect.height / 2;
       points.push({ x, y });
     });
 
@@ -1120,23 +1122,18 @@ class AppController {
     svg.classList.remove("animating");
 
     const paths = kanaStrokes[char];
+    const charDisplay = document.getElementById("modal-char-display");
+
     if (paths) {
+      if (charDisplay) charDisplay.style.display = "none";
       paths.forEach(d => {
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("d", d);
         svg.appendChild(path);
       });
     } else {
-      // Draw a fallback generic character outline stroke inside modal
-      const textNode = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      textNode.setAttribute("x", "50");
-      textNode.setAttribute("y", "68");
-      textNode.setAttribute("font-size", "50");
-      textNode.setAttribute("text-anchor", "middle");
-      textNode.setAttribute("fill", "rgba(120, 120, 140, 0.08)");
-      textNode.setAttribute("font-family", "'Outfit', 'Noto Sans JP'");
-      textNode.innerText = char;
-      svg.appendChild(textNode);
+      if (charDisplay) charDisplay.style.display = "block";
+      // Clear SVG text fallback drawing to avoid visual duplication
     }
   }
 
