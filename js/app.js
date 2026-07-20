@@ -476,12 +476,10 @@ class AppController {
     const pebbles = container.querySelectorAll(".pebble-node");
     if (pebbles.length < 2) return;
 
-    // Adjust SVG size relative to wrapper container bounds including padding
-    const wrapperRect = wrapper.getBoundingClientRect();
-    svg.setAttribute("width", wrapperRect.width);
-    svg.setAttribute("height", wrapperRect.height);
-
+    // Get actual dimensions of the SVG element on screen to set 1:1 scale bounds
     const svgRect = svg.getBoundingClientRect();
+    svg.setAttribute("width", svgRect.width);
+    svg.setAttribute("height", svgRect.height);
 
     let pathData = "";
     const points = [];
