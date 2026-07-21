@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.9';
-import { soundSynth } from './sound.js?v=3.9';
-import { TracingCanvas } from './canvas.js?v=3.9';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.10';
+import { soundSynth } from './sound.js?v=3.10';
+import { TracingCanvas } from './canvas.js?v=3.10';
 
 class AppController {
   constructor() {
@@ -571,9 +571,34 @@ class AppController {
 
     const syllabusList = document.getElementById("active-lesson-syllabus");
     syllabusList.innerHTML = "";
+    
+    // Custom modern card lists with icons instead of plain bullets (Duolingo style)
     lesson.syllabus.forEach(item => {
       const li = document.createElement("li");
-      li.innerText = item;
+      li.style.display = "flex";
+      li.style.alignItems = "center";
+      li.style.gap = "12px";
+      li.style.padding = "12px 14px";
+      li.style.background = "var(--panel-active)";
+      li.style.borderRadius = "var(--border-radius-md)";
+      li.style.border = "1px solid var(--card-border)";
+      li.style.fontSize = "0.92rem";
+      li.style.fontWeight = "600";
+      li.style.color = "var(--text-main)";
+      li.style.boxShadow = "var(--shadow-sm)";
+      li.style.transition = "transform 0.2s ease, border-color 0.2s ease";
+
+      let icon = '<i class="fa-solid fa-star" style="color:var(--accent); font-size:0.95rem; width:20px; text-align:center;"></i>';
+      if (item.toLowerCase().includes("grammar:")) {
+        icon = '<i class="fa-solid fa-book-bookmark" style="color:var(--accent-secondary); font-size:0.95rem; width:20px; text-align:center;"></i>';
+      } else if (item.toLowerCase().includes("vocabulary:")) {
+        icon = '<i class="fa-solid fa-language" style="color:var(--accent-success); font-size:0.95rem; width:20px; text-align:center;"></i>';
+      } else if (item.toLowerCase().includes("kanji:")) {
+        icon = '<i class="fa-solid fa-pen-fancy" style="color:var(--accent); font-size:0.95rem; width:20px; text-align:center;"></i>';
+      }
+
+      const cleanText = item.replace(/^(Grammar:|Vocabulary:|Kanji:)/i, "").trim();
+      li.innerHTML = `${icon} <span style="flex:1; line-height:1.3;">${cleanText}</span>`;
       syllabusList.appendChild(li);
     });
 
@@ -613,24 +638,26 @@ class AppController {
     const grammarItems = lesson.syllabus.filter(item => item.startsWith("Grammar:"));
     let grammarHtml = `
       <div class="grammar-slide">
-        <h4 style="margin-bottom: 12px; color: var(--accent); font-weight:700; font-size:1.1rem;">Grammar & Key Patterns</h4>
-        <div style="display:flex; flex-direction:column; gap:12px;">
+        <h4 style="margin-bottom: 15px; color: var(--accent); font-weight:700; font-size:1.15rem; display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-book-open-reader"></i> Grammar & Key Patterns
+        </h4>
+        <div style="display:flex; flex-direction:column; gap:12px; max-height:240px; overflow-y:auto; padding-right:5px;">
     `;
     if (grammarItems.length > 0) {
       grammarItems.forEach(item => {
         const clean = item.replace("Grammar:", "").trim();
         grammarHtml += `
-          <div style="padding:12px 15px; background:var(--panel-active); border-radius:var(--border-radius-md); border-left:3px solid var(--accent-secondary);">
-            <span style="font-weight:600; color:var(--text-main); font-size:1rem;">${clean}</span>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:5px; line-height:1.4;">
-              Learn and apply this pattern in conversations. Use vocabulary terms to substitute subjects and objects.
+          <div style="padding:14px 16px; background:var(--panel-active); border-radius:var(--border-radius-md); border:1px solid var(--card-border); border-left:4px solid var(--accent-secondary); box-shadow:var(--shadow-sm);">
+            <span style="font-weight:700; color:var(--text-main); font-size:1.02rem;">${clean}</span>
+            <p style="font-size:0.86rem; color:var(--text-muted); margin-top:6px; line-height:1.45;">
+              Learn and apply this pattern in conversation. Tap words in Slide 2 to practice the vocabulary required for this structure.
             </p>
           </div>
         `;
       });
     } else {
       grammarHtml += `
-        <div style="padding:15px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted);">
+        <div style="padding:20px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted); border:1px dashed var(--card-border);">
           No explicit grammar patterns listed for this lesson.
         </div>
       `;
@@ -641,32 +668,38 @@ class AppController {
     // Slide 2: Vocabulary Spotlight
     let vocabHtml = `
       <div class="vocab-slide">
-        <h4 style="margin-bottom: 8px; color: var(--accent); font-weight:700; font-size:1.1rem;">Vocabulary Spotlight</h4>
+        <h4 style="margin-bottom: 5px; color: var(--accent); font-weight:700; font-size:1.15rem; display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-volume-high"></i> Vocabulary Spotlight
+        </h4>
         <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Tap the speaker icon to hear pronunciation.</p>
-        <div style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; padding-right:5px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; max-height:240px; overflow-y:auto; padding-right:5px;">
     `;
+    let vocabCount = 0;
     if (lesson.vocabulary && lesson.vocabulary.length > 0) {
       lesson.vocabulary.forEach(hiragana => {
         const dictItem = dictionary.find(d => d.reading === hiragana || d.word === hiragana);
         if (dictItem) {
+          vocabCount++;
           vocabHtml += `
-            <div style="padding:10px 12px; background:var(--panel-active); border-radius:var(--border-radius-sm); border:1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <span style="font-size:1.05rem; font-weight:700; color:var(--text-main);">${dictItem.word}</span>
-                  <span style="font-size:0.8rem; color:var(--text-muted);">(${dictItem.reading})</span>
-                  <i class="fa-solid fa-volume-high speak-btn" data-text="${dictItem.word}" style="cursor:pointer; color:var(--accent); font-size:0.85rem; padding:4px;"></i>
+            <div class="vocab-study-card" style="padding:12px 14px; background:var(--panel-active); border-radius:var(--border-radius-md); border:1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm); transition:transform 0.15s ease;">
+              <div style="min-width:0; flex:1;">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap;">
+                  <span style="font-size:1.1rem; font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${dictItem.word}</span>
+                  <span style="font-size:0.78rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">(${dictItem.reading})</span>
                 </div>
-                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">${dictItem.english}</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${dictItem.english}</div>
               </div>
-              <span class="vocab-tag" style="margin:0; font-size:0.75rem;">${dictItem.tag}</span>
+              <button class="speak-btn" data-text="${dictItem.word}" style="background:var(--panel-hover); border:none; outline:none; border-radius:50%; width:28px; height:28px; display:flex; justify-content:center; align-items:center; cursor:pointer; color:var(--accent); flex-shrink:0; transition:background-color 0.2s;">
+                <i class="fa-solid fa-volume-high" style="font-size:0.8rem;"></i>
+              </button>
             </div>
           `;
         }
       });
-    } else {
+    }
+    if (vocabCount === 0) {
       vocabHtml += `
-        <div style="padding:15px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted);">
+        <div style="grid-column: span 2; padding:20px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted); border:1px dashed var(--card-border);">
           No custom vocabulary listed for this lesson.
         </div>
       `;
@@ -677,31 +710,36 @@ class AppController {
     // Slide 3: Kanji Practice
     let kanjiHtml = `
       <div class="kanji-slide">
-        <h4 style="margin-bottom: 8px; color: var(--accent); font-weight:700; font-size:1.1rem;">Kanji Spotlight</h4>
+        <h4 style="margin-bottom: 5px; color: var(--accent); font-weight:700; font-size:1.15rem; display:flex; align-items:center; gap:8px;">
+          <i class="fa-solid fa-pen-nib"></i> Kanji Spotlight
+        </h4>
         <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Key characters featured in this lesson.</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; max-height:220px; overflow-y:auto; padding-right:5px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; max-height:240px; overflow-y:auto; padding-right:5px;">
     `;
+    let kanjiCount = 0;
     if (lesson.kanji && lesson.kanji.length > 0) {
       lesson.kanji.forEach(char => {
         const kanjiItem = kanjiData.find(k => k.char === char);
         if (kanjiItem) {
+          kanjiCount++;
           kanjiHtml += `
-            <div style="padding:10px; background:var(--panel-active); border-radius:var(--border-radius-md); border:1px solid var(--card-border); display:flex; gap:8px; align-items:center;">
-              <div style="font-size:1.6rem; font-weight:700; color:var(--accent); width:40px; height:40px; background:var(--panel-hover); border-radius:var(--border-radius-sm); display:flex; justify-content:center; align-items:center; flex-shrink:0;">
+            <div style="padding:12px; background:var(--panel-active); border-radius:var(--border-radius-md); border:1px solid var(--card-border); display:flex; gap:10px; align-items:center; box-shadow:var(--shadow-sm); border-bottom:3px solid var(--accent);">
+              <div style="font-size:1.8rem; font-weight:700; color:var(--accent); width:45px; height:45px; background:var(--panel-hover); border-radius:var(--border-radius-md); display:flex; justify-content:center; align-items:center; flex-shrink:0; box-shadow:inset 0 2px 5px rgba(0,0,0,0.05);">
                 ${kanjiItem.char}
               </div>
-              <div style="min-width:0;">
-                <div style="font-weight:600; font-size:0.85rem; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${kanjiItem.meaning}</div>
-                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Kun: ${kanjiItem.kunyomi}</div>
-                <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">On: ${kanjiItem.onyomi}</div>
+              <div style="min-width:0; flex:1;">
+                <div style="font-weight:700; font-size:0.9rem; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${kanjiItem.meaning}</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Kun: ${kanjiItem.kunyomi}</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">On: ${kanjiItem.onyomi}</div>
               </div>
             </div>
           `;
         }
       });
-    } else {
+    }
+    if (kanjiCount === 0) {
       kanjiHtml += `
-        <div style="grid-column: span 2; padding:15px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted);">
+        <div style="grid-column: span 2; padding:20px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted); border:1px dashed var(--card-border);">
           No custom Kanji listed for this lesson.
         </div>
       `;

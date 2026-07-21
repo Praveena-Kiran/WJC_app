@@ -617,10 +617,9 @@ body.has-banner #main-content {
   color: var(--text-muted);
 }
 
-.lesson-syllabus-list li::before {
-  content: "•";
-  color: var(--accent);
-  font-weight: bold;
+.lesson-syllabus-list li:hover {
+  transform: translateX(4px);
+  border-color: var(--accent) !important;
 }
 
 .lesson-btn-start {
