@@ -24,10 +24,16 @@ export class TracingCanvas {
     // Resize handler
     window.addEventListener("resize", () => this.resizeCanvas());
 
-    // Mouse drawing
-    this.canvas.addEventListener("mousedown", (e) => this.startDrawing(e.offsetX, e.offsetY));
-    this.canvas.addEventListener("mousemove", (e) => this.draw(e.offsetX, e.offsetY));
-    this.canvas.addEventListener("mouseup", () => this.stopDrawing());
+    // Mouse drawing — use getBoundingClientRect so coords are correct inside modals
+    this.canvas.addEventListener("mousedown", (e) => {
+      const p = this._clientToCanvas(e.clientX, e.clientY);
+      this.startDrawing(p.x, p.y);
+    });
+    this.canvas.addEventListener("mousemove", (e) => {
+      const p = this._clientToCanvas(e.clientX, e.clientY);
+      this.draw(p.x, p.y);
+    });
+    this.canvas.addEventListener("mouseup",  () => this.stopDrawing());
     this.canvas.addEventListener("mouseout", () => this.stopDrawing());
 
     // Touch drawing (for responsive/mobile screens)
@@ -80,24 +86,34 @@ export class TracingCanvas {
   // Adjust canvas bounds for high DPI screens
   resizeCanvas() {
     const rect = this.canvas.getBoundingClientRect();
-    const width = rect.width || 320;
+    const width  = rect.width  || 320;
     const height = rect.height || 320;
 
     const dpr = window.devicePixelRatio || 1;
-    this.canvas.width = width * dpr;
-    this.canvas.height = height * dpr;
+    this.canvas.width  = Math.round(width  * dpr);
+    this.canvas.height = Math.round(height * dpr);
 
     // Reset transform first to avoid cumulative scaling on repeated calls
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.scale(dpr, dpr);
 
-    this.ctx.lineCap = "round";
+    this.ctx.lineCap  = "round";
     this.ctx.lineJoin = "round";
+  }
+
+  // Convert a client-space point to canvas CSS-pixel space
+  _clientToCanvas(clientX, clientY) {
+    const rect = this.canvas.getBoundingClientRect();
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
   }
 
   startDrawing(x, y) {
     this.isDrawing = true;
-    [this.lastX, this.lastY] = [x, y];
+    this.lastX = x;
+    this.lastY = y;
   }
 
   draw(x, y) {
@@ -106,14 +122,15 @@ export class TracingCanvas {
     this.ctx.beginPath();
     this.ctx.moveTo(this.lastX, this.lastY);
     this.ctx.lineTo(x, y);
-    
+
     this.ctx.strokeStyle = this.currentColor;
-    this.ctx.lineWidth = this.currentBrushSize;
-    this.ctx.lineCap = "round";
-    this.ctx.lineJoin = "round";
-    
+    this.ctx.lineWidth   = this.currentBrushSize;
+    this.ctx.lineCap     = "round";
+    this.ctx.lineJoin    = "round";
+
     this.ctx.stroke();
-    [this.lastX, this.lastY] = [x, y];
+    this.lastX = x;
+    this.lastY = y;
   }
 
   stopDrawing() {
@@ -121,8 +138,11 @@ export class TracingCanvas {
   }
 
   clear() {
-    // Use physical canvas dimensions (not CSS) since context is scaled by dpr
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // Context is scaled by DPR, so clear in CSS pixel space
+    const rect = this.canvas.getBoundingClientRect();
+    const w = rect.width  || this.canvas.width;
+    const h = rect.height || this.canvas.height;
+    this.ctx.clearRect(0, 0, w, h);
   }
 
   setColor(color) {
