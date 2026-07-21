@@ -42,16 +42,16 @@ export class TracingCanvas {
       const touch = e.touches[0];
       const p = this._clientToCanvas(touch.clientX, touch.clientY);
       this.startDrawing(p.x, p.y);
-    });
+    }, { passive: false });
 
     this.canvas.addEventListener("touchmove", (e) => {
       e.preventDefault();
       const touch = e.touches[0];
       const p = this._clientToCanvas(touch.clientX, touch.clientY);
       this.draw(p.x, p.y);
-    });
+    }, { passive: false });
 
-    this.canvas.addEventListener("touchend", () => this.stopDrawing());
+    this.canvas.addEventListener("touchend", () => this.stopDrawing(), { passive: false });
 
     // Brush Size
     if (this.brushSizeInput) {
