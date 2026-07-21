@@ -1052,8 +1052,8 @@ input:checked + .slider:before {
 
 .kanji-svg-trace-guide path {
   fill: none;
-  stroke: rgba(34, 102, 76, 0.18);
-  stroke-width: 5;
+  stroke: rgba(34, 102, 76, 0.45);
+  stroke-width: 6;
   stroke-linecap: round;
   stroke-linejoin: round;
   transition: stroke 0.3s;
@@ -1068,8 +1068,8 @@ input:checked + .slider:before {
 /* Kana modal SVG layer */
 .modal-svg-stroke-layer path {
   fill: none;
-  stroke: rgba(34, 102, 76, 0.2);
-  stroke-width: 5;
+  stroke: rgba(34, 102, 76, 0.5);
+  stroke-width: 6;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -1354,7 +1354,7 @@ input:checked + .slider:before {
 
 .modal-svg-stroke-layer path {
   fill: none;
-  stroke: rgba(120, 120, 140, 0.12);
+  stroke: rgba(34, 102, 76, 0.5);
   stroke-width: 6;
   stroke-linecap: round;
   stroke-linejoin: round;

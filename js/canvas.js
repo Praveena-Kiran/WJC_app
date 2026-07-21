@@ -161,20 +161,21 @@ export class TracingCanvas {
     refCtx.scale(dpr, dpr);
     refCtx.clearRect(0, 0, w, h);
 
-    // Draw each SVG path string as a canvas path
-    const scaleX = w / 100;
-    const scaleY = h / 100;
+    // Draw each SVG path string as a canvas path using Path2D
+    const scaleX = w / 109;
+    const scaleY = h / 109;
 
     refCtx.strokeStyle = "#000";
-    refCtx.lineWidth   = Math.max(10, w * 0.08); // generous tolerance band
+    refCtx.lineWidth   = Math.max(10, w * 0.08) / scaleX; // adjusted for context scaling
     refCtx.lineCap     = "round";
     refCtx.lineJoin    = "round";
 
+    refCtx.save();
+    refCtx.scale(scaleX, scaleY);
     for (const d of strokePaths) {
-      refCtx.beginPath();
-      this._parseSVGPath(refCtx, d, scaleX, scaleY);
-      refCtx.stroke();
+      refCtx.stroke(new Path2D(d));
     }
+    refCtx.restore();
 
     // ── 2. Get pixel data from both canvases ──
     const refData  = refCtx.getImageData(0, 0, refCanvas.width, refCanvas.height).data;
@@ -192,29 +193,6 @@ export class TracingCanvas {
 
     if (refInked === 0) return 0;
     return Math.round((overlap / refInked) * 100);
-  }
-
-  // Minimal SVG path parser supporting M, L, C, Z commands
-  _parseSVGPath(ctx, d, sx, sy) {
-    const tokens = d.trim().split(/(?=[MLCZ])/);
-    for (const token of tokens) {
-      const cmd  = token[0];
-      const nums = token.slice(1).trim().split(/[\s,]+/).map(Number);
-
-      if (cmd === "M") {
-        ctx.moveTo(nums[0] * sx, nums[1] * sy);
-      } else if (cmd === "L") {
-        ctx.lineTo(nums[0] * sx, nums[1] * sy);
-      } else if (cmd === "C") {
-        ctx.bezierCurveTo(
-          nums[0] * sx, nums[1] * sy,
-          nums[2] * sx, nums[3] * sy,
-          nums[4] * sx, nums[5] * sy
-        );
-      } else if (cmd === "Z") {
-        ctx.closePath();
-      }
-    }
   }
 
   // Returns true if user drew something (any non-transparent pixels)

@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=2.5';
-import { soundSynth } from './sound.js?v=2.5';
-import { TracingCanvas } from './canvas.js?v=2.5';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=2.9';
+import { soundSynth } from './sound.js?v=2.9';
+import { TracingCanvas } from './canvas.js?v=2.9';
 
 class AppController {
   constructor() {
@@ -44,6 +44,7 @@ class AppController {
     };
 
     this.canvasController = null;
+    this.kanaModalCanvas = null;  // separate TracingCanvas for kana modal
     this.selectedKanji = null;
     this.activeModalKana = null;
     this.timelineObserver = null;
@@ -1076,6 +1077,63 @@ class AppController {
       this.animateKanaStrokes();
     });
 
+    // Modal Clear drawing
+    const modalClearBtn = document.getElementById("btn-modal-clear-kana");
+    if (modalClearBtn) {
+      modalClearBtn.addEventListener("click", () => {
+        if (this.kanaModalCanvas) this.kanaModalCanvas.clear();
+        const banner = document.getElementById("modal-feedback-banner");
+        if (banner) banner.style.display = "none";
+      });
+    }
+
+    // Modal Check Drawing
+    const modalCheckBtn = document.getElementById("btn-modal-check-kana");
+    if (modalCheckBtn) {
+      modalCheckBtn.addEventListener("click", () => {
+        if (!this.activeModalKana || !this.kanaModalCanvas) return;
+
+        const banner = document.getElementById("modal-feedback-banner");
+        if (!this.kanaModalCanvas.hasDrawing()) {
+          banner.style.display = "block";
+          banner.style.backgroundColor = "rgba(255, 150, 0, 0.15)";
+          banner.style.color = "var(--text-main)";
+          banner.style.border = "1px solid rgba(255,150,0,0.3)";
+          banner.innerText = "✏️ Draw the character first!";
+          return;
+        }
+
+        const char = this.activeModalKana.kana.char;
+        const strokes = kanaStrokes[char];
+        if (!strokes) {
+          banner.style.display = "block";
+          banner.style.backgroundColor = "rgba(255, 150, 0, 0.15)";
+          banner.style.color = "var(--text-main)";
+          banner.innerText = "No reference strokes available for this character.";
+          return;
+        }
+
+        const score = this.kanaModalCanvas.checkDrawing(strokes);
+        banner.style.display = "block";
+        banner.style.border = "none";
+        if (score > 60) {
+          soundSynth.playCorrect && soundSynth.playCorrect();
+          banner.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+          banner.style.color = "#10b981";
+          banner.innerText = `✅ Correct! Score: ${score}% — Great job!`;
+        } else if (score > 30) {
+          banner.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
+          banner.style.color = "#f59e0b";
+          banner.innerText = `👍 Good try! Score: ${score}% — Keep practicing!`;
+        } else {
+          soundSynth.playIncorrect && soundSynth.playIncorrect();
+          banner.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
+          banner.style.color = "#ef4444";
+          banner.innerText = `❌ Needs more practice! Score: ${score}% — Try tracing the guide.`;
+        }
+      });
+    }
+
     // Modal Mastery Toggle
     const masteryCheckbox = document.getElementById("modal-mastery-checkbox");
     masteryCheckbox.addEventListener("change", () => {
@@ -1157,7 +1215,27 @@ class AppController {
     // Initial strokes setup
     this.setupKanaStrokesGuide(kana.char);
 
+    // Clear feedback banner
+    const banner = document.getElementById("modal-feedback-banner");
+    if (banner) banner.style.display = "none";
+
+    // Initialize or reset kana drawing canvas
+    const modalCanvas = document.getElementById("modal-kana-draw-canvas");
+    if (modalCanvas) {
+      if (!this.kanaModalCanvas) {
+        this.kanaModalCanvas = new TracingCanvas(modalCanvas, null, null, null);
+        // Use accent color for drawing
+        this.kanaModalCanvas.setColor("#22664c");
+      } else {
+        this.kanaModalCanvas.resizeCanvas();
+      }
+    }
+
     modal.classList.add("active");
+    // Resize after modal is visible so canvas dimensions are correct
+    requestAnimationFrame(() => {
+      if (this.kanaModalCanvas) this.kanaModalCanvas.resizeCanvas();
+    });
   }
 
   setupKanaStrokesGuide(char) {
