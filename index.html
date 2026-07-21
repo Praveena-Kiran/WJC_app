@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Custom Styling System -->
-  <link rel="stylesheet" href="css/style.css?v=3.6">
+  <link rel="stylesheet" href="css/style.css?v=3.7">
 </head>
 <body class="theme-zen has-banner">
 
@@ -21,11 +21,11 @@
 
   <!-- Mobile Header -->
   <header class="mobile-header">
-    <button class="btn-mobile-nav" id="mobile-nav-toggle" aria-label="Open navigation menu">
-      <i class="fa-solid fa-bars"></i>
-    </button>
-    <h1>ZENGO</h1>
     <div style="width: 24px;"></div> <!-- placeholder for spacing alignment -->
+    <h1>ZENGO</h1>
+    <button class="btn-mobile-nav" id="mobile-nav-toggle" aria-label="Open settings panel" style="background:none; border:none; outline:none; font-size:1.4rem; padding:5px;">
+      <i class="fa-solid fa-gear"></i>
+    </button>
   </header>
 
   <div id="app-container">
@@ -790,8 +790,32 @@
     </div>
   </div>
 
+  <!-- Sticky Bottom Navigation for Mobile (Duolingo style) -->
+  <nav id="mobile-bottom-nav">
+    <button class="nav-item active" data-view="dashboard">
+      <i class="fa-solid fa-house-chimney"></i>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" data-view="kana-trainer">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span>Kana</span>
+    </button>
+    <button class="nav-item" data-view="dictionary">
+      <i class="fa-solid fa-book-open"></i>
+      <span>Dictionary</span>
+    </button>
+    <button class="nav-item" data-view="kanji-board">
+      <i class="fa-solid fa-brush"></i>
+      <span>Kanji</span>
+    </button>
+    <button class="nav-item" data-view="quiz">
+      <i class="fa-solid fa-gamepad"></i>
+      <span>Quiz</span>
+    </button>
+  </nav>
+
   <!-- Core JavaScript Modular Application Loading -->
-  <script type="module" src="js/app.js?v=3.6"></script>
+  <script type="module" src="js/app.js?v=3.7"></script>
 
 </body>
 </html>

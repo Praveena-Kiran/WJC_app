@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.6';
-import { soundSynth } from './sound.js?v=3.6';
-import { TracingCanvas } from './canvas.js?v=3.6';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.7';
+import { soundSynth } from './sound.js?v=3.7';
+import { TracingCanvas } from './canvas.js?v=3.7';
 
 class AppController {
   constructor() {
@@ -343,7 +343,7 @@ class AppController {
 
     // Close sidebar on document clicks
     document.addEventListener("click", (e) => {
-      if (sidebar.classList.contains("open") && !sidebar.contains(e.target) && e.target !== mobileToggle) {
+      if (sidebar.classList.contains("open") && !sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
         sidebar.classList.remove("open");
       }
     });
