@@ -1120,16 +1120,16 @@ class AppController {
           soundSynth.playCorrect && soundSynth.playCorrect();
           banner.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
           banner.style.color = "#10b981";
-          banner.innerText = `✅ Correct! Score: ${score}% — Great job!`;
+          banner.innerText = `✅ Correct! Great job!`;
         } else if (score > 4) {
           banner.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
           banner.style.color = "#f59e0b";
-          banner.innerText = `👍 Good try! Score: ${score}% — Keep practicing!`;
+          banner.innerText = `👍 Good try! Keep practicing!`;
         } else {
           soundSynth.playIncorrect && soundSynth.playIncorrect();
           banner.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
           banner.style.color = "#ef4444";
-          banner.innerText = `❌ Needs more practice! Score: ${score}% — Try tracing the guide.`;
+          banner.innerText = `❌ Needs more practice! Try tracing the guide.`;
         }
       });
     }
@@ -1546,16 +1546,16 @@ class AppController {
           soundSynth.playSuccess && soundSynth.playSuccess();
           banner.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
           banner.style.color = "#10b981";
-          banner.innerText = `✅ Correct! Score: ${score}%`;
+          banner.innerText = `✅ Correct! Great job!`;
         } else if (score > 4) {
           banner.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
           banner.style.color = "#f59e0b";
-          banner.innerText = `👍 Good try! Score: ${score}%. Keep practicing!`;
+          banner.innerText = `👍 Good try! Keep practicing!`;
         } else {
           soundSynth.playError && soundSynth.playError();
           banner.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
           banner.style.color = "#ef4444";
-          banner.innerText = `❌ Needs work! Score: ${score}%. Keep practicing!`;
+          banner.innerText = `❌ Needs work! Keep practicing!`;
         }
       });
     }
