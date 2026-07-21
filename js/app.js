@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.5';
-import { soundSynth } from './sound.js?v=3.5';
-import { TracingCanvas } from './canvas.js?v=3.5';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.6';
+import { soundSynth } from './sound.js?v=3.6';
+import { TracingCanvas } from './canvas.js?v=3.6';
 
 class AppController {
   constructor() {
@@ -136,6 +136,15 @@ class AppController {
           e.stopPropagation();
           const text = speakBtn.dataset.text;
           this.speakJapanese(text);
+          return;
+        }
+
+        const speakExampleBtn = e.target.closest(".speak-example-btn");
+        if (speakExampleBtn) {
+          e.stopPropagation();
+          const text = speakExampleBtn.dataset.text;
+          this.speakJapanese(text);
+          return;
         }
       });
     }
@@ -1512,24 +1521,49 @@ class AppController {
       const isStarred = this.state.starredVocab.includes(item.word);
 
       row.innerHTML = `
-        <div class="vocab-details">
+        <div class="vocab-details" style="cursor: pointer; flex: 1;">
           <div class="vocab-jp-row">
             <span class="vocab-kanji">${item.word}</span>
             <span class="vocab-reading">(${item.reading})</span>
             <i class="fa-solid fa-volume-high speak-btn" data-text="${item.word}" style="margin-left: 8px; font-size: 0.95rem;"></i>
           </div>
           <div class="vocab-english">${item.english}</div>
+          
+          ${item.example ? `
+            <div class="vocab-example-block" style="display:none; margin-top: 10px; padding: 10px; background: var(--panel-active); border-radius: var(--border-radius-sm); border-left: 3px solid var(--accent); pointer-events: auto;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <span class="vocab-example-jp" style="font-weight:600; color:var(--text-main); font-size:0.95rem;">${item.example.jp}</span>
+                <i class="fa-solid fa-volume-high speak-example-btn" data-text="${item.example.jp}" style="font-size:0.9rem; cursor:pointer; color:var(--accent); padding:4px;"></i>
+              </div>
+              <div class="vocab-example-en" style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">${item.example.en}</div>
+            </div>
+          ` : ''}
         </div>
-        <div class="vocab-meta">
+        <div class="vocab-meta" style="flex-shrink: 0;">
           <span class="vocab-tag">${item.tag}</span>
-          <i class="fa-solid fa-star bookmark-star ${isStarred ? 'starred' : ''}"></i>
+          <i class="fa-solid fa-star bookmark-star ${isStarred ? 'starred' : ''}" style="cursor: pointer;"></i>
         </div>
       `;
 
       // star clicking bookmark
-      row.querySelector(".bookmark-star").addEventListener("click", () => {
+      row.querySelector(".bookmark-star").addEventListener("click", (e) => {
+        e.stopPropagation();
         this.toggleStar(item.word);
         this.renderDictionaryList();
+      });
+
+      // Expand vocab details on click to show example
+      const details = row.querySelector(".vocab-details");
+      details.addEventListener("click", (e) => {
+        if (e.target.closest(".speak-btn") || e.target.closest(".speak-example-btn")) {
+          return; // don't toggle when clicking speak buttons
+        }
+        const block = row.querySelector(".vocab-example-block");
+        if (block) {
+          const isHidden = block.style.display === "none";
+          block.style.display = isHidden ? "block" : "none";
+          row.classList.toggle("expanded", isHidden);
+        }
       });
 
       container.appendChild(row);
