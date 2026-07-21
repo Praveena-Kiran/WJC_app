@@ -1283,10 +1283,9 @@ class AppController {
     if (modalCanvas) {
       if (!this.kanaModalCanvas) {
         this.kanaModalCanvas = new TracingCanvas(modalCanvas, null, null, null);
-        // Use accent color for drawing
         this.kanaModalCanvas.setColor("#22664c");
       } else {
-        this.kanaModalCanvas.resizeCanvas();
+        this.kanaModalCanvas.clear(); // clear old drawing on new letter
       }
     }
 
@@ -1658,7 +1657,10 @@ class AppController {
     });
 
     if (this.canvasController) {
-      this.canvasController.resizeCanvas();
+      this.canvasController.clear(); // clear old drawing on new kanji
+      // Also hide the feedback banner
+      const banner = document.getElementById("kanji-feedback-banner");
+      if (banner) banner.style.display = "none";
     }
   }
 
