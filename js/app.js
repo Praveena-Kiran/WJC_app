@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.8';
-import { soundSynth } from './sound.js?v=3.8';
-import { TracingCanvas } from './canvas.js?v=3.8';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.9';
+import { soundSynth } from './sound.js?v=3.9';
+import { TracingCanvas } from './canvas.js?v=3.9';
 
 class AppController {
   constructor() {
@@ -533,27 +533,33 @@ class AppController {
       const id = this.state.activeLessonId;
       const lesson = lessons.find(l => l.id === id);
       if (!lesson) return;
-
-      soundSynth.playSuccess();
-      
-      // Complete lesson - push to solved lessons if not exists
-      if (!this.state.solvedLessons.includes(id)) {
-        this.state.solvedLessons.push(id);
-        
-        // Auto unlock next lesson if exists
-        const nextId = id + 1;
-        if (lessons.some(l => l.id === nextId)) {
-          this.state.activeLessonId = nextId;
-        }
-        
-        // Increment streak count on lesson completion
-        this.state.streakCount += 1;
-      }
-
-      this.saveState();
-      this.renderZenDashboard();
-      this.updateLessonDetailsCard(lessons.find(l => l.id === this.state.activeLessonId) || lesson);
+      this.openStudySession(lesson);
     });
+
+    // Close study modal button
+    const closeStudyBtn = document.getElementById("btn-close-study");
+    if (closeStudyBtn) {
+      closeStudyBtn.addEventListener("click", () => {
+        const modal = document.getElementById("study-modal");
+        if (modal) modal.classList.remove("active");
+      });
+    }
+
+    // Prev study slide
+    const studyPrevBtn = document.getElementById("btn-study-prev");
+    if (studyPrevBtn) {
+      studyPrevBtn.addEventListener("click", () => {
+        this.handleStudyPrev();
+      });
+    }
+
+    // Next study slide
+    const studyNextBtn = document.getElementById("btn-study-next");
+    if (studyNextBtn) {
+      studyNextBtn.addEventListener("click", () => {
+        this.handleStudyNext();
+      });
+    }
 
     // Populate with first lesson details initially
     this.updateLessonDetailsCard(lessons[0]);
@@ -574,13 +580,206 @@ class AppController {
     const startBtn = document.getElementById("active-lesson-start-btn");
     startBtn.style.display = "block";
 
-    // Update start button text depending on completion
+    // Update start button text depending on completion (Feature 5 / Study flow)
     if (this.state.solvedLessons.includes(lesson.id)) {
-      startBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i> Lesson Completed`;
+      startBtn.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> Review Lesson`;
       startBtn.style.backgroundColor = "var(--accent-secondary)";
     } else {
-      startBtn.innerHTML = `Complete Lesson & Grow Bonsai`;
+      startBtn.innerHTML = `<i class="fa-solid fa-play"></i> Study Lesson`;
       startBtn.style.backgroundColor = "var(--accent)";
+    }
+  }
+
+  // ==========================================
+  // MODULE G: INTERACTIVE STUDY DECKS
+  // ==========================================
+  openStudySession(lesson) {
+    this.studyLesson = lesson;
+    this.studySlideIndex = 0;
+    this.studySlides = this.buildStudySlides(lesson);
+    this.renderStudySlide();
+    
+    // Set title on modal
+    document.getElementById("study-modal-title").innerText = `Study Lesson ${lesson.id}: ${lesson.title}`;
+
+    const modal = document.getElementById("study-modal");
+    if (modal) modal.classList.add("active");
+  }
+
+  buildStudySlides(lesson) {
+    const slides = [];
+
+    // Slide 1: Grammar Notes
+    const grammarItems = lesson.syllabus.filter(item => item.startsWith("Grammar:"));
+    let grammarHtml = `
+      <div class="grammar-slide">
+        <h4 style="margin-bottom: 12px; color: var(--accent); font-weight:700; font-size:1.1rem;">Grammar & Key Patterns</h4>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+    `;
+    if (grammarItems.length > 0) {
+      grammarItems.forEach(item => {
+        const clean = item.replace("Grammar:", "").trim();
+        grammarHtml += `
+          <div style="padding:12px 15px; background:var(--panel-active); border-radius:var(--border-radius-md); border-left:3px solid var(--accent-secondary);">
+            <span style="font-weight:600; color:var(--text-main); font-size:1rem;">${clean}</span>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-top:5px; line-height:1.4;">
+              Learn and apply this pattern in conversations. Use vocabulary terms to substitute subjects and objects.
+            </p>
+          </div>
+        `;
+      });
+    } else {
+      grammarHtml += `
+        <div style="padding:15px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted);">
+          No explicit grammar patterns listed for this lesson.
+        </div>
+      `;
+    }
+    grammarHtml += `</div></div>`;
+    slides.push(grammarHtml);
+
+    // Slide 2: Vocabulary Spotlight
+    let vocabHtml = `
+      <div class="vocab-slide">
+        <h4 style="margin-bottom: 8px; color: var(--accent); font-weight:700; font-size:1.1rem;">Vocabulary Spotlight</h4>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Tap the speaker icon to hear pronunciation.</p>
+        <div style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto; padding-right:5px;">
+    `;
+    if (lesson.vocabulary && lesson.vocabulary.length > 0) {
+      lesson.vocabulary.forEach(hiragana => {
+        const dictItem = dictionary.find(d => d.reading === hiragana || d.word === hiragana);
+        if (dictItem) {
+          vocabHtml += `
+            <div style="padding:10px 12px; background:var(--panel-active); border-radius:var(--border-radius-sm); border:1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:1.05rem; font-weight:700; color:var(--text-main);">${dictItem.word}</span>
+                  <span style="font-size:0.8rem; color:var(--text-muted);">(${dictItem.reading})</span>
+                  <i class="fa-solid fa-volume-high speak-btn" data-text="${dictItem.word}" style="cursor:pointer; color:var(--accent); font-size:0.85rem; padding:4px;"></i>
+                </div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">${dictItem.english}</div>
+              </div>
+              <span class="vocab-tag" style="margin:0; font-size:0.75rem;">${dictItem.tag}</span>
+            </div>
+          `;
+        }
+      });
+    } else {
+      vocabHtml += `
+        <div style="padding:15px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted);">
+          No custom vocabulary listed for this lesson.
+        </div>
+      `;
+    }
+    vocabHtml += `</div></div>`;
+    slides.push(vocabHtml);
+
+    // Slide 3: Kanji Practice
+    let kanjiHtml = `
+      <div class="kanji-slide">
+        <h4 style="margin-bottom: 8px; color: var(--accent); font-weight:700; font-size:1.1rem;">Kanji Spotlight</h4>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Key characters featured in this lesson.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; max-height:220px; overflow-y:auto; padding-right:5px;">
+    `;
+    if (lesson.kanji && lesson.kanji.length > 0) {
+      lesson.kanji.forEach(char => {
+        const kanjiItem = kanjiData.find(k => k.char === char);
+        if (kanjiItem) {
+          kanjiHtml += `
+            <div style="padding:10px; background:var(--panel-active); border-radius:var(--border-radius-md); border:1px solid var(--card-border); display:flex; gap:8px; align-items:center;">
+              <div style="font-size:1.6rem; font-weight:700; color:var(--accent); width:40px; height:40px; background:var(--panel-hover); border-radius:var(--border-radius-sm); display:flex; justify-content:center; align-items:center; flex-shrink:0;">
+                ${kanjiItem.char}
+              </div>
+              <div style="min-width:0;">
+                <div style="font-weight:600; font-size:0.85rem; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${kanjiItem.meaning}</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Kun: ${kanjiItem.kunyomi}</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">On: ${kanjiItem.onyomi}</div>
+              </div>
+            </div>
+          `;
+        }
+      });
+    } else {
+      kanjiHtml += `
+        <div style="grid-column: span 2; padding:15px; background:var(--panel-active); border-radius:var(--border-radius-md); text-align:center; color:var(--text-muted);">
+          No custom Kanji listed for this lesson.
+        </div>
+      `;
+    }
+    kanjiHtml += `</div></div>`;
+    slides.push(kanjiHtml);
+
+    return slides;
+  }
+
+  renderStudySlide() {
+    const container = document.getElementById("study-slide-container");
+    if (!container) return;
+
+    container.innerHTML = this.studySlides[this.studySlideIndex];
+    
+    // Click listeners for vocab audio
+    container.querySelectorAll(".speak-btn").forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        this.speakJapanese(btn.dataset.text);
+      };
+    });
+
+    const total = this.studySlides.length;
+    document.getElementById("study-slide-progress").innerText = `Slide ${this.studySlideIndex + 1} of ${total}`;
+
+    // Disable/Enable Prev button
+    const prevBtn = document.getElementById("btn-study-prev");
+    prevBtn.disabled = this.studySlideIndex === 0;
+
+    // Next button text
+    const nextBtn = document.getElementById("btn-study-next");
+    if (this.studySlideIndex === total - 1) {
+      nextBtn.innerHTML = `Finish & Grow <i class="fa-solid fa-seedling" style="margin-left:4px;"></i>`;
+    } else {
+      nextBtn.innerHTML = `Next <i class="fa-solid fa-chevron-right" style="margin-left:4px;"></i>`;
+    }
+  }
+
+  handleStudyNext() {
+    const total = this.studySlides.length;
+    if (this.studySlideIndex < total - 1) {
+      this.studySlideIndex += 1;
+      this.renderStudySlide();
+      soundSynth.playClick();
+    } else {
+      // Complete lesson
+      const modal = document.getElementById("study-modal");
+      if (modal) modal.classList.remove("active");
+
+      const id = this.studyLesson.id;
+      soundSynth.playSuccess();
+      
+      if (!this.state.solvedLessons.includes(id)) {
+        this.state.solvedLessons.push(id);
+        
+        // Auto unlock next lesson if exists
+        const nextId = id + 1;
+        if (lessons.some(l => l.id === nextId)) {
+          this.state.activeLessonId = nextId;
+        }
+        
+        // Increment streak count on lesson completion
+        this.state.streakCount += 1;
+      }
+
+      this.saveState();
+      this.renderZenDashboard();
+      this.updateLessonDetailsCard(lessons.find(l => l.id === this.state.activeLessonId) || this.studyLesson);
+    }
+  }
+
+  handleStudyPrev() {
+    if (this.studySlideIndex > 0) {
+      this.studySlideIndex -= 1;
+      this.renderStudySlide();
+      soundSynth.playClick();
     }
   }
 
