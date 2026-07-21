@@ -79,30 +79,25 @@ export class TracingCanvas {
     }
   }
 
-  // Adjust canvas bounds for high DPI screens
+  // Adjust canvas bounds to a fixed high-quality resolution (512x512)
   resizeCanvas() {
-    const rect = this.canvas.getBoundingClientRect();
-    const width  = rect.width  || 320;
-    const height = rect.height || 320;
-
-    const dpr = window.devicePixelRatio || 1;
-    this.canvas.width  = Math.round(width  * dpr);
-    this.canvas.height = Math.round(height * dpr);
-
-    // Reset transform first to avoid cumulative scaling on repeated calls
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.scale(dpr, dpr);
-
+    const size = 512;
+    if (this.canvas.width !== size || this.canvas.height !== size) {
+      this.canvas.width = size;
+      this.canvas.height = size;
+    }
     this.ctx.lineCap  = "round";
     this.ctx.lineJoin = "round";
   }
 
-  // Convert a client-space point to canvas CSS-pixel space
+  // Convert a client-space point to canvas coordinates (fixed 512x512 space)
   _clientToCanvas(clientX, clientY) {
     const rect = this.canvas.getBoundingClientRect();
+    const w = rect.width || 1;
+    const h = rect.height || 1;
     return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
+      x: ((clientX - rect.left) / w) * 512,
+      y: ((clientY - rect.top) / h) * 512
     };
   }
 
@@ -119,10 +114,15 @@ export class TracingCanvas {
     this.ctx.moveTo(this.lastX, this.lastY);
     this.ctx.lineTo(x, y);
 
+    // Dynamic stroke size relative to layout width to keep it matching selected brush size
+    const rect = this.canvas.getBoundingClientRect();
+    const w = rect.width || 512;
+    const displayScale = 512 / w;
+
     this.ctx.strokeStyle = this.currentColor;
-    this.ctx.lineWidth   = this.currentBrushSize;
+    this.ctx.lineWidth   = this.currentBrushSize * displayScale;
     this.ctx.lineCap     = "round";
-    this.ctx.lineJoin    = "round";
+    this.ctx.lineJoin = "round";
 
     this.ctx.stroke();
     this.lastX = x;
@@ -134,16 +134,11 @@ export class TracingCanvas {
   }
 
   clear() {
-    // Context is scaled by DPR, so clear in CSS pixel space
-    const rect = this.canvas.getBoundingClientRect();
-    const w = rect.width  || this.canvas.width;
-    const h = rect.height || this.canvas.height;
-    this.ctx.clearRect(0, 0, w, h);
+    this.ctx.clearRect(0, 0, 512, 512);
   }
 
   setColor(color) {
     this.currentColor = color;
-    // Update active class on palette indicators if they exist
     if (this.colorPalette) {
       this.colorPalette.querySelectorAll(".color-dot").forEach(dot => {
         if (dot.dataset.color === color) {
@@ -156,29 +151,23 @@ export class TracingCanvas {
   }
 
   // ─── Check Accuracy ────────────────────────────────────────────
-  // Renders guide strokes on a hidden offscreen canvas, then compares
-  // how much of the user's drawn pixels land on top of those guide pixels.
-  // Returns a score 0-100 (percentage overlap).
+  // Renders guide strokes on a 512x512 reference canvas, then compares overlap.
   checkDrawing(strokePaths) {
-    const rect = this.canvas.getBoundingClientRect();
-    const w = Math.round(rect.width)  || 320;
-    const h = Math.round(rect.height) || 320;
-    const dpr = window.devicePixelRatio || 1;
+    const size = 512;
 
     // ── 1. Build reference canvas with the guide strokes ──
     const refCanvas = document.createElement("canvas");
-    refCanvas.width  = w * dpr;
-    refCanvas.height = h * dpr;
+    refCanvas.width  = size;
+    refCanvas.height = size;
     const refCtx = refCanvas.getContext("2d");
-    refCtx.scale(dpr, dpr);
-    refCtx.clearRect(0, 0, w, h);
+    refCtx.clearRect(0, 0, size, size);
 
-    // Draw each SVG path string as a canvas path using Path2D
-    const scaleX = w / 109;
-    const scaleY = h / 109;
+    // Draw each SVG path string using Path2D
+    const scaleX = size / 109;
+    const scaleY = size / 109;
 
     refCtx.strokeStyle = "#000";
-    refCtx.lineWidth   = Math.max(10, w * 0.08) / scaleX; // adjusted for context scaling
+    refCtx.lineWidth   = Math.max(10, size * 0.08) / scaleX;
     refCtx.lineCap     = "round";
     refCtx.lineJoin    = "round";
 
@@ -189,17 +178,17 @@ export class TracingCanvas {
     }
     refCtx.restore();
 
-    // ── 2. Get pixel data from both canvases ──
-    const refData  = refCtx.getImageData(0, 0, refCanvas.width, refCanvas.height).data;
-    const userData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
+    // ── 2. Get pixel data from both 512x512 canvases ──
+    const refData  = refCtx.getImageData(0, 0, size, size).data;
+    const userData = this.ctx.getImageData(0, 0, size, size).data;
 
-    let refInked   = 0; // pixels with ink in the reference
-    let overlap    = 0; // pixels inked in both
+    let refInked   = 0;
+    let overlap    = 0;
 
     for (let i = 3; i < refData.length; i += 4) {
-      if (refData[i] > 30) {          // reference pixel is opaque
+      if (refData[i] > 30) {
         refInked++;
-        if (userData[i] > 30) overlap++; // user also drew here
+        if (userData[i] > 30) overlap++;
       }
     }
 
@@ -207,9 +196,9 @@ export class TracingCanvas {
     return Math.round((overlap / refInked) * 100);
   }
 
-  // Returns true if user drew something (any non-transparent pixels)
+  // Returns true if user drew something
   hasDrawing() {
-    const data = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height).data;
+    const data = this.ctx.getImageData(0, 0, 512, 512).data;
     for (let i = 3; i < data.length; i += 4) {
       if (data[i] > 10) return true;
     }
