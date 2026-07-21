@@ -1116,12 +1116,12 @@ class AppController {
         const score = this.kanaModalCanvas.checkDrawing(strokes);
         banner.style.display = "block";
         banner.style.border = "none";
-        if (score > 35) {
+        if (score > 8) {
           soundSynth.playCorrect && soundSynth.playCorrect();
           banner.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
           banner.style.color = "#10b981";
           banner.innerText = `✅ Correct! Score: ${score}% — Great job!`;
-        } else if (score > 15) {
+        } else if (score > 4) {
           banner.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
           banner.style.color = "#f59e0b";
           banner.innerText = `👍 Good try! Score: ${score}% — Keep practicing!`;
@@ -1542,12 +1542,12 @@ class AppController {
         const score = this.canvasController.checkDrawing(this.selectedKanji.strokes);
         
         banner.style.display = "block";
-        if (score > 35) {
+        if (score > 8) {
           soundSynth.playSuccess && soundSynth.playSuccess();
           banner.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
           banner.style.color = "#10b981";
           banner.innerText = `✅ Correct! Score: ${score}%`;
-        } else if (score > 15) {
+        } else if (score > 4) {
           banner.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
           banner.style.color = "#f59e0b";
           banner.innerText = `👍 Good try! Score: ${score}%. Keep practicing!`;
