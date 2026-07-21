@@ -730,11 +730,50 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-/* Kana Grid */
-.kana-grid {
+/* Kana Gojuuon Table */
+.kana-table {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 15px;
+  grid-template-columns: 40px repeat(5, 1fr);
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.kana-table-header {
+  display: contents;
+}
+
+.kana-col-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 0 8px;
+}
+
+.kana-row-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--panel-active);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 4px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.kana-cell-empty {
+  background: transparent;
+  border: 1.5px dashed var(--card-border);
+  border-radius: var(--border-radius-md);
+  min-height: 80px;
+  opacity: 0.4;
 }
 
 .kana-card {
@@ -742,7 +781,7 @@ input:checked + .slider:before {
   border: 1px solid var(--card-border);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow);
-  height: 100px;
+  min-height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -750,15 +789,16 @@ input:checked + .slider:before {
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .kana-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px) scale(1.04);
   box-shadow: var(--shadow-hover);
 }
 
 .kana-char {
-  font-size: 2.2rem;
+  font-size: 1.9rem;
   font-weight: 500;
   line-height: 1;
 }

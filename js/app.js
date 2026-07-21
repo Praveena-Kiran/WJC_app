@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=2.9';
-import { soundSynth } from './sound.js?v=2.9';
-import { TracingCanvas } from './canvas.js?v=2.9';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.0';
+import { soundSynth } from './sound.js?v=3.0';
+import { TracingCanvas } from './canvas.js?v=3.0';
 
 class AppController {
   constructor() {
@@ -1116,12 +1116,12 @@ class AppController {
         const score = this.kanaModalCanvas.checkDrawing(strokes);
         banner.style.display = "block";
         banner.style.border = "none";
-        if (score > 60) {
+        if (score > 35) {
           soundSynth.playCorrect && soundSynth.playCorrect();
           banner.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
           banner.style.color = "#10b981";
           banner.innerText = `✅ Correct! Score: ${score}% — Great job!`;
-        } else if (score > 30) {
+        } else if (score > 15) {
           banner.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
           banner.style.color = "#f59e0b";
           banner.innerText = `👍 Good try! Score: ${score}% — Keep practicing!`;
@@ -1160,32 +1160,91 @@ class AppController {
 
     container.innerHTML = "";
 
-    // Find active type selection
     const activeTab = document.querySelector("#kana-type-select .btn-tab.active");
     const selectedType = activeTab ? activeTab.dataset.type : "hiragana";
-    const filteredKanas = kanaData.filter(item => item.type === selectedType);
+    const allKanas = kanaData.filter(item => item.type === selectedType);
     const showRomaji = document.getElementById("toggle-romaji").checked;
 
-    filteredKanas.forEach((kana, idx) => {
-      const card = document.createElement("div");
-      card.className = "kana-card";
-      if (this.state.masteredKana.includes(kana.id)) {
-        card.classList.add("mastered");
-      }
+    // Build lookup by romaji for quick access
+    const lookup = {};
+    allKanas.forEach((k, idx) => { lookup[k.romaji] = { kana: k, idx }; });
 
-      card.innerHTML = `
-        <span class="kana-char">${kana.char}</span>
-        <span class="kana-romaji ${showRomaji ? '' : 'hidden'}">${kana.romaji}</span>
-        <div class="kana-badge-mastered"></div>
-      `;
+    // Gojuuon table definition: rows × vowels
+    // Each row: [label, a, i, u, e, o] — null means empty cell
+    const rows = [
+      { label: "あ",  vowels: ["a",   "i",   "u",   "e",   "o"  ] },
+      { label: "か",  vowels: ["ka",  "ki",  "ku",  "ke",  "ko" ] },
+      { label: "さ",  vowels: ["sa",  "shi", "su",  "se",  "so" ] },
+      { label: "た",  vowels: ["ta",  "chi", "tsu", "te",  "to" ] },
+      { label: "な",  vowels: ["na",  "ni",  "nu",  "ne",  "no" ] },
+      { label: "は",  vowels: ["ha",  "hi",  "fu",  "he",  "ho" ] },
+      { label: "ま",  vowels: ["ma",  "mi",  "mu",  "me",  "mo" ] },
+      { label: "や",  vowels: ["ya",  null,  "yu",  null,  "yo" ] },
+      { label: "ら",  vowels: ["ra",  "ri",  "ru",  "re",  "ro" ] },
+      { label: "わ",  vowels: ["wa",  null,  null,  null,  "wo" ] },
+      { label: "ん",  vowels: ["n",   null,  null,  null,  null ] },
+    ];
 
-      card.addEventListener("click", () => {
-        soundSynth.playClick();
-        this.openKanaDetailModal(kana, filteredKanas, idx);
-      });
+    // Create table wrapper
+    const table = document.createElement("div");
+    table.className = "kana-table";
 
-      container.appendChild(card);
+    // Column headers row: empty label cell + a i u e o
+    const colHeaders = ["", "a", "i", "u", "e", "o"];
+    colHeaders.forEach(h => {
+      const hCell = document.createElement("div");
+      hCell.className = "kana-col-header";
+      hCell.innerText = h;
+      table.appendChild(hCell);
     });
+
+    rows.forEach(row => {
+      // Row label
+      const rowLabel = document.createElement("div");
+      rowLabel.className = "kana-row-label";
+      rowLabel.innerText = row.label;
+      table.appendChild(rowLabel);
+
+      // 5 cells (a, i, u, e, o)
+      row.vowels.forEach(romaji => {
+        if (romaji === null) {
+          const empty = document.createElement("div");
+          empty.className = "kana-cell-empty";
+          table.appendChild(empty);
+          return;
+        }
+
+        const entry = lookup[romaji];
+        if (!entry) {
+          const empty = document.createElement("div");
+          empty.className = "kana-cell-empty";
+          table.appendChild(empty);
+          return;
+        }
+
+        const { kana, idx } = entry;
+        const card = document.createElement("div");
+        card.className = "kana-card";
+        if (this.state.masteredKana.includes(kana.id)) {
+          card.classList.add("mastered");
+        }
+
+        card.innerHTML = `
+          <span class="kana-char">${kana.char}</span>
+          <span class="kana-romaji ${showRomaji ? '' : 'hidden'}">${kana.romaji}</span>
+          <div class="kana-badge-mastered"></div>
+        `;
+
+        card.addEventListener("click", () => {
+          soundSynth.playClick();
+          this.openKanaDetailModal(kana, allKanas, idx);
+        });
+
+        table.appendChild(card);
+      });
+    });
+
+    container.appendChild(table);
   }
 
   openKanaDetailModal(kana, list, index) {
@@ -1483,20 +1542,20 @@ class AppController {
         const score = this.canvasController.checkDrawing(this.selectedKanji.strokes);
         
         banner.style.display = "block";
-        if (score > 75) {
+        if (score > 35) {
           soundSynth.playSuccess && soundSynth.playSuccess();
           banner.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
-          banner.style.color = "#10b981"; // Emerald green
-          banner.innerText = `Excellent! Score: ${score}%`;
-        } else if (score > 40) {
+          banner.style.color = "#10b981";
+          banner.innerText = `✅ Correct! Score: ${score}%`;
+        } else if (score > 15) {
           banner.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
-          banner.style.color = "#f59e0b"; // Amber
-          banner.innerText = `Good attempt! Score: ${score}%. Try to be more accurate.`;
+          banner.style.color = "#f59e0b";
+          banner.innerText = `👍 Good try! Score: ${score}%. Keep practicing!`;
         } else {
           soundSynth.playError && soundSynth.playError();
           banner.style.backgroundColor = "rgba(239, 68, 68, 0.2)";
-          banner.style.color = "#ef4444"; // Red
-          banner.innerText = `Needs work! Score: ${score}%. Keep practicing!`;
+          banner.style.color = "#ef4444";
+          banner.innerText = `❌ Needs work! Score: ${score}%. Keep practicing!`;
         }
       });
     }
