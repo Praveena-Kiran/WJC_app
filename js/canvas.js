@@ -40,19 +40,15 @@ export class TracingCanvas {
     this.canvas.addEventListener("touchstart", (e) => {
       e.preventDefault();
       const touch = e.touches[0];
-      const rect = this.canvas.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      this.startDrawing(x, y);
+      const p = this._clientToCanvas(touch.clientX, touch.clientY);
+      this.startDrawing(p.x, p.y);
     });
 
     this.canvas.addEventListener("touchmove", (e) => {
       e.preventDefault();
       const touch = e.touches[0];
-      const rect = this.canvas.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const y = touch.clientY - rect.top;
-      this.draw(x, y);
+      const p = this._clientToCanvas(touch.clientX, touch.clientY);
+      this.draw(p.x, p.y);
     });
 
     this.canvas.addEventListener("touchend", () => this.stopDrawing());

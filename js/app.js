@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.2';
-import { soundSynth } from './sound.js?v=3.2';
-import { TracingCanvas } from './canvas.js?v=3.2';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.3';
+import { soundSynth } from './sound.js?v=3.3';
+import { TracingCanvas } from './canvas.js?v=3.3';
 
 class AppController {
   constructor() {
@@ -1659,6 +1659,13 @@ class AppController {
     if (filterKanji.length > 0) {
       this.selectKanjiCharacter(filterKanji[0]);
     }
+
+    // Resize canvas after it becomes visible
+    requestAnimationFrame(() => {
+      if (this.canvasController) {
+        this.canvasController.resizeCanvas();
+      }
+    });
   }
 
   renderKanjiGrid() {
