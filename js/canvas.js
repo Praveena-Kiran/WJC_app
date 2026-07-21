@@ -83,20 +83,16 @@ export class TracingCanvas {
     const width = rect.width || 320;
     const height = rect.height || 320;
 
-    // Use Device Pixel Ratio for clean drawing
     const dpr = window.devicePixelRatio || 1;
     this.canvas.width = width * dpr;
     this.canvas.height = height * dpr;
-    
-    // Scale drawing context to match device scale
+
+    // Reset transform first to avoid cumulative scaling on repeated calls
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.scale(dpr, dpr);
-    
-    // Restore styling parameters
+
     this.ctx.lineCap = "round";
     this.ctx.lineJoin = "round";
-    
-    // Redraw guide parameters if needed, otherwise clear
-    this.clear();
   }
 
   startDrawing(x, y) {
@@ -125,8 +121,8 @@ export class TracingCanvas {
   }
 
   clear() {
-    const rect = this.canvas.getBoundingClientRect();
-    this.ctx.clearRect(0, 0, rect.width, rect.height);
+    // Use physical canvas dimensions (not CSS) since context is scaled by dpr
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   setColor(color) {
