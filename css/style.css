@@ -1438,7 +1438,19 @@ input:checked + .slider:before {
 
 @media (max-width: 768px) {
   #app-container {
-    flex-direction: column;
+    display: block !important;
+  }
+
+  body.has-banner {
+    padding-top: 44px !important;
+  }
+
+  body.has-banner .mobile-header {
+    top: 44px !important;
+  }
+
+  body.has-banner #app-container {
+    padding-top: 0 !important;
   }
 
   .mobile-header {

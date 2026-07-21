@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.7';
-import { soundSynth } from './sound.js?v=3.7';
-import { TracingCanvas } from './canvas.js?v=3.7';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.8';
+import { soundSynth } from './sound.js?v=3.8';
+import { TracingCanvas } from './canvas.js?v=3.8';
 
 class AppController {
   constructor() {
