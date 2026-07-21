@@ -1,7 +1,7 @@
 // Zengo Japanese Language Learning Suite - Central App Controller
-import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.0';
-import { soundSynth } from './sound.js?v=3.0';
-import { TracingCanvas } from './canvas.js?v=3.0';
+import { lessons, kanaData, dictionary, kanjiData, conjugateVerb, kanaStrokes } from './data.js?v=3.1';
+import { soundSynth } from './sound.js?v=3.1';
+import { TracingCanvas } from './canvas.js?v=3.1';
 
 class AppController {
   constructor() {
@@ -40,7 +40,8 @@ class AppController {
         currentQuestionIndex: 0,
         score: 0,
         questions: []
-      }
+      },
+      srsData: {} // keyed by kana id: { interval, easeFactor, dueDate, reviews }
     };
 
     this.canvasController = null;
@@ -48,6 +49,9 @@ class AppController {
     this.selectedKanji = null;
     this.activeModalKana = null;
     this.timelineObserver = null;
+    this.flashcardDeck = [];      // SRS deck for current session
+    this.flashcardIndex = 0;      // current card index
+    this.activeQuizQuestion = null; // current quiz question object
     
     // Active dictionary category chip filter
     this.activeDictCategory = "all";
@@ -64,6 +68,7 @@ class AppController {
     this.setupLazySoundBanner();
     this.setupLessonDetails();
     this.setupKanaTrainer();
+    this.setupFlashcardMode();
     this.setupDictionaryAndConjugator();
     this.setupKanjiBoard();
     this.setupQuiz();
@@ -1046,7 +1051,19 @@ class AppController {
       typeSelect.querySelectorAll(".btn-tab").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
 
-      this.renderKanaTrainer();
+      const type = btn.dataset.type;
+      const grid = document.getElementById("kanas-grid-container");
+      const flashPanel = document.getElementById("flashcard-panel");
+
+      if (type === "flashcard") {
+        grid.style.display = "none";
+        flashPanel.style.display = "block";
+        this.startFlashcardSession();
+      } else {
+        grid.style.display = "";
+        flashPanel.style.display = "none";
+        this.renderKanaTrainer();
+      }
     });
 
     const romajiToggle = document.getElementById("toggle-romaji");
@@ -1267,6 +1284,26 @@ class AppController {
     document.getElementById("modal-vocab-japanese").innerText = kana.vocab || "-";
     document.getElementById("modal-vocab-english").innerText = kana.translation || "";
 
+    // Example sentence (Feature 5)
+    const exampleBlock = document.getElementById("modal-example-block");
+    const exampleJp = document.getElementById("modal-example-jp");
+    const exampleEn = document.getElementById("modal-example-en");
+    if (kana.example && exampleBlock) {
+      exampleJp.innerText = kana.example.jp;
+      exampleEn.innerText = kana.example.en;
+      exampleBlock.style.display = "block";
+    } else if (exampleBlock) {
+      exampleBlock.style.display = "none";
+    }
+
+    // Wire example speak button
+    const exampleSpeakBtn = document.getElementById("btn-speak-example");
+    if (exampleSpeakBtn) {
+      exampleSpeakBtn.onclick = () => {
+        if (kana.example) this.speakJapanese(kana.example.jp);
+      };
+    }
+
     // Mastery checkbox
     const masteryCheckbox = document.getElementById("modal-mastery-checkbox");
     masteryCheckbox.checked = this.state.masteredKana.includes(kana.id);
@@ -1293,6 +1330,8 @@ class AppController {
     // Resize after modal is visible so canvas dimensions are correct
     requestAnimationFrame(() => {
       if (this.kanaModalCanvas) this.kanaModalCanvas.resizeCanvas();
+      // Auto-speak the character when modal opens (Feature 2)
+      setTimeout(() => this.speakJapanese(kana.char), 300);
     });
   }
 
@@ -1308,14 +1347,33 @@ class AppController {
 
     if (paths) {
       if (charDisplay) charDisplay.style.display = "none";
-      paths.forEach(d => {
+      paths.forEach((d, i) => {
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("d", d);
         svg.appendChild(path);
+
+        // Extract start point from "M x,y" or "M x y"
+        const m = d.match(/M\s*([\d.]+)[,\s]+([\d.]+)/);
+        if (m) {
+          const cx = parseFloat(m[1]);
+          const cy = parseFloat(m[2]);
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", cx);
+          circle.setAttribute("cy", cy);
+          circle.setAttribute("r", "5.5");
+          circle.setAttribute("class", "stroke-order-circle");
+          svg.appendChild(circle);
+
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", cx);
+          text.setAttribute("y", cy);
+          text.setAttribute("class", "stroke-order-text");
+          text.textContent = String(i + 1);
+          svg.appendChild(text);
+        }
       });
     } else {
       if (charDisplay) charDisplay.style.display = "block";
-      // Clear SVG text fallback drawing to avoid visual duplication
     }
   }
 
@@ -1650,11 +1708,33 @@ class AppController {
     guideSvg.innerHTML = "";
     guideSvg.classList.remove("animating");
 
-    kanji.strokes.forEach(d => {
+    kanji.strokes.forEach((d, i) => {
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", d);
       guideSvg.appendChild(path);
+
+      // Stroke order number (Feature 3)
+      const m = d.match(/M\s*([\d.]+)[,\s]+([\d.]+)/);
+      if (m) {
+        const cx = parseFloat(m[1]);
+        const cy = parseFloat(m[2]);
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", cx);
+        circle.setAttribute("cy", cy);
+        circle.setAttribute("r", "5.5");
+        circle.setAttribute("class", "stroke-order-circle");
+        guideSvg.appendChild(circle);
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", cx);
+        text.setAttribute("y", cy);
+        text.setAttribute("class", "stroke-order-text");
+        text.textContent = String(i + 1);
+        guideSvg.appendChild(text);
+      }
     });
+
+    // Auto-speak kanji on select (Feature 2)
+    setTimeout(() => this.speakJapanese(kanji.char), 200);
 
     if (this.canvasController) {
       this.canvasController.clear(); // clear old drawing on new kanji
@@ -1705,6 +1785,16 @@ class AppController {
     document.getElementById("btn-quiz-retry").addEventListener("click", () => {
       this.resetQuizLobby();
     });
+
+    // Speak button for quiz question (Feature 2)
+    const quizSpeakBtn = document.getElementById("btn-quiz-speak");
+    if (quizSpeakBtn) {
+      quizSpeakBtn.addEventListener("click", () => {
+        if (this.activeQuizQuestion) {
+          this.speakJapanese(this.activeQuizQuestion.char);
+        }
+      });
+    }
   }
 
   resetQuizLobby() {
@@ -1738,10 +1828,21 @@ class AppController {
     const config = this.state.quizState;
     
     let pool = [];
+    config.isVocabMode = (config.deck === "vocabulary");
+
     if (config.deck === "hiragana") {
       pool = kanaData.filter(k => k.type === "hiragana");
     } else if (config.deck === "katakana") {
       pool = kanaData.filter(k => k.type === "katakana");
+    } else if (config.deck === "vocabulary") {
+      // Use dictionary entries that have both Japanese and English
+      pool = dictionary.filter(w => w.japanese && w.english).map(w => ({
+        char: w.japanese,
+        romaji: w.english,    // answer key = English meaning
+        type: "vocabulary",
+        vocab: w.romaji || "",
+        reading: w.romaji || ""
+      }));
     } else {
       pool = [...kanaData];
     }
@@ -1762,6 +1863,8 @@ class AppController {
     const question = config.questions[config.currentQuestionIndex];
     if (!question) return;
 
+    this.activeQuizQuestion = question;
+
     const total = config.questions.length;
     const current = config.currentQuestionIndex + 1;
     document.getElementById("quiz-progress-text").innerText = `Question ${current} of ${total}`;
@@ -1770,26 +1873,34 @@ class AppController {
     const fillPercent = (config.currentQuestionIndex / total) * 100;
     document.getElementById("quiz-progress-fill").style.width = `${fillPercent}%`;
 
+    const isVocab = config.isVocabMode;
     document.getElementById("quiz-target-char").innerText = question.char;
+    document.getElementById("quiz-prompt-text").innerText = isVocab
+      ? "What does this word mean in English?"
+      : "What is the correct Romaji for this character?";
 
-    const pool = kanaData.filter(k => k.romaji !== question.romaji);
-    const shuffledPool = pool.sort(() => 0.5 - Math.random());
-    const distractors = shuffledPool.slice(0, 3).map(k => k.romaji);
+    // Build distractors
+    let distPool;
+    if (isVocab) {
+      distPool = dictionary.filter(w => w.english !== question.romaji).map(w => w.english);
+    } else {
+      distPool = kanaData.filter(k => k.romaji !== question.romaji).map(k => k.romaji);
+    }
+    const shuffledPool = distPool.sort(() => 0.5 - Math.random());
+    const distractors = shuffledPool.slice(0, 3);
 
     const choices = [question.romaji, ...distractors].sort(() => 0.5 - Math.random());
 
     const container = document.getElementById("quiz-options-container");
     container.innerHTML = "";
 
-    choices.forEach(romaji => {
+    choices.forEach(val => {
       const btn = document.createElement("button");
       btn.className = "choice-button";
-      btn.innerText = romaji;
-
+      btn.innerText = val;
       btn.addEventListener("click", () => {
-        this.submitQuizAnswer(btn, romaji, question.romaji);
+        this.submitQuizAnswer(btn, val, question.romaji);
       });
-
       container.appendChild(btn);
     });
   }
@@ -1852,6 +1963,126 @@ class AppController {
       msg.innerText = "🍂 Keep practicing. Patience and time grow all seeds.";
       msg.style.color = "var(--text-muted)";
     }
+  }
+
+  // ==========================================
+  // MODULE F: SRS FLASHCARD SYSTEM (Feature 1)
+  // ==========================================
+  setupFlashcardMode() {
+    document.getElementById("btn-flashcard-flip").addEventListener("click", () => {
+      this.flipFlashcard();
+    });
+    document.getElementById("flashcard-card").addEventListener("click", () => {
+      this.flipFlashcard();
+    });
+    document.getElementById("btn-srs-easy").addEventListener("click", () => {
+      this.rateFlashcard("easy");
+    });
+    document.getElementById("btn-srs-hard").addEventListener("click", () => {
+      this.rateFlashcard("hard");
+    });
+    document.getElementById("btn-srs-forgot").addEventListener("click", () => {
+      this.rateFlashcard("forgot");
+    });
+    document.getElementById("btn-flashcard-speak").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (this.flashcardDeck[this.flashcardIndex]) {
+        this.speakJapanese(this.flashcardDeck[this.flashcardIndex].char);
+      }
+    });
+  }
+
+  // SM-2 spaced repetition algorithm
+  sm2Update(data, rating) {
+    // rating: "easy"=5, "hard"=3, "forgot"=1
+    const q = rating === "easy" ? 5 : rating === "hard" ? 3 : 1;
+    let { interval = 1, easeFactor = 2.5, reviews = 0 } = data;
+
+    if (q >= 3) {
+      if (reviews === 0) interval = 1;
+      else if (reviews === 1) interval = 6;
+      else interval = Math.round(interval * easeFactor);
+      reviews += 1;
+    } else {
+      interval = 1;
+      reviews = 0;
+    }
+    easeFactor = Math.max(1.3, easeFactor + 0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+
+    const dueDate = Date.now() + interval * 24 * 60 * 60 * 1000;
+    return { interval, easeFactor, reviews, dueDate };
+  }
+
+  startFlashcardSession() {
+    const now = Date.now();
+    // All kana sorted by dueDate (overdue first, then new)
+    const allKana = [...kanaData];
+    allKana.sort((a, b) => {
+      const da = this.state.srsData[a.id];
+      const db = this.state.srsData[b.id];
+      const dueA = da ? da.dueDate : 0;
+      const dueB = db ? db.dueDate : 0;
+      return dueA - dueB;
+    });
+
+    // Prioritize overdue / new cards, up to 20
+    this.flashcardDeck = allKana.slice(0, 20);
+    this.flashcardIndex = 0;
+    this.renderFlashcard();
+  }
+
+  renderFlashcard() {
+    const card = this.flashcardDeck[this.flashcardIndex];
+    if (!card) {
+      document.getElementById("flashcard-progress").innerText = "🎉 All done! Come back tomorrow for more.";
+      document.getElementById("flashcard-front-actions").style.display = "none";
+      document.getElementById("flashcard-back-actions").style.display = "none";
+      return;
+    }
+
+    // Reset flip state
+    document.getElementById("flashcard-card").classList.remove("flipped");
+    document.getElementById("flashcard-front-actions").style.display = "block";
+    document.getElementById("flashcard-back-actions").style.display = "none";
+
+    // Fill content
+    document.getElementById("flashcard-char").innerText = card.char;
+    document.getElementById("flashcard-romaji").innerText = card.romaji;
+    document.getElementById("flashcard-vocab").innerText = card.vocab
+      ? `${card.vocab} — ${card.translation}`
+      : "";
+    document.getElementById("flashcard-example").innerText = card.example
+      ? `"${card.example.jp}" — ${card.example.en}`
+      : "";
+
+    const srs = this.state.srsData[card.id];
+    const total = this.flashcardDeck.length;
+    const due = srs ? new Date(srs.dueDate).toLocaleDateString() : "New card";
+    document.getElementById("flashcard-progress").innerText =
+      `Card ${this.flashcardIndex + 1} of ${total} · Next review: ${due}`;
+
+    // Auto-speak on new card
+    setTimeout(() => this.speakJapanese(card.char), 200);
+  }
+
+  flipFlashcard() {
+    const cardEl = document.getElementById("flashcard-card");
+    const isFlipped = cardEl.classList.toggle("flipped");
+    document.getElementById("flashcard-front-actions").style.display = isFlipped ? "none" : "block";
+    document.getElementById("flashcard-back-actions").style.display = isFlipped ? "flex" : "none";
+  }
+
+  rateFlashcard(rating) {
+    const card = this.flashcardDeck[this.flashcardIndex];
+    if (!card) return;
+
+    soundSynth.playClick();
+    const existing = this.state.srsData[card.id] || {};
+    this.state.srsData[card.id] = this.sm2Update(existing, rating);
+    this.saveState();
+
+    this.flashcardIndex += 1;
+    this.renderFlashcard();
   }
 }
 

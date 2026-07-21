@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Custom Styling System -->
-  <link rel="stylesheet" href="css/style.css?v=3.0">
+  <link rel="stylesheet" href="css/style.css?v=3.1">
 </head>
 <body class="theme-zen has-banner">
 
@@ -374,6 +374,7 @@
             <div class="btn-group" id="kana-type-select">
               <button class="btn-tab active" data-type="hiragana">Hiragana (平仮名)</button>
               <button class="btn-tab" data-type="katakana">Katakana (片仮名)</button>
+              <button class="btn-tab" data-type="flashcard">⚡ Flashcards (SRS)</button>
             </div>
             
             <div class="toggle-switch-container">
@@ -388,6 +389,42 @@
           <!-- Kanas Grid -->
           <div class="kana-grid" id="kanas-grid-container">
             <!-- Dynamic Kanas elements -->
+          </div>
+
+          <!-- SRS Flashcard Mode Panel (hidden by default) -->
+          <div id="flashcard-panel" style="display:none; text-align:center;">
+            <div class="flashcard-wrapper" id="flashcard-wrapper">
+              <div class="flashcard" id="flashcard-card">
+                <div class="flashcard-front" id="flashcard-front">
+                  <span class="flashcard-char" id="flashcard-char">あ</span>
+                  <button class="btn-utility" id="btn-flashcard-speak" style="margin-top:15px; font-size:0.85rem;">
+                    <i class="fa-solid fa-volume-high"></i> Listen
+                  </button>
+                </div>
+                <div class="flashcard-back" id="flashcard-back">
+                  <span class="flashcard-romaji" id="flashcard-romaji">a</span>
+                  <span class="flashcard-vocab" id="flashcard-vocab"></span>
+                  <span class="flashcard-example" id="flashcard-example"></span>
+                </div>
+              </div>
+            </div>
+
+            <div id="flashcard-front-actions" style="margin-top:20px;">
+              <button class="btn-primary" id="btn-flashcard-flip" style="padding:12px 40px; font-size:1rem;">
+                <i class="fa-solid fa-rotate"></i> Flip Card
+              </button>
+            </div>
+
+            <div id="flashcard-back-actions" style="display:none; margin-top:20px; display:none;">
+              <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">How well did you know it?</p>
+              <div style="display:flex; gap:12px; justify-content:center;">
+                <button class="btn-utility" id="btn-srs-forgot" style="color:#ef4444; border-color:#ef4444; flex:1;">❌ Forgot</button>
+                <button class="btn-utility" id="btn-srs-hard" style="color:#f59e0b; border-color:#f59e0b; flex:1;">😐 Hard</button>
+                <button class="btn-utility" id="btn-srs-easy" style="color:#10b981; border-color:#10b981; flex:1;">✅ Easy</button>
+              </div>
+            </div>
+
+            <div id="flashcard-progress" style="margin-top:20px; color:var(--text-muted); font-size:0.9rem;"></div>
           </div>
         </div>
       </section>
@@ -591,9 +628,10 @@
               <div>
                 <label style="font-weight:600; font-size:0.9rem; color:var(--text-muted); text-transform:uppercase;">Character Deck</label>
                 <div class="toggle-button-group" id="quiz-deck-toggle" style="margin-top:8px;">
-                  <button class="toggle-opt active" data-deck="hiragana">Hiragana Only</button>
-                  <button class="toggle-opt" data-deck="katakana">Katakana Only</button>
-                  <button class="toggle-opt" data-deck="mixed">Mixed Deck</button>
+                  <button class="toggle-opt active" data-deck="hiragana">Hiragana</button>
+                  <button class="toggle-opt" data-deck="katakana">Katakana</button>
+                  <button class="toggle-opt" data-deck="mixed">Mixed Kana</button>
+                  <button class="toggle-opt" data-deck="vocabulary">📚 Vocabulary</button>
                 </div>
               </div>
 
@@ -624,8 +662,13 @@
             </div>
 
             <div class="quiz-question-box">
-              <div class="quiz-kana-display" id="quiz-target-char">-</div>
-              <div class="quiz-prompt-text">What is the correct Romaji transcription of this character?</div>
+              <div style="display:flex; justify-content:center; align-items:center; gap:12px;">
+                <div class="quiz-kana-display" id="quiz-target-char">-</div>
+                <button class="btn-utility" id="btn-quiz-speak" style="padding:10px; border-radius:50%; width:40px; height:40px; display:flex; justify-content:center; align-items:center;" title="Listen">
+                  <i class="fa-solid fa-volume-high"></i>
+                </button>
+              </div>
+              <div class="quiz-prompt-text" id="quiz-prompt-text">What is the correct Romaji for this character?</div>
             </div>
 
             <div class="quiz-choices-grid" id="quiz-options-container">
@@ -705,6 +748,16 @@
               <p style="font-weight:700; font-size:1rem; margin-top:3px;" id="modal-vocab-japanese">-</p>
               <p style="font-size:0.85rem; color:var(--text-muted);" id="modal-vocab-english">-</p>
             </div>
+
+            <!-- Example Sentence Block -->
+            <div id="modal-example-block" style="background-color: var(--panel-active); padding:12px; border-radius:var(--border-radius-md); margin-top:10px; display:none;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.75rem; font-weight:600; color:var(--text-muted); text-transform:uppercase;">Example Sentence:</span>
+                <i class="fa-solid fa-volume-high" id="btn-speak-example" style="cursor:pointer; color:var(--accent); font-size:0.9rem;"></i>
+              </div>
+              <p style="font-weight:600; font-size:1rem; margin-top:3px;" id="modal-example-jp">-</p>
+              <p style="font-size:0.82rem; color:var(--text-muted); font-style:italic;" id="modal-example-en">-</p>
+            </div>
           </div>
 
           <label class="modal-checkbox-row">
@@ -738,7 +791,7 @@
   </div>
 
   <!-- Core JavaScript Modular Application Loading -->
-  <script type="module" src="js/app.js?v=3.0"></script>
+  <script type="module" src="js/app.js?v=3.1"></script>
 
 </body>
 </html>
