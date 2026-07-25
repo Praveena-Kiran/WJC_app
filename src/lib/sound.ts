@@ -1,6 +1,9 @@
 // Retro Web Audio Synthesizer for Zengo Language Suite
 
 class SoundSynthesizer {
+  ctx: AudioContext | null;
+  enabled: boolean;
+
   constructor() {
     this.ctx = null;
     this.enabled = false;
@@ -11,7 +14,7 @@ class SoundSynthesizer {
     if (this.ctx) return Promise.resolve(true);
 
     try {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       this.ctx = new AudioContextClass();
       this.enabled = true;
       console.log("AudioContext initialized successfully.");
@@ -31,7 +34,7 @@ class SoundSynthesizer {
   }
 
   // Helper to create oscillators and decay gain
-  createTone(frequency, type, duration, gainStart = 0.15) {
+  createTone(frequency: number, type: OscillatorType, duration: number, gainStart = 0.15) {
     if (!this.enabled || !this.ctx) return;
     
     // Resume context if suspended
@@ -63,31 +66,32 @@ class SoundSynthesizer {
   // 2. Correct: Double-tone ascending chord
   playCorrect() {
     if (!this.enabled || !this.ctx) return;
-    if (this.ctx.state === "suspended") this.ctx.resume();
+    const ctx = this.ctx;
+    if (ctx.state === "suspended") ctx.resume();
 
-    const now = this.ctx.currentTime;
+    const now = ctx.currentTime;
     
     // First tone (523Hz - C5)
-    const osc1 = this.ctx.createOscillator();
-    const gain1 = this.ctx.createGain();
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
     osc1.type = "sine";
     osc1.frequency.setValueAtTime(523, now);
     gain1.gain.setValueAtTime(0.12, now);
     gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
     osc1.connect(gain1);
-    gain1.connect(this.ctx.destination);
+    gain1.connect(ctx.destination);
     osc1.start(now);
     osc1.stop(now + 0.25);
 
     // Second tone (659Hz - E5) starting slightly later
-    const osc2 = this.ctx.createOscillator();
-    const gain2 = this.ctx.createGain();
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
     osc2.type = "sine";
     osc2.frequency.setValueAtTime(659, now + 0.08);
     gain2.gain.setValueAtTime(0.12, now + 0.08);
     gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.08 + 0.25);
     osc2.connect(gain2);
-    gain2.connect(this.ctx.destination);
+    gain2.connect(ctx.destination);
     osc2.start(now + 0.08);
     osc2.stop(now + 0.08 + 0.25);
   }
@@ -100,15 +104,16 @@ class SoundSynthesizer {
   // 4. Success/Level Completed: Ascending arpeggio sequence
   playSuccess() {
     if (!this.enabled || !this.ctx) return;
-    if (this.ctx.state === "suspended") this.ctx.resume();
+    const ctx = this.ctx;
+    if (ctx.state === "suspended") ctx.resume();
 
-    const now = this.ctx.currentTime;
+    const now = ctx.currentTime;
     const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
     const tempo = 0.10; // spacing between notes
 
     notes.forEach((freq, idx) => {
-      const osc = this.ctx.createOscillator();
-      const gainNode = this.ctx.createGain();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
       
       osc.type = "sine";
       osc.frequency.setValueAtTime(freq, now + idx * tempo);
@@ -117,7 +122,7 @@ class SoundSynthesizer {
       gainNode.gain.exponentialRampToValueAtTime(0.0001, now + idx * tempo + 0.3);
       
       osc.connect(gainNode);
-      gainNode.connect(this.ctx.destination);
+      gainNode.connect(ctx.destination);
       
       osc.start(now + idx * tempo);
       osc.stop(now + idx * tempo + 0.3);

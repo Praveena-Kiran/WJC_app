@@ -805,10 +805,16 @@ export const dictionary = [
 ];
 
 // Verb Conjugator Logic
-export function conjugateVerb(verbObj) {
-  const dictionaryForm = verbObj.word;
-  const type = verbObj.type; // 'ru', 'u', or 'irr'
-  const baseReading = verbObj.reading;
+export function conjugateVerb(verbObj: any) {
+  if (!verbObj) return null;
+  if (typeof verbObj === "string") {
+    const found = dictionary.find((d) => d.word === verbObj || d.reading === verbObj);
+    verbObj = found || { word: verbObj, reading: verbObj, type: verbObj.endsWith("る") ? "ru" : "u" };
+  }
+  const dictionaryForm = verbObj.word || "";
+  const type = verbObj.type || (dictionaryForm.endsWith("る") ? "ru" : "u");
+  const verbType = verbObj.tag || (type === "ru" ? "Ru-verb (Group 2)" : "U-verb (Group 1)");
+  const baseReading = verbObj.reading || dictionaryForm;
 
   let polite = "";
   let negative = "";
@@ -843,9 +849,9 @@ export function conjugateVerb(verbObj) {
     const readingStem = baseReading.slice(0, -1);
 
     // Polite form: change final u row to i row + masu
-    const iRow = { "う": "い", "く": "き", "つ": "ち", "る": "り", "む": "み", "ぬ": "に", "ぶ": "び", "す": "し", "ぐ": "ぎ" };
+    const iRow: Record<string, string> = { "う": "い", "く": "き", "つ": "ち", "る": "り", "む": "み", "ぬ": "に", "ぶ": "び", "す": "し", "ぐ": "ぎ" };
     // Negative form: change final u row to a row + nai (u becomes wa)
-    const aRow = { "う": "わ", "く": "か", "つ": "た", "る": "ら", "む": "ま", "ぬ": "な", "ぶ": "ば", "す": "さ", "ぐ": "が" };
+    const aRow: Record<string, string> = { "う": "わ", "く": "か", "つ": "た", "る": "ら", "む": "ま", "ぬ": "な", "ぶ": "ば", "す": "さ", "ぐ": "が" };
 
     const charI = iRow[lastChar] || "い";
     const readI = iRow[lastReading] || "い";
@@ -885,7 +891,7 @@ export function conjugateVerb(verbObj) {
     }
   }
 
-  return { polite, negative, past, te };
+  return { type: verbType, polite, masu: polite, negative, nai: negative, past, ta: past, te };
 }
 
 // 4. Kanji Dataset (N5/N4 level with stroke path vectors)

@@ -1,15 +1,26 @@
 // Tracing Canvas Controller for Kanji Practice Board
 
 export class TracingCanvas {
-  constructor(canvasElement, brushSizeElement, clearBtnElement, colorPaletteContainer) {
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  brushSizeInput: HTMLInputElement | null;
+  clearBtn: HTMLElement | null;
+  colorPalette: HTMLElement | null;
+  isDrawing: boolean;
+  currentColor: string;
+  currentBrushSize: number;
+  lastX: number;
+  lastY: number;
+
+  constructor(canvasElement: HTMLCanvasElement, brushSizeElement: any, clearBtnElement: any, colorPaletteContainer: any) {
     this.canvas = canvasElement;
-    this.ctx = this.canvas.getContext("2d");
+    this.ctx = this.canvas.getContext("2d")!;
     this.brushSizeInput = brushSizeElement;
     this.clearBtn = clearBtnElement;
     this.colorPalette = colorPaletteContainer;
 
     this.isDrawing = false;
-    this.currentColor = "#ff7597"; // Default hot pink for dark, will sync with theme
+    this.currentColor = "#ff7597";
     this.currentBrushSize = 5;
     
     this.lastX = 0;
@@ -55,8 +66,11 @@ export class TracingCanvas {
 
     // Brush Size
     if (this.brushSizeInput) {
-      this.brushSizeInput.addEventListener("input", (e) => {
-        this.currentBrushSize = parseInt(e.target.value, 10);
+      this.brushSizeInput.addEventListener("input", (e: Event) => {
+        const target = e.target as HTMLInputElement | null;
+        if (target) {
+          this.currentBrushSize = parseInt(target.value, 10);
+        }
       });
     }
 
@@ -67,13 +81,15 @@ export class TracingCanvas {
 
     // Color Palette Selection
     if (this.colorPalette) {
-      this.colorPalette.addEventListener("click", (e) => {
-        const dot = e.target.closest(".color-dot");
+      this.colorPalette.addEventListener("click", (e: Event) => {
+        const target = e.target as HTMLElement | null;
+        const dot = target?.closest(".color-dot") as HTMLElement | null;
         if (dot) {
-          // Remove active class from all color dots
-          this.colorPalette.querySelectorAll(".color-dot").forEach(d => d.classList.remove("active"));
+          this.colorPalette?.querySelectorAll(".color-dot").forEach((d: any) => d.classList.remove("active"));
           dot.classList.add("active");
-          this.currentColor = dot.dataset.color;
+          if (dot.dataset.color) {
+            this.currentColor = dot.dataset.color;
+          }
         }
       });
     }
@@ -91,7 +107,7 @@ export class TracingCanvas {
   }
 
   // Convert a client-space point to canvas coordinates (fixed 512x512 space)
-  _clientToCanvas(clientX, clientY) {
+  _clientToCanvas(clientX: number, clientY: number) {
     const rect = this.canvas.getBoundingClientRect();
     const w = rect.width || 1;
     const h = rect.height || 1;
@@ -101,13 +117,13 @@ export class TracingCanvas {
     };
   }
 
-  startDrawing(x, y) {
+  startDrawing(x: number, y: number) {
     this.isDrawing = true;
     this.lastX = x;
     this.lastY = y;
   }
 
-  draw(x, y) {
+  draw(x: number, y: number) {
     if (!this.isDrawing) return;
 
     this.ctx.beginPath();
@@ -137,10 +153,10 @@ export class TracingCanvas {
     this.ctx.clearRect(0, 0, 512, 512);
   }
 
-  setColor(color) {
+  setColor(color: string) {
     this.currentColor = color;
     if (this.colorPalette) {
-      this.colorPalette.querySelectorAll(".color-dot").forEach(dot => {
+      this.colorPalette.querySelectorAll(".color-dot").forEach((dot: any) => {
         if (dot.dataset.color === color) {
           dot.classList.add("active");
         } else {
@@ -152,14 +168,14 @@ export class TracingCanvas {
 
   // ─── Check Accuracy ────────────────────────────────────────────
   // Renders guide strokes on a 512x512 reference canvas, then compares overlap.
-  checkDrawing(strokePaths) {
+  checkDrawing(strokePaths: string[]) {
     const size = 512;
 
     // ── 1. Build reference canvas with the guide strokes ──
     const refCanvas = document.createElement("canvas");
     refCanvas.width  = size;
     refCanvas.height = size;
-    const refCtx = refCanvas.getContext("2d");
+    const refCtx = refCanvas.getContext("2d")!;
     refCtx.clearRect(0, 0, size, size);
 
     // Draw each SVG path string using Path2D

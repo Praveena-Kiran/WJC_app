@@ -1853,3 +1853,148 @@ input:checked + .slider:before {
   opacity: 1;
   transform: scale(1.1);
 }
+
+/* ====================================================
+   DUOLINGO INTERACTIVE QUIZ STYLES
+   ==================================================== */
+.duo-question-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  animation: fadeIn 0.3s ease;
+}
+
+.duo-question-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 5px;
+}
+
+.duo-question-prompt {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.duo-question-prompt strong {
+  color: var(--accent);
+  font-size: 1.15rem;
+}
+
+.duo-choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .duo-choices-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.duo-choice-card {
+  background: var(--card-bg);
+  border: 2px solid var(--card-border);
+  border-bottom: 5px solid var(--card-border);
+  border-radius: var(--border-radius-md);
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.15s ease;
+  position: relative;
+  text-align: left;
+}
+
+.duo-choice-card:hover {
+  background: var(--panel-active);
+  transform: translateY(-2px);
+  border-bottom-width: 5px;
+}
+
+.duo-choice-card:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.duo-choice-card.selected {
+  border-color: var(--accent) !important;
+  border-bottom-color: var(--accent-hover) !important;
+  background: var(--panel-active) !important;
+  color: var(--accent) !important;
+}
+
+.duo-choice-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 2px solid var(--card-border);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.duo-choice-card.selected .duo-choice-badge {
+  border-color: var(--accent) !important;
+  background: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+.duo-choice-text {
+  flex: 1;
+  line-height: 1.2;
+}
+
+/* Feedback banner states in footer */
+#study-footer-banner.banner-default {
+  background-color: var(--panel-active);
+  border: 1px solid var(--card-border);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+#study-footer-banner.banner-correct {
+  background-color: #d7ffb8 !important;
+  border-color: #58a700 !important;
+  color: #58a700 !important;
+}
+
+#study-footer-banner.banner-correct #study-feedback-text {
+  color: #58a700 !important;
+}
+
+#study-footer-banner.banner-incorrect {
+  background-color: #ffd8d8 !important;
+  border-color: #ea2b2b !important;
+  color: #ea2b2b !important;
+}
+
+#study-footer-banner.banner-incorrect #study-feedback-text {
+  color: #ea2b2b !important;
+}
+
+#btn-study-action {
+  transition: all 0.15s ease;
+}
+
+#btn-study-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  border-bottom-width: 4px !important;
+}
+
