@@ -147,6 +147,39 @@ export function WoxsenStudentDashboard() {
             </div>
           )}
         </div>
+
+        {/* Official Course Announcements Banner */}
+        <div className="content-card" style={{ gridColumn: "1 / -1" }}>
+          <div className="card-title">
+            <i className="fa-solid fa-bullhorn" style={{ color: "var(--accent)" }}></i>
+            <span>Official WJC Announcements</span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "12px", marginTop: "10px" }}>
+            {state.announcements.map((ann) => (
+              <div
+                key={ann.id}
+                style={{
+                  padding: "14px 18px",
+                  background: "var(--panel-active)",
+                  borderRadius: "var(--border-radius-md)",
+                  border: "1px solid var(--card-border)",
+                  borderLeft: "4px solid var(--accent)"
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: "0.98rem", color: "var(--text-main)", marginBottom: "4px" }}>
+                  {ann.title}
+                </div>
+                <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "8px" }}>
+                  {ann.content}
+                </div>
+                <div style={{ fontSize: "0.76rem", color: "var(--accent)", fontWeight: 600 }}>
+                  📢 {ann.author} • {ann.date}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

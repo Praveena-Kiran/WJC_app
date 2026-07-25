@@ -6,7 +6,9 @@ import { useApp } from "@/context/AppContext";
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const { state, setActiveView, setStudyMode, setCyberTheme, setUserRole } = useApp();
 
+  const isAdmin = state.userRole === "admin";
   const isTeacher = state.userRole === "teacher";
+  const isStudentView = !isAdmin && !isTeacher;
 
   return (
     <aside id="sidebar" className={isOpen ? "open" : ""}>
@@ -41,10 +43,12 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
             <option value="external">External Student (Zengo)</option>
             <option value="woxsen-student">Woxsen Student</option>
             <option value="teacher">WJC Instructor (Teacher)</option>
+            <option value="admin">⚡ Super Admin Portal</option>
           </select>
         </div>
 
         <nav className="nav-links" id="sidebar-nav-container">
+          {/* Main Dashboard Link */}
           <button
             className={`nav-item ${state.activeView === "dashboard" ? "active" : ""}`}
             onClick={() => {
@@ -52,109 +56,114 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
               onClose?.();
             }}
           >
-            <i className="fa-solid fa-house-chimney"></i>
-            <span>Dashboard</span>
+            <i className={`fa-solid ${isAdmin ? "fa-sliders" : "fa-house-chimney"}`}></i>
+            <span>{isAdmin ? "Admin Management" : isTeacher ? "Faculty Portal" : "Dashboard"}</span>
           </button>
 
-          {!isTeacher && (
-            <button
-              className={`nav-item ${state.activeView === "n5-roadmap" ? "active" : ""}`}
-              onClick={() => {
-                setActiveView("n5-roadmap");
-                onClose?.();
-              }}
-            >
-              <i className="fa-regular fa-calendar-check"></i>
-              <span>N5 Goal & Roadmap</span>
-            </button>
+          {/* Student Learning Links - Hidden for Admin & Teacher */}
+          {isStudentView && (
+            <>
+              <button
+                className={`nav-item ${state.activeView === "n5-roadmap" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveView("n5-roadmap");
+                  onClose?.();
+                }}
+              >
+                <i className="fa-regular fa-calendar-check"></i>
+                <span>N5 Goal & Roadmap</span>
+              </button>
+
+              <button
+                className={`nav-item ${state.activeView === "kana-trainer" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveView("kana-trainer");
+                  onClose?.();
+                }}
+              >
+                <i className="fa-solid fa-graduation-cap"></i>
+                <span>Kana Trainer</span>
+              </button>
+
+              <button
+                className={`nav-item ${state.activeView === "dictionary" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveView("dictionary");
+                  onClose?.();
+                }}
+              >
+                <i className="fa-solid fa-book-open"></i>
+                <span>Dictionary & Conjugator</span>
+              </button>
+
+              <button
+                className={`nav-item ${state.activeView === "kanji-board" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveView("kanji-board");
+                  onClose?.();
+                }}
+              >
+                <i className="fa-solid fa-brush"></i>
+                <span>Kanji Board</span>
+              </button>
+
+              <button
+                className={`nav-item ${state.activeView === "quiz" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveView("quiz");
+                  onClose?.();
+                }}
+              >
+                <i className="fa-solid fa-gamepad"></i>
+                <span>Kana Quiz</span>
+              </button>
+
+              <button
+                className={`nav-item ${state.activeView === "kaiwa" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveView("kaiwa");
+                  onClose?.();
+                }}
+              >
+                <i className="fa-solid fa-comments"></i>
+                <span>Kaiwa Roleplay</span>
+              </button>
+
+              <button
+                className={`nav-item ${state.activeView === "voice-coach" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveView("voice-coach");
+                  onClose?.();
+                }}
+              >
+                <i className="fa-solid fa-microphone-lines"></i>
+                <span>Voice Coach</span>
+              </button>
+
+              <button
+                className={`nav-item ${state.activeView === "kanji-radicals" ? "active" : ""}`}
+                onClick={() => {
+                  setActiveView("kanji-radicals");
+                  onClose?.();
+                }}
+              >
+                <i className="fa-solid fa-puzzle-piece"></i>
+                <span>Radical Puzzle</span>
+              </button>
+            </>
           )}
 
-          {!isTeacher && (
+          {/* Teacher links */}
+          {isTeacher && (
             <button
-              className={`nav-item ${state.activeView === "kana-trainer" ? "active" : ""}`}
+              className={`nav-item ${state.activeView === "dictionary" ? "active" : ""}`}
               onClick={() => {
-                setActiveView("kana-trainer");
+                setActiveView("dictionary");
                 onClose?.();
               }}
             >
-              <i className="fa-solid fa-graduation-cap"></i>
-              <span>Kana Trainer</span>
-            </button>
-          )}
-
-          <button
-            className={`nav-item ${state.activeView === "dictionary" ? "active" : ""}`}
-            onClick={() => {
-              setActiveView("dictionary");
-              onClose?.();
-            }}
-          >
-            <i className="fa-solid fa-book-open"></i>
-            <span>Dictionary & Conjugator</span>
-          </button>
-
-          {!isTeacher && (
-            <button
-              className={`nav-item ${state.activeView === "kanji-board" ? "active" : ""}`}
-              onClick={() => {
-                setActiveView("kanji-board");
-                onClose?.();
-              }}
-            >
-              <i className="fa-solid fa-brush"></i>
-              <span>Kanji Board</span>
-            </button>
-          )}
-
-          {!isTeacher && (
-            <button
-              className={`nav-item ${state.activeView === "quiz" ? "active" : ""}`}
-              onClick={() => {
-                setActiveView("quiz");
-                onClose?.();
-              }}
-            >
-              <i className="fa-solid fa-gamepad"></i>
-              <span>Kana Quiz</span>
-            </button>
-          )}
-
-          {!isTeacher && (
-            <button
-              className={`nav-item ${state.activeView === "kaiwa" ? "active" : ""}`}
-              onClick={() => {
-                setActiveView("kaiwa");
-                onClose?.();
-              }}
-            >
-              <i className="fa-solid fa-comments"></i>
-              <span>Kaiwa Roleplay</span>
-            </button>
-          )}
-
-          {!isTeacher && (
-            <button
-              className={`nav-item ${state.activeView === "voice-coach" ? "active" : ""}`}
-              onClick={() => {
-                setActiveView("voice-coach");
-                onClose?.();
-              }}
-            >
-              <i className="fa-solid fa-microphone-lines"></i>
-              <span>Voice Coach</span>
-            </button>
-          )}
-
-          {!isTeacher && (
-            <button
-              className={`nav-item ${state.activeView === "kanji-radicals" ? "active" : ""}`}
-              onClick={() => {
-                setActiveView("kanji-radicals");
-                onClose?.();
-              }}
-            >
-              <i className="fa-solid fa-puzzle-piece"></i>
-              <span>Radical Puzzle</span>
+              <i className="fa-solid fa-book-open"></i>
+              <span>Dictionary Reference</span>
             </button>
           )}
         </nav>

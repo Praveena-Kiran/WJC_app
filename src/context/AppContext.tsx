@@ -7,7 +7,7 @@ export interface AppState {
   activeView: string;
   studyMode: "zen" | "cyber";
   cyberTheme: "dark" | "light";
-  userRole: "external" | "woxsen-student" | "teacher";
+  userRole: "external" | "woxsen-student" | "teacher" | "admin";
   activeStudentName: string;
   solvedLessons: number[];
   activeLessonId: number;
@@ -32,6 +32,21 @@ export interface AppState {
   targetJlptLevel: "N5" | "N4" | "N3" | "N2" | "N1";
   showOnboardingModal: boolean;
   solvedNodes: number[];
+  studentsRoster: Array<{
+    id: string;
+    name: string;
+    rollNo: string;
+    jlptLevel: "N5" | "N4" | "N3" | "N2" | "N1";
+    dateJoined: string;
+    status: "active" | "inactive";
+  }>;
+  announcements: Array<{
+    id: string;
+    title: string;
+    content: string;
+    date: string;
+    author: string;
+  }>;
 }
 
 // Compute default target date (30 days from now)
@@ -49,6 +64,17 @@ const initialAppState: AppState = {
   starredVocab: [],
   practicedKanji: [],
   streakCount: 3,
+  studentsRoster: [
+    { id: "s1", name: "Sneha Reddy", rollNo: "WOX2026-001", jlptLevel: "N5", dateJoined: "2026-07-01", status: "active" },
+    { id: "s2", name: "Rohan Sharma", rollNo: "WOX2026-002", jlptLevel: "N5", dateJoined: "2026-07-02", status: "active" },
+    { id: "s3", name: "Arjun Verma", rollNo: "WOX2026-003", jlptLevel: "N4", dateJoined: "2026-07-05", status: "active" },
+    { id: "s4", name: "Pooja Patel", rollNo: "WOX2026-004", jlptLevel: "N5", dateJoined: "2026-07-08", status: "active" },
+    { id: "s5", name: "Vince Carter", rollNo: "WOX2026-005", jlptLevel: "N5", dateJoined: "2026-07-10", status: "active" }
+  ],
+  announcements: [
+    { id: "a1", title: "JLPT N5 Prep Session This Friday", content: "Join us in Hall B at 4:00 PM for Kanji stroke order review and practice test.", date: "2026-07-20", author: "Sensei Tanaka" },
+    { id: "a2", title: "WJC Anime & Shadowing Workshop", content: "Interactive pitch accent shadowing workshop with live voice analysis.", date: "2026-07-22", author: "Sensei Tanaka" }
+  ],
   attendanceDb: {
     "2026-07-10": { "Sneha Reddy": "present", "Rohan Sharma": "present", "Arjun Verma": "present", "Pooja Patel": "present", "Vince Carter": "present" },
     "2026-07-12": { "Sneha Reddy": "present", "Rohan Sharma": "absent", "Arjun Verma": "present", "Pooja Patel": "present", "Vince Carter": "present" },
@@ -82,7 +108,7 @@ interface AppContextType {
   setActiveView: (view: string) => void;
   setStudyMode: (mode: "zen" | "cyber") => void;
   setCyberTheme: (theme: "dark" | "light") => void;
-  setUserRole: (role: "external" | "woxsen-student" | "teacher") => void;
+  setUserRole: (role: "external" | "woxsen-student" | "teacher" | "admin") => void;
   setActiveLessonId: (id: number) => void;
   markLessonSolved: (id: number) => void;
   markNodeSolved: (nodeId: number) => void;
@@ -92,12 +118,17 @@ interface AppContextType {
   saveAttendanceRecord: (date: string, records: Record<string, string>) => void;
   addUploadedFile: (file: { name: string; size: string; date: string }) => void;
   deleteUploadedFile: (name: string) => void;
+  addStudentToRoster: (student: { name: string; rollNo: string; jlptLevel: "N5" | "N4" | "N3" | "N2" | "N1" }) => void;
+  removeStudentFromRoster: (id: string) => void;
+  toggleStudentRosterStatus: (id: string) => void;
+  addAnnouncement: (announcement: { title: string; content: string }) => void;
+  deleteAnnouncement: (id: string) => void;
   setQuizState: (updater: (prev: AppState["quizState"]) => AppState["quizState"]) => void;
   updateSrsData: (kanaId: string, rating: "again" | "hard" | "good" | "easy") => void;
   dismissSoundBanner: () => void;
   setN5TargetDate: (dateStr: string) => void;
   toggleDailyTask: (taskId: string) => void;
-  completeOnboarding: (data: { name: string; role: "external" | "woxsen-student" | "teacher"; targetDate: string; level: "N5" | "N4" | "N3" | "N2" | "N1" }) => void;
+  completeOnboarding: (data: { name: string; role: "external" | "woxsen-student" | "teacher" | "admin"; targetDate: string; level: "N5" | "N4" | "N3" | "N2" | "N1" }) => void;
   openOnboardingModal: () => void;
   closeOnboardingModal: () => void;
   speakJapanese: (text: string) => void;
@@ -189,7 +220,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, cyberTheme: theme }));
   };
 
-  const setUserRole = (role: "external" | "woxsen-student" | "teacher") => {
+  const setUserRole = (role: "external" | "woxsen-student" | "teacher" | "admin") => {
     playSound("success");
     setState((prev) => ({
       ...prev,
@@ -282,6 +313,63 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const addStudentToRoster = (student: { name: string; rollNo: string; jlptLevel: "N5" | "N4" | "N3" | "N2" | "N1" }) => {
+    playSound("success");
+    const newStudent = {
+      id: `s-${Date.now()}`,
+      name: student.name,
+      rollNo: student.rollNo || `WOX2026-00${state.studentsRoster.length + 1}`,
+      jlptLevel: student.jlptLevel,
+      dateJoined: new Date().toISOString().split("T")[0],
+      status: "active" as const
+    };
+    setState((prev) => ({
+      ...prev,
+      studentsRoster: [newStudent, ...prev.studentsRoster]
+    }));
+  };
+
+  const removeStudentFromRoster = (id: string) => {
+    playSound("click");
+    setState((prev) => ({
+      ...prev,
+      studentsRoster: prev.studentsRoster.filter((s) => s.id !== id)
+    }));
+  };
+
+  const toggleStudentRosterStatus = (id: string) => {
+    playSound("click");
+    setState((prev) => ({
+      ...prev,
+      studentsRoster: prev.studentsRoster.map((s) =>
+        s.id === id ? { ...s, status: s.status === "active" ? "inactive" : "active" } : s
+      )
+    }));
+  };
+
+  const addAnnouncement = (announcement: { title: string; content: string }) => {
+    playSound("success");
+    const newAnn = {
+      id: `ann-${Date.now()}`,
+      title: announcement.title,
+      content: announcement.content,
+      date: new Date().toISOString().split("T")[0],
+      author: "Admin Sensei"
+    };
+    setState((prev) => ({
+      ...prev,
+      announcements: [newAnn, ...prev.announcements]
+    }));
+  };
+
+  const deleteAnnouncement = (id: string) => {
+    playSound("click");
+    setState((prev) => ({
+      ...prev,
+      announcements: prev.announcements.filter((a) => a.id !== id)
+    }));
+  };
+
   const setQuizState = (updater: (prev: AppState["quizState"]) => AppState["quizState"]) => {
     setState((prev) => ({ ...prev, quizState: updater(prev.quizState) }));
   };
@@ -348,7 +436,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const completeOnboarding = (data: {
     name: string;
-    role: "external" | "woxsen-student" | "teacher";
+    role: "external" | "woxsen-student" | "teacher" | "admin";
     targetDate: string;
     level: "N5" | "N4" | "N3" | "N2" | "N1";
   }) => {
@@ -391,6 +479,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         saveAttendanceRecord,
         addUploadedFile,
         deleteUploadedFile,
+        addStudentToRoster,
+        removeStudentFromRoster,
+        toggleStudentRosterStatus,
+        addAnnouncement,
+        deleteAnnouncement,
         setQuizState,
         updateSrsData,
         dismissSoundBanner,

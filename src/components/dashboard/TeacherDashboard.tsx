@@ -3,17 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useApp } from "@/context/AppContext";
 
-const ROSTER_STUDENTS = [
-  "Sneha Reddy",
-  "Rohan Sharma",
-  "Arjun Verma",
-  "Pooja Patel",
-  "Vince Carter"
-];
-
 export function TeacherDashboard() {
-  const { state, saveAttendanceRecord, addUploadedFile, deleteUploadedFile, playSound } = useApp();
-  const [selectedDate, setSelectedDate] = useState<string>("2026-07-21");
+  const {
+    state,
+    saveAttendanceRecord,
+    addUploadedFile,
+    deleteUploadedFile,
+    playSound
+  } = useApp();
+
+  const [selectedDate, setSelectedDate] = useState<string>("2026-07-25");
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [s3Status, setS3Status] = useState<{ configured: boolean; message: string }>({
     configured: false,
@@ -21,17 +20,14 @@ export function TeacherDashboard() {
   });
 
   const [attendanceMap, setAttendanceMap] = useState<Record<string, "present" | "absent">>(() => {
-    return {
-      "Sneha Reddy": "present",
-      "Rohan Sharma": "present",
-      "Arjun Verma": "present",
-      "Pooja Patel": "present",
-      "Vince Carter": "present"
-    };
+    const map: Record<string, "present" | "absent"> = {};
+    state.studentsRoster.forEach((s) => {
+      map[s.name] = "present";
+    });
+    return map;
   });
 
   useEffect(() => {
-    // Check AWS S3 storage status
     fetch("/api/upload")
       .then((res) => res.json())
       .then((data) => {
@@ -55,18 +51,18 @@ export function TeacherDashboard() {
       setAttendanceMap(existing as Record<string, "present" | "absent">);
     } else {
       const defaultRecord: Record<string, "present" | "absent"> = {};
-      ROSTER_STUDENTS.forEach((student) => {
-        defaultRecord[student] = "present";
+      state.studentsRoster.forEach((student) => {
+        defaultRecord[student.name] = "present";
       });
       setAttendanceMap(defaultRecord);
     }
   };
 
-  const toggleStudentStatus = (student: string) => {
+  const toggleStudentAttendance = (studentName: string) => {
     playSound("click");
     setAttendanceMap((prev) => ({
       ...prev,
-      [student]: prev[student] === "present" ? "absent" : "present"
+      [studentName]: prev[studentName] === "present" ? "absent" : "present"
     }));
   };
 
@@ -99,8 +95,6 @@ export function TeacherDashboard() {
             date: new Date().toISOString().split("T")[0]
           });
           playSound("success");
-        } else {
-          console.error("Upload error:", data.error);
         }
       } catch (err) {
         console.error("File upload failed:", err);
@@ -109,26 +103,12 @@ export function TeacherDashboard() {
     }
   };
 
-  // Stats calculation
-  const totalRecords = Object.values(state.attendanceDb);
-  let totalPresentCount = 0;
-  let totalSlotCount = 0;
-
-  totalRecords.forEach((record) => {
-    Object.values(record).forEach((val) => {
-      totalSlotCount++;
-      if (val === "present") totalPresentCount++;
-    });
-  });
-
-  const avgAttendancePct = totalSlotCount > 0 ? Math.round((totalPresentCount / totalSlotCount) * 100) : 90;
-
   return (
     <section id="teacher-dashboard-view" className="view-section active">
-      <div className="header-row">
+      <div className="header-row" style={{ marginBottom: "20px" }}>
         <div className="welcome-msg">
-          <h2>WJC Faculty Dashboard</h2>
-          <p>Admin portal for Woxsen Japanese Centre (WJC) instructors. Manage rosters, files, and attendance.</p>
+          <h2>👩‍🏫 WJC Faculty Teacher Portal</h2>
+          <p>Teacher interface to mark daily class attendance and upload study PDFs/files for your students.</p>
         </div>
 
         {/* S3 Storage Status Badge */}
@@ -147,37 +127,36 @@ export function TeacherDashboard() {
           }}
         >
           <i className={`fa-solid ${s3Status.configured ? "fa-cloud-check" : "fa-cloud"}`}></i>
-          <span>{s3Status.configured ? "AWS S3 Storage Connected" : "Local Storage Mode (.env.local missing)"}</span>
+          <span>{s3Status.configured ? "AWS S3 Connected" : "Local Storage Mode"}</span>
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div className="stats-row">
+      {/* Stats Overview Bar */}
+      <div className="stats-row" style={{ marginBottom: "25px" }}>
         <div className="stat-item-card">
-          <div className="stat-label">Class Average Attendance</div>
-          <div className="stat-value">{avgAttendancePct}%</div>
+          <div className="stat-label">Enrolled Class Students</div>
+          <div className="stat-value">{state.studentsRoster.length}</div>
         </div>
         <div className="stat-item-card">
-          <div className="stat-label">Total Roster Students</div>
-          <div className="stat-value">{ROSTER_STUDENTS.length}</div>
-        </div>
-        <div className="stat-item-card">
-          <div className="stat-label">Shared Classroom Files</div>
+          <div className="stat-label">Uploaded Course Files</div>
           <div className="stat-value">{state.uploadedFiles.length}</div>
+        </div>
+        <div className="stat-item-card">
+          <div className="stat-label">Logged Attendance Sessions</div>
+          <div className="stat-value">{Object.keys(state.attendanceDb).length}</div>
         </div>
       </div>
 
       <div className="dashboard-grid">
-        {/* Attendance Marker */}
+        {/* Attendance Marker Card */}
         <div className="content-card">
           <div className="card-title">
-            <i className="fa-solid fa-calendar-check"></i>
+            <i className="fa-solid fa-calendar-check" style={{ color: "var(--accent)" }}></i>
             <span>Class Attendance Marker</span>
           </div>
+
           <div className="search-container" style={{ alignItems: "center", marginBottom: "20px" }}>
-            <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--text-muted)" }}>
-              Select Class Date:
-            </span>
+            <span style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--text-muted)" }}>Select Class Date:</span>
             <input
               type="date"
               className="search-input"
@@ -187,15 +166,15 @@ export function TeacherDashboard() {
             />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {ROSTER_STUDENTS.map((student) => {
-              const status = attendanceMap[student] || "present";
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "300px", overflowY: "auto" }}>
+            {state.studentsRoster.map((student) => {
+              const status = attendanceMap[student.name] || "present";
               const isPresent = status === "present";
 
               return (
                 <div
-                  key={student}
-                  onClick={() => toggleStudentStatus(student)}
+                  key={student.id}
+                  onClick={() => toggleStudentAttendance(student.name)}
                   style={{
                     padding: "12px 16px",
                     background: "var(--panel-active)",
@@ -207,15 +186,18 @@ export function TeacherDashboard() {
                     cursor: "pointer"
                   }}
                 >
-                  <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>{student}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--text-main)" }}>{student.name}</div>
+                    <div style={{ fontSize: "0.76rem", color: "var(--text-muted)" }}>{student.rollNo} • JLPT {student.jlptLevel}</div>
+                  </div>
                   <span
                     style={{
                       padding: "4px 14px",
-                      borderRadius: "20px",
-                      fontSize: "0.8rem",
+                      borderRadius: "16px",
+                      fontSize: "0.78rem",
                       fontWeight: 700,
                       backgroundColor: isPresent ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)",
-                      color: isPresent ? "var(--accent-success, #10b981)" : "#ef4444"
+                      color: isPresent ? "#10b981" : "#ef4444"
                     }}
                   >
                     {isPresent ? "Present ✓" : "Absent ✗"}
@@ -230,21 +212,21 @@ export function TeacherDashboard() {
             onClick={handleSaveAttendance}
             style={{ marginTop: "20px", width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "8px" }}
           >
-            <i className="fa-solid fa-floppy-disk"></i> Save Attendance Record
+            <i className="fa-solid fa-floppy-disk"></i> Save Class Attendance
           </button>
         </div>
 
-        {/* File Upload Panel */}
+        {/* AWS S3 File Upload Manager */}
         <div className="content-card">
           <div className="card-title" style={{ justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <i className="fa-solid fa-cloud-arrow-up"></i>
+              <i className="fa-solid fa-cloud-arrow-up" style={{ color: "var(--accent)" }}></i>
               <span>Upload Study Resource</span>
             </div>
-            {isUploading && <span style={{ fontSize: "0.8rem", color: "var(--accent)", fontWeight: 600 }}>Uploading to S3...</span>}
+            {isUploading && <span style={{ fontSize: "0.8rem", color: "var(--accent)", fontWeight: 600 }}>Uploading...</span>}
           </div>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "20px" }}>
-            Upload lecture files or vocabulary decks directly to AWS S3 storage for students.
+          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", marginBottom: "15px" }}>
+            Upload lecture notes, grammar slides, or vocabulary PDFs for your students.
           </p>
 
           <label
@@ -252,27 +234,26 @@ export function TeacherDashboard() {
               backgroundColor: "var(--panel-active)",
               border: "2px dashed var(--card-border)",
               borderRadius: "var(--border-radius-md)",
-              padding: "30px 15px",
+              padding: "24px 15px",
               textAlign: "center",
               marginBottom: "20px",
               cursor: "pointer",
               display: "block"
             }}
           >
-            <i className="fa-solid fa-file-pdf" style={{ fontSize: "2.5rem", color: "var(--accent)", marginBottom: "10px" }}></i>
-            <p style={{ fontWeight: 600, fontSize: "0.95rem" }}>
-              {isUploading ? "Uploading file..." : "Drag & drop study file here"}
+            <i className="fa-solid fa-file-pdf" style={{ fontSize: "2.2rem", color: "var(--accent)", marginBottom: "8px" }}></i>
+            <p style={{ fontWeight: 600, fontSize: "0.9rem" }}>
+              {isUploading ? "Uploading file..." : "Click or Drag study PDF here"}
             </p>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "5px" }}>or click to select from file explorer</p>
             <input type="file" onChange={handleFileUpload} disabled={isUploading} style={{ display: "none" }} />
           </label>
 
-          <div className="classroom-files-list" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "250px", overflowY: "auto" }}>
             {state.uploadedFiles.map((file, idx) => (
               <div
                 key={idx}
                 style={{
-                  padding: "12px 16px",
+                  padding: "10px 14px",
                   background: "var(--panel-active)",
                   borderRadius: "var(--border-radius-md)",
                   border: "1px solid var(--card-border)",
@@ -281,18 +262,16 @@ export function TeacherDashboard() {
                   alignItems: "center"
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <i className="fa-solid fa-file-pdf" style={{ fontSize: "1.5rem", color: "var(--accent)" }}></i>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <i className="fa-solid fa-file-pdf" style={{ fontSize: "1.3rem", color: "var(--accent)" }}></i>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: "0.92rem", color: "var(--text-main)" }}>{file.name}</div>
-                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-                      {file.size} • {file.date}
-                    </div>
+                    <div style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text-main)" }}>{file.name}</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{file.size} • {file.date}</div>
                   </div>
                 </div>
                 <button
                   onClick={() => deleteUploadedFile(file.name)}
-                  style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "1.1rem" }}
+                  style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "1rem" }}
                 >
                   <i className="fa-solid fa-trash"></i>
                 </button>

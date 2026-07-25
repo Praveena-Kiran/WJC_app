@@ -8,7 +8,7 @@ export function OnboardingModal() {
 
   const [step, setStep] = useState(1);
   const [name, setName] = useState(state.activeStudentName || "Learner");
-  const [role, setRole] = useState<"external" | "woxsen-student" | "teacher">(state.userRole || "external");
+  const [role, setRole] = useState<"external" | "woxsen-student" | "teacher" | "admin">(state.userRole || "external");
   const [level, setLevel] = useState<"N5" | "N4" | "N3" | "N2" | "N1">(state.targetJlptLevel || "N5");
   
   const defaultDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -131,6 +131,7 @@ export function OnboardingModal() {
                 <option value="external">External Student (Zengo Suite)</option>
                 <option value="woxsen-student">Woxsen University Student</option>
                 <option value="teacher">WJC Instructor / Faculty</option>
+                <option value="admin">⚡ Super Admin Portal</option>
               </select>
             </div>
 

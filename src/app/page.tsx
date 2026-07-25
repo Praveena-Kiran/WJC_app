@@ -10,6 +10,7 @@ import { ZenDashboard } from "@/components/dashboard/ZenDashboard";
 import { CyberZenDashboard } from "@/components/dashboard/CyberZenDashboard";
 import { WoxsenStudentDashboard } from "@/components/dashboard/WoxsenStudentDashboard";
 import { TeacherDashboard } from "@/components/dashboard/TeacherDashboard";
+import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 import { KanaTrainer } from "@/components/kana/KanaTrainer";
 import { DictionaryView } from "@/components/DictionaryView";
 import { KanjiBoard } from "@/components/KanjiBoard";
@@ -27,6 +28,9 @@ export default function Home() {
   const renderActiveView = () => {
     switch (state.activeView) {
       case "dashboard":
+        if (state.userRole === "admin") {
+          return <AdminDashboard />;
+        }
         if (state.userRole === "teacher") {
           return <TeacherDashboard />;
         }

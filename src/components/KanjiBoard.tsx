@@ -133,7 +133,7 @@ export function KanjiBoard() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "15px", background: "var(--panel-active)", padding: "12px", borderRadius: "var(--border-radius-md)", fontSize: "0.88rem" }}>
             <div><strong>Kunyomi:</strong> {selectedKanji.kunyomi}</div>
             <div><strong>Onyomi:</strong> {selectedKanji.onyomi}</div>
-            <div><strong>Strokes:</strong> {selectedKanji.strokes}</div>
+            <div><strong>Strokes:</strong> {Array.isArray(selectedKanji.strokes) ? `${selectedKanji.strokes.length} strokes` : selectedKanji.strokes}</div>
             <div><strong>JLPT:</strong> N5</div>
           </div>
 
