@@ -1,0 +1,19 @@
+* text=auto eol=lf
+
+*.svg text
+*.tsx text diff=typescript
+*.ts text diff=typescript
+*.css text
+*.json text
+
+*.ico binary
+*.jpg binary
+*.png binary
+*.gif binary
+*.mp3 binary
+*.mp4 binary
+*.woff2 binary
+
+package-lock.json		-merge
+pnpm-lock.yaml			-merge
+yarn.lock			-merge
