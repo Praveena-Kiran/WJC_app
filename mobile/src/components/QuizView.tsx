@@ -9,7 +9,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { apiFetch } from '../lib/api';
+import { apiFetch } from '@/src/lib/api-fetch';
 
 export interface QuizQuestion {
   prompt: string;

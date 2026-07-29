@@ -8,7 +8,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { apiFetch } from '../../lib/api';
+import { apiFetch } from '@/src/lib/api-fetch';
 
 interface UserItem {
   id: string;
