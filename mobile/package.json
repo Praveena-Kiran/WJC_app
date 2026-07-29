@@ -72,7 +72,15 @@
     "db:seed": "npx prisma db seed",
     "server:dev": "tsx watch server/index.ts",
     "update:preview": "eas update --branch preview --message 'Preview update'",
-    "update:prod": "eas update --branch production --message 'Production update'"
+    "update:prod": "eas update --branch production --message 'Production update'",
+    "build:ios:dev": "eas build --platform ios --profile development",
+    "build:ios:preview": "eas build --platform ios --profile preview",
+    "build:ios:prod": "eas build --platform ios --profile production",
+    "build:android:dev": "eas build --platform android --profile development",
+    "build:android:preview": "eas build --platform android --profile preview",
+    "build:android:prod": "eas build --platform android --profile production",
+    "submit:ios": "eas submit --platform ios --profile production",
+    "submit:android": "eas submit --platform android --profile production"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -21,10 +21,18 @@
       "backgroundColor": "#1a1a2e"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.zengo.app"
+      "supportsTablet": false,
+      "bundleIdentifier": "com.zengo.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Zengo uses your microphone for pronunciation coaching.",
+        "NSSpeechRecognitionUsageDescription": "Zengo uses speech recognition to score your Japanese pronunciation."
+      }
     },
     "android": {
+      "package": "com.zengo.app",
+      "versionCode": 1,
+      "permissions": ["RECORD_AUDIO", "INTERNET"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png",
@@ -40,7 +48,9 @@
       "expo-router",
       "expo-secure-store",
       "expo-document-picker",
-      "expo-audio"
+      "expo-audio",
+      ["expo-speech", {}],
+      ["expo-haptics", {}]
     ],
     "experiments": {
       "typedRoutes": true

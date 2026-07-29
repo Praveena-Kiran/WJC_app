@@ -6,14 +6,53 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:8081"
+      }
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "distribution": "internal"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://staging-api.zengo.app"
+      }
     },
     "production": {
-      "channel": "production"
+      "channel": "production",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {},
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.zengo.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "team@zengo.app",
+        "ascAppId": "",
+        "appleTeamId": "<10-char-Apple-Team-ID>"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "internal"
+      }
     }
   }
 }
