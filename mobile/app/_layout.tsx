@@ -3,9 +3,14 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import 'react-native-reanimated';
 import * as Sentry from '@sentry/react-native';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { onlineManager } from '@tanstack/react-query';
+import * as Network from 'expo-network';
 
+import { queryClient, persister } from '@/src/lib/query-client';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useOtaUpdate } from '../src/hooks/useOtaUpdate';
 
@@ -31,6 +36,20 @@ SplashScreen.preventAutoHideAsync();
 
 function RootLayout() {
   useOtaUpdate();
+
+  // ── Online manager: refetch queries when network reconnects (#009c) ────────
+  useEffect(() => {
+    return onlineManager.setEventListener((setOnline) => {
+      const checkNetwork = async () => {
+        const state = await Network.getNetworkStateAsync();
+        setOnline(state.isConnected ?? true);
+      };
+      const subscription = AppState.addEventListener('change', checkNetwork);
+      // Fire once immediately to set initial state.
+      void checkNetwork();
+      return () => subscription.remove();
+    });
+  }, []);
 
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -60,12 +79,19 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister }}
+    >
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          {/* Onboarding is a full-screen step outside tabs/auth stacks (#011) */}
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </ThemeProvider>
+    </PersistQueryClientProvider>
   );
 }
