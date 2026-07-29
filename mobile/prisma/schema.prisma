@@ -200,6 +200,18 @@ model QuizRun {
   @@index([userId])
 }
 
+model AuditEvent {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  targetId  String?
+  payload   Json?
+  timestamp DateTime @default(now())
+
+  @@index([actorId])
+  @@index([timestamp])
+}
+
 // ── Better Auth generated models (appended by CLI) ───────────────────────────
 // Run: npx @better-auth/cli@latest generate --config ./src/server/auth.ts --output ./prisma/schema.prisma
 // DO NOT hand-edit the four models below — they are managed by better-auth CLI.
