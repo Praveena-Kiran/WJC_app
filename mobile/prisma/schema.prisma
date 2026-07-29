@@ -1,0 +1,266 @@
+// This is your Prisma schema file.
+// Learn more: https://pris.ly/d/prisma-schema
+// Re-generate Better Auth models: npx @better-auth/cli@latest generate --config ./src/server/auth.ts --output ./prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Reference (seeded, read-only) ────────────────────────────────────────────
+
+model Lesson {
+  id          Int    @id
+  title       String
+  jpTitle     String
+  description String
+  syllabus    Json
+  kanji       String[]
+  vocabulary  String[]
+}
+
+model Kana {
+  id          String      @id
+  char        String
+  romaji      String
+  type        String      // "hiragana" | "katakana"
+  vocab       String
+  translation String
+  notes       String?
+  example     Json?
+  strokes     KanaStroke[]
+}
+
+model KanaStroke {
+  id        Int    @id @default(autoincrement())
+  kanaId    String
+  pathIndex Int
+  d         String
+  kana      Kana   @relation(fields: [kanaId], references: [id])
+
+  @@unique([kanaId, pathIndex])
+}
+
+model Vocabulary {
+  id      Int     @id @default(autoincrement())
+  word    String
+  reading String
+  romaji  String
+  english String
+  tag     String  // "Noun" | "Verb" | "Adjective"
+  type    String? // "u" | "ru" | "irr" | "i" | "na" — null for non-verbs/adjectives
+  lesson  Int
+  example Json
+
+  @@index([tag])
+}
+
+model Kanji {
+  char    String       @id
+  level   String       // "N5" | "N4"
+  meaning String
+  onyomi  String
+  kunyomi String
+  strokes KanjiStroke[]
+
+  @@index([level])
+}
+
+model KanjiStroke {
+  id        Int    @id @default(autoincrement())
+  kanjiChar String
+  pathIndex Int
+  d         String
+  kanji     Kanji  @relation(fields: [kanjiChar], references: [char])
+
+  @@unique([kanjiChar, pathIndex])
+}
+
+model KaiwaScenario {
+  id          String @id
+  title       String
+  jpTitle     String
+  category    String
+  icon        String
+  description String
+  dialogue    Json
+}
+
+model PronunciationPhrase {
+  id             String   @id
+  japanese       String
+  romaji         String
+  english        String
+  category       String
+  pitchName      String
+  pitchType      String   // "heiban" | "atamadaka" | "nakadaka" | "odaka"
+  moras          String[]
+  moraPitches    String[]
+  pitchDropIndex Int?
+  notes          String
+}
+
+model RadicalPuzzle {
+  id          String @id
+  targetKanji String
+  meaning     String
+  onyomi      String
+  kunyomi     String
+  radicals    Json
+  candidates  Json
+  explanation String
+}
+
+// ── Per-user (owned) ──────────────────────────────────────────────────────────
+
+model UserProfile {
+  userId          String   @id
+  role            String   @default("external") @db.VarChar(20) // "external" | "woxsen-student" | "teacher"
+  targetJlptLevel String   @default("N5") @db.VarChar(4)
+  n5TargetDate    String?
+  studyMode       String   @default("zen") @db.VarChar(10)      // "zen" | "cyber"
+  cyberTheme      String   @default("dark") @db.VarChar(10)     // "dark" | "light"
+  soundEnabled    Boolean  @default(true)
+  hapticsEnabled  Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@index([role])
+}
+
+model UserProgress {
+  userId              String   @id
+  masteredKana        String[] @default([])
+  starredVocab        String[] @default([])
+  practicedKanji      String[] @default([])
+  solvedLessons       Int[]    @default([1])
+  solvedNodes         Int[]    @default([1])
+  activeLessonId      Int      @default(1)
+  streakCount         Int      @default(0)
+  dailyTasksCompleted String[] @default([])
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id])
+}
+
+model SrsCard {
+  id         String   @id @default(cuid())
+  userId     String
+  kanaId     String
+  interval   Int      @default(1)
+  easeFactor Float    @default(2.5)
+  reviews    Int      @default(0)
+  dueDate    DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, kanaId])
+  @@index([userId, dueDate])
+}
+
+model Attendance {
+  id             Int      @id @default(autoincrement())
+  // YYYY-MM-DD string — NOT native DateTime to avoid timezone shift bugs
+  attendanceDate String   @db.Char(10)
+  studentUserId  String
+  status         String   @db.VarChar(10) // "present" | "absent" | "late"
+  markedBy       String
+  createdAt      DateTime @default(now())
+  student        User     @relation("StudentAttendance", fields: [studentUserId], references: [id])
+  marker         User     @relation("MarkerAttendance", fields: [markedBy], references: [id])
+
+  @@unique([attendanceDate, studentUserId])
+  @@index([studentUserId])
+}
+
+model UploadedFile {
+  id         String   @id @default(cuid())
+  name       String
+  size       String
+  date       DateTime
+  fileUrl    String
+  key        String
+  uploadedBy String
+  file       User     @relation("UploadedFiles", fields: [uploadedBy], references: [id])
+
+  @@index([uploadedBy])
+}
+
+model QuizRun {
+  id        String   @id @default(cuid())
+  userId    String
+  deck      String
+  length    Int
+  score     Int
+  createdAt DateTime @default(now())
+  user      User     @relation("QuizRuns", fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+// ── Better Auth generated models (appended by CLI) ───────────────────────────
+// Run: npx @better-auth/cli@latest generate --config ./src/server/auth.ts --output ./prisma/schema.prisma
+// DO NOT hand-edit the four models below — they are managed by better-auth CLI.
+// Back-relations to User model are added manually after each CLI run.
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+
+  // ── Back-relations (hand-edited after CLI generate) ──
+  sessions      Session[]
+  accounts      Account[]
+
+  userProfile   UserProfile?
+  userProgress  UserProgress?
+  srsCards      SrsCard[]
+  quizRuns      QuizRun[]         @relation("QuizRuns")
+  uploadedFiles UploadedFile[]    @relation("UploadedFiles")
+  attendanceAs  Attendance[]      @relation("StudentAttendance")
+  attendanceBy  Attendance[]      @relation("MarkerAttendance")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+}

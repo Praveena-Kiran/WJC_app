@@ -1,9 +1,23 @@
-node_modules/
-.next/
-out/
-build
+# Environment
 .env*
-.vercel
+!.env.example
+!.env.development.example
+
+# Dependencies
+node_modules/
+
+# Expo build artifacts
+.expo/
+dist/
+ios/
+android/
+web-build/
+
+# TypeScript
 *.tsbuildinfo
-next-env.d.ts
-coverage/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
