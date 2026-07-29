@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { auth } from './auth';
+import { progressRoute } from './handlers/progress';
 import { quizRoute } from './handlers/quiz';
 import { adminRoute } from './handlers/admin';
 import { securityHeaders } from './middleware/security';
@@ -31,6 +32,7 @@ app.get('/healthz', (c) => c.json({ ok: true }));
 app.mount('/api/auth', auth.handler);
 
 // Route handlers
+app.route('/api/progress', progressRoute);
 app.route('/api/quiz', quizRoute);
 app.route('/api/admin', adminRoute);
 
