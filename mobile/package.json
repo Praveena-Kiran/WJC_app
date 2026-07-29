@@ -8,6 +8,7 @@
     "@better-auth/expo": "^1.2.0",
     "@expo/vector-icons": "^14.0.0",
     "@prisma/client": "^5.22.0",
+    "@sentry/react-native": "^8.20.0",
     "@tanstack/react-query": "^5.0.0",
     "@tanstack/react-query-persist-client": "^5.0.0",
     "better-auth": "^1.2.0",

@@ -4,8 +4,17 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import * as Sentry from '@sentry/react-native';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { useOtaUpdate } from '../src/hooks/useOtaUpdate';
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  tracesSampleRate: 0.2,
+  profilesSampleRate: 0.1,
+  enabled: process.env.NODE_ENV !== 'development',
+});
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -20,7 +29,9 @@ export const unstable_settings = {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayout() {
+  useOtaUpdate();
+
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -42,6 +53,8 @@ export default function RootLayout() {
 
   return <RootLayoutNav />;
 }
+
+export default Sentry.wrap(RootLayout);
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
