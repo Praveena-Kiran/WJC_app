@@ -1,10 +1,18 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
 import { auth } from '../auth';
 import { prisma } from '../db';
 
 export const quizRoute = new Hono();
 
-quizRoute.post('/', async (c) => {
+const quizSchema = z.object({
+  deck: z.string().min(1),
+  length: z.number().int().positive(),
+  score: z.number().int().min(0),
+});
+
+quizRoute.post('/', zValidator('json', quizSchema), async (c) => {
   const session = await auth.api.getSession({
     headers: c.req.raw.headers,
   });
@@ -12,12 +20,7 @@ quizRoute.post('/', async (c) => {
     return c.json({ error: 'Unauthorized' }, 401);
   }
 
-  const body = await c.req.json();
-  const { deck, length, score } = body;
-
-  if (!deck || typeof length !== 'number' || typeof score !== 'number') {
-    return c.json({ error: 'Invalid payload: deck, length, and score are required' }, 400);
-  }
+  const { deck, length, score } = c.req.valid('json');
 
   const run = await prisma.quizRun.create({
     data: {
