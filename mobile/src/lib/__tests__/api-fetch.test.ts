@@ -68,8 +68,9 @@ describe('apiFetch', () => {
 
     const { apiFetch } = await import('../api-fetch');
 
-    await expect(apiFetch('/api/progress')).rejects.toThrow(ApiError);
-    await expect(apiFetch('/api/progress')).rejects.toMatchObject({ status: 401 });
+    const err: any = await apiFetch('/api/progress').catch((e) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err.status).toBe(401);
   });
 
   it('throws ApiError with status 404 and body', async () => {
@@ -78,7 +79,7 @@ describe('apiFetch', () => {
 
     const { apiFetch } = await import('../api-fetch');
 
-    const err = await apiFetch('/api/nonexistent').catch((e) => e);
+    const err: any = await apiFetch('/api/nonexistent').catch((e) => e);
     expect(err).toBeInstanceOf(ApiError);
     expect(err.status).toBe(404);
     expect(err.body).toEqual({ error: 'Not Found' });
@@ -86,7 +87,7 @@ describe('apiFetch', () => {
 
   it('injects Cookie header when authClient has a session', async () => {
     const { authClient } = await import('@/src/auth-client');
-    vi.mocked(authClient.getCookie).mockReturnValue('better-auth.session-token=abc123');
+    vi.mocked((authClient as any).getCookie).mockReturnValue('better-auth.session-token=abc123');
 
     const fetchSpy = mockFetch(200, { masteredKana: [] });
 

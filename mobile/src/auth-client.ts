@@ -23,7 +23,7 @@ export const authClient = createAuthClient({
       scheme: 'zengo',            // must match app.json "scheme"
       storagePrefix: 'zengo',     // prefix for SecureStore keys
       storage: SecureStore,       // secure, encrypted session storage
-    }),
+    }) as any,
   ],
 });
 

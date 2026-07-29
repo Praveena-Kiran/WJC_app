@@ -83,8 +83,8 @@ progressRoute.put('/', async (c) => {
     const { userId: _ignored, ...profileData } = body.profile as Record<string, unknown>;
     updatedProfile = await prisma.userProfile.upsert({
       where: { userId },
-      create: { userId, ...profileData } as Parameters<typeof prisma.userProfile.create>[0]['data'],
-      update: profileData as Parameters<typeof prisma.userProfile.update>[0]['data'],
+      create: { userId, ...(profileData as any) },
+      update: profileData as any,
     });
   }
 
@@ -92,8 +92,8 @@ progressRoute.put('/', async (c) => {
     const { userId: _ignored, ...progressData } = body.progress as Record<string, unknown>;
     updatedProgress = await prisma.userProgress.upsert({
       where: { userId },
-      create: { userId, ...progressData } as Parameters<typeof prisma.userProgress.create>[0]['data'],
-      update: progressData as Parameters<typeof prisma.userProgress.update>[0]['data'],
+      create: { userId, ...(progressData as any) },
+      update: progressData as any,
     });
   }
 

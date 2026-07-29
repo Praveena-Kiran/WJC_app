@@ -64,7 +64,7 @@ export function AdminDashboard() {
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
-      const res = await apiFetch(`/api/admin/users${userSearch ? `?search=${userSearch}` : ''}`);
+      const res: any = await apiFetch(`/api/admin/users${userSearch ? `?search=${userSearch}` : ''}`);
       if (res.success) {
         setUsers(res.data);
       }
@@ -78,7 +78,7 @@ export function AdminDashboard() {
   const fetchHealth = async () => {
     setLoadingHealth(true);
     try {
-      const res = await apiFetch('/api/admin/health');
+      const res: any = await apiFetch('/api/admin/health');
       if (res.success) {
         setHealth(res.data);
       }
@@ -92,7 +92,7 @@ export function AdminDashboard() {
   const fetchAuditLogs = async () => {
     setLoadingAudit(true);
     try {
-      const res = await apiFetch('/api/admin/audit');
+      const res: any = await apiFetch('/api/admin/audit');
       if (res.success) {
         setAuditLogs(res.data);
       }

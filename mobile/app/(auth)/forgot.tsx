@@ -38,7 +38,7 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
 
     try {
-      await authClient.forgetPassword({
+      await (authClient as any).forgetPassword({
         email: email.trim().toLowerCase(),
         // Deep-link URL — opens the app to the reset-password screen.
         redirectTo: 'zengo://reset-password',
@@ -66,7 +66,7 @@ export default function ForgotPasswordScreen() {
         <Text style={styles.note}>
           Tap the link in the email to open the Zengo app and reset your password.
         </Text>
-        <Link href="/(auth)/login" style={styles.backLink}>
+        <Link href={"/(auth)/login" as any} style={styles.backLink}>
           ← Back to login
         </Link>
       </View>
@@ -119,7 +119,7 @@ export default function ForgotPasswordScreen() {
           )}
         </TouchableOpacity>
 
-        <Link href="/(auth)/login" style={styles.backLink}>
+        <Link href={"/(auth)/login" as any} style={styles.backLink}>
           ← Back to login
         </Link>
       </View>

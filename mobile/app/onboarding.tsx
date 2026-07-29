@@ -96,7 +96,7 @@ export default function OnboardingScreen() {
         }),
       });
 
-      router.replace('/(tabs)/');
+      router.replace('/(tabs)' as any);
     } catch (e) {
       setError('Failed to save your profile. Please try again.');
       console.error('[onboarding] submit error:', e);

@@ -55,7 +55,7 @@ export async function apiFetch<T = unknown>(
   // Inject the better-auth session cookie.
   // getCookie() returns the raw Cookie header string (e.g. "better-auth.session-token=abc123")
   try {
-    const cookies = authClient.getCookie?.();
+    const cookies = (authClient as any).getCookie?.();
     if (cookies) headers.set('Cookie', cookies);
   } catch {
     // Not signed in — omit Cookie header. The request will be treated as unauthenticated.

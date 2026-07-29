@@ -71,7 +71,7 @@ export default function RegisterScreen() {
 
       // Redirect to onboarding — the databaseHooks (#012b) auto-create
       // UserProfile + UserProgress. Onboarding will update them.
-      router.replace('/onboarding');
+      router.replace('/onboarding' as any);
     } catch (e) {
       setError('Network error. Please check your connection and try again.');
       console.error('[register] signUp error:', e);
@@ -174,7 +174,7 @@ export default function RegisterScreen() {
           <View style={styles.linkRow}>
             <Text style={styles.linkText}>
               Already have an account?{' '}
-              <Link href="/(auth)/login" style={styles.link}>
+              <Link href={"/(auth)/login" as any} style={styles.link}>
                 Sign in
               </Link>
             </Text>

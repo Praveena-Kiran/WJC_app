@@ -13,7 +13,7 @@
  * Issue #012b: databaseHooks for auto-creating UserProfile/UserProgress on signup.
  */
 import { betterAuth } from 'better-auth';
-import { prismaAdapter } from 'better-auth/adapters';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { expo } from '@better-auth/expo';
 import { prisma } from './db';
 
@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, { provider: 'pg' }),
+  database: prismaAdapter(prisma, { provider: 'postgresql' }),
 
   secret: process.env.BETTER_AUTH_SECRET!,
 

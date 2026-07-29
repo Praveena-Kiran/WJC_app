@@ -55,15 +55,15 @@ export default function LoginScreen() {
       try {
         const { profile } = await apiFetch<{ profile: null | object }>('/api/progress');
         if (!profile) {
-          router.replace('/onboarding');
+          router.replace('/onboarding' as any);
         } else {
-          router.replace('/(tabs)/');
+          router.replace('/(tabs)' as any);
         }
       } catch (e) {
         if (e instanceof ApiError && e.status === 404) {
-          router.replace('/onboarding');
+          router.replace('/onboarding' as any);
         } else {
-          router.replace('/(tabs)/');
+          router.replace('/(tabs)' as any);
         }
       }
     } catch (e) {
@@ -137,11 +137,11 @@ export default function LoginScreen() {
           <View style={styles.links}>
             <Text style={styles.linkText}>
               Don't have an account?{' '}
-              <Link href="/(auth)/register" style={styles.link}>
+              <Link href={"/(auth)/register" as any} style={styles.link}>
                 Create one
               </Link>
             </Text>
-            <Link href="/(auth)/forgot" style={[styles.link, styles.forgotLink]}>
+            <Link href={"/(auth)/forgot" as any} style={[styles.link, styles.forgotLink]}>
               Forgot password?
             </Link>
           </View>
