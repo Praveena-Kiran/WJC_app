@@ -7,7 +7,7 @@ COPY mobile/prisma ./mobile/prisma
 
 # Install dependencies and generate Prisma Client
 WORKDIR /app/mobile
-RUN npm install
+RUN npm install --legacy-peer-deps
 RUN npx prisma generate
 
 # Copy mobile application code
