@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { STORIES } from '../components/kaiwa-stories';
 
-describe('KaiwaView Duolingo Stories (Issue #182 / #044b)', () => {
+describe('KaiwaView Duolingo Stories (Issue #125 / #044)', () => {
   it('exports valid stories deck array', () => {
     expect(Array.isArray(STORIES)).toBe(true);
     expect(STORIES.length).toBeGreaterThan(0);
