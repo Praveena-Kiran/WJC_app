@@ -4,6 +4,7 @@ import { auth } from './auth';
 import { progressRoute } from './handlers/progress';
 import { quizRoute } from './handlers/quiz';
 import { adminRoute } from './handlers/admin';
+import { referenceRoute } from './handlers/reference';
 import { securityHeaders } from './middleware/security';
 import { strictRateLimit } from './middleware/rate-limit';
 import { apiBodyLimit } from './middleware/body-limit';
@@ -35,5 +36,6 @@ app.mount('/api/auth', auth.handler);
 app.route('/api/progress', progressRoute);
 app.route('/api/quiz', quizRoute);
 app.route('/api/admin', adminRoute);
+app.route('/api/reference', referenceRoute);
 
 export default app;
