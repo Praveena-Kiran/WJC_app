@@ -3,14 +3,11 @@ import path from 'path';
 
 export default defineConfig({
   test: {
-    environment: 'node',
     globals: true,
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-    exclude: ['node_modules', 'dist', '.expo'],
-  },
-  resolve: {
+    environment: 'node',
     alias: {
       '@': path.resolve(__dirname, './'),
+      'react-native': path.resolve(__dirname, './src/__tests__/__mocks__/react-native.js'),
     },
   },
 });
