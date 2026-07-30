@@ -1,44 +1,21 @@
-import { StyleSheet } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import React, { useState } from 'react';
+import { ZenDashboard } from '../../src/components/dashboard/ZenDashboard';
+import { CyberZenDashboard } from '../../src/components/dashboard/CyberZenDashboard';
+import { WoxsenStudentDashboard } from '../../src/components/dashboard/WoxsenStudentDashboard';
+import { TeacherDashboard } from '../../src/components/dashboard/TeacherDashboard';
 
-/**
- * Zengo — Home screen skeleton.
- * This is a placeholder that will be replaced by the full dashboard
- * once auth and data layers are wired up (Issues #009, #025).
- */
 export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hello Zengo 👋</Text>
-      <Text style={styles.subtitle}>
-        日本語を学ぼう
-      </Text>
-      <Text style={styles.note}>
-        Setup in progress — auth &amp; data coming soon.
-      </Text>
-    </View>
-  );
-}
+  // In v1, role & mode are read from app context or state
+  const [userRole] = useState<'external' | 'woxsen-student' | 'teacher'>('external');
+  const [studyMode] = useState<'zen' | 'cyber'>('zen');
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 20,
-    marginBottom: 16,
-  },
-  note: {
-    fontSize: 14,
-    opacity: 0.6,
-    textAlign: 'center',
-  },
-});
+  if (userRole === 'teacher') {
+    return <TeacherDashboard />;
+  }
+
+  if (userRole === 'woxsen-student') {
+    return <WoxsenStudentDashboard />;
+  }
+
+  return studyMode === 'zen' ? <ZenDashboard /> : <CyberZenDashboard />;
+}
