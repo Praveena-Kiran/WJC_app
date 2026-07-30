@@ -4,6 +4,7 @@ import { calculateN5Metrics } from './n5-metrics';
 
 export interface N5DeadlineCardProps {
   n5TargetDate?: string | null;
+  targetDays?: number;
   solvedCount?: number;
   kanaCount?: number;
   kanjiCount?: number;
@@ -14,6 +15,7 @@ export interface N5DeadlineCardProps {
 
 export function N5DeadlineCard({
   n5TargetDate,
+  targetDays,
   solvedCount = 0,
   kanaCount = 0,
   kanjiCount = 0,
@@ -21,8 +23,9 @@ export function N5DeadlineCard({
   onNavigateToRoadmap,
   onAdjustGoalDate,
 }: N5DeadlineCardProps) {
+  const effectiveTargetDate = n5TargetDate || (targetDays ? new Date(Date.now() + targetDays * 86400000).toISOString() : null);
   const metrics = calculateN5Metrics(
-    n5TargetDate,
+    effectiveTargetDate,
     solvedCount,
     kanaCount,
     kanjiCount,
@@ -108,7 +111,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginVertical: 8,
-    marginHorizontal: 16,
     borderLeftWidth: 4,
     borderLeftColor: '#5c60f5',
     shadowColor: '#000',
