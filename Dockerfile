@@ -1,19 +1,18 @@
-# Base Node image
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# Copy root manifests
-COPY package*.json ./
+# Copy mobile package manifests
 COPY mobile/package*.json ./mobile/
 
-# Install dependencies
-RUN npm install --prefix mobile
+# Install dependencies inside mobile
+WORKDIR /app/mobile
+RUN npm install
 
-# Copy source files
-COPY . .
+# Copy mobile application code
+COPY mobile/ ./
 
 # Expose server port
 EXPOSE 3000
 
-# Start production app
-CMD ["npm", "start", "--prefix", "mobile"]
+# Start production server
+CMD ["npm", "start"]
