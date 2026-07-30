@@ -1,12 +1,14 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# Copy mobile package manifests
+# Copy mobile package manifests and prisma schema
 COPY mobile/package*.json ./mobile/
+COPY mobile/prisma ./mobile/prisma
 
-# Install dependencies inside mobile
+# Install dependencies and generate Prisma Client
 WORKDIR /app/mobile
 RUN npm install
+RUN npx prisma generate
 
 # Copy mobile application code
 COPY mobile/ ./
