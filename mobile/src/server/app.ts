@@ -6,6 +6,7 @@ import { quizRoute } from './handlers/quiz';
 import { adminRoute } from './handlers/admin';
 import { referenceRoute } from './handlers/reference';
 import { attendanceRoute } from './handlers/attendance';
+import { uploadRoute, filesRoute } from './handlers/upload';
 import { securityHeaders } from './middleware/security';
 import { strictRateLimit } from './middleware/rate-limit';
 import { apiBodyLimit } from './middleware/body-limit';
@@ -39,5 +40,7 @@ app.route('/api/quiz', quizRoute);
 app.route('/api/admin', adminRoute);
 app.route('/api/reference', referenceRoute);
 app.route('/api/attendance', attendanceRoute);
+app.route('/api/upload', uploadRoute);
+app.route('/api/files', filesRoute);
 
 export default app;
