@@ -46,12 +46,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store",
-      "expo-document-picker",
-      "expo-audio",
-      ["expo-font", {}],
-      ["expo-speech", {}],
-      ["expo-haptics", {}]
+      ["expo-font", {}]
     ],
     "experiments": {
       "typedRoutes": true
