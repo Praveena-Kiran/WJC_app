@@ -22,10 +22,17 @@ export function getApiUrl(): string {
     return explicit.replace(/\/$/, '');
   }
 
-  // 2. Expo Go dev mode: auto-detect LAN IP from debuggerHost
+  // 2. Expo Go dev mode: auto-detect LAN IP from hostUri or debuggerHost
   if (__DEV__) {
-    const lan = (Constants.expoGoConfig as { debuggerHost?: string } | null)?.debuggerHost?.split(':')[0];
-    if (lan) return `http://${lan}:8081`;
+    const hostUri =
+      Constants.hostUri ??
+      Constants.expoConfig?.hostUri ??
+      (Constants.expoGoConfig as { debuggerHost?: string } | null)?.debuggerHost ??
+      (Constants as any).manifest?.debuggerHost ??
+      (Constants as any).manifest2?.extra?.expoGo?.debuggerHost;
+
+    const lan = hostUri?.split(':')[0];
+    if (lan && lan !== 'localhost' && lan !== '127.0.0.1') return `http://${lan}:8081`;
     return 'http://localhost:8081';
   }
 

@@ -17,10 +17,10 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { expo } from '@better-auth/expo';
 import { prisma } from './db';
 
-// Build trusted origins dynamically so dev localhost works.
+// Build trusted origins dynamically so dev localhost and LAN IPs work.
 const trustedOrigins: string[] = ['zengo://', 'exp://', 'exp://**'];
 if (process.env.NODE_ENV === 'development') {
-  trustedOrigins.push('http://localhost:8081', 'http://localhost:*');
+  trustedOrigins.push('http://localhost:8081', 'http://localhost:*', 'http://192.168.*', 'http://10.*', 'http://172.*', 'http://*');
 }
 
 export const auth = betterAuth({
