@@ -10,14 +10,12 @@
  * before the session cookie has propagated to useSession().
  */
 import { Tabs, useRouter } from 'expo-router';
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { useSession } from '@/src/auth-client';
 import { useEffect } from 'react';
+import { GlassmorphicTabBar } from '@/src/components/navigation/GlassmorphicTabBar';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const router = useRouter();
   const { data: session, isPending } = useSession();
 
@@ -41,46 +39,19 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <GlassmorphicTabBar {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
         headerShown: false,
+        // Transparent scene container so the floating pill overlaps content cleanly
+        sceneStyle: { backgroundColor: 'transparent' },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>🏠</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="kana"
-        options={{
-          title: 'Kana',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>🈠</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="kanji"
-        options={{
-          title: 'Kanji',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>漢</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="dictionary"
-        options={{
-          title: 'Dictionary',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>📖</Text>,
-        }}
-      />
-      <Tabs.Screen
-        name="quiz"
-        options={{
-          title: 'Quiz',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>🎯</Text>,
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="kana" options={{ title: 'Kana' }} />
+      <Tabs.Screen name="kanji" options={{ title: 'Kanji' }} />
+      <Tabs.Screen name="dictionary" options={{ title: 'Dictionary' }} />
+      <Tabs.Screen name="quiz" options={{ title: 'Quiz' }} />
+      <Tabs.Screen name="kaiwa" options={{ title: 'Kaiwa' }} />
     </Tabs>
   );
 }
