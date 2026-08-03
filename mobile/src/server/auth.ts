@@ -23,8 +23,18 @@ if (process.env.NODE_ENV === 'development') {
   trustedOrigins.push('http://localhost:8081', 'http://localhost:*', 'http://192.168.*', 'http://10.*', 'http://172.*', 'http://*');
 }
 
+// The Expo API server runs on the same process as Metro (port 8081 in dev).
+// Setting baseURL prevents Better Auth from deriving it from the request stream,
+// which causes "Cannot pipe to a closed or destroyed stream" errors.
+const BASE_URL =
+  process.env.BETTER_AUTH_URL ??
+  process.env.EXPO_PUBLIC_API_URL ??
+  'http://localhost:8081';
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
+
+  baseURL: BASE_URL,
 
   secret: process.env.BETTER_AUTH_SECRET!,
 
