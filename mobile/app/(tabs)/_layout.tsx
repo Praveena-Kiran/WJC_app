@@ -1,10 +1,31 @@
-import { Tabs } from 'expo-router';
+/**
+ * (tabs)/_layout.tsx — Tab bar navigator
+ *
+ * Secondary auth guard: if a user somehow reaches this layout without a
+ * valid session, they are immediately redirected to the welcome screen.
+ * The primary guard lives in the root _layout.tsx.
+ */
+import { Tabs, useRouter } from 'expo-router';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Text } from 'react-native';
+import { useSession } from '@/src/auth-client';
+import { useEffect } from 'react';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
+
+  // ── Secondary auth guard ────────────────────────────────────────────────────
+  // Redirect to welcome screen if there is no active session.
+  // isPending is true while the session is being hydrated from SecureStore —
+  // we wait for it to resolve before making a routing decision.
+  useEffect(() => {
+    if (!isPending && !session?.user) {
+      router.replace('/');
+    }
+  }, [isPending, session, router]);
 
   return (
     <Tabs

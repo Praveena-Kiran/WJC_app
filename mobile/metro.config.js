@@ -21,12 +21,30 @@ const existingBlockList = Array.isArray(config.resolver.blockList)
 
 config.resolver.blockList = [
   ...existingBlockList,
-  // Block any file path containing 'server/' (mobile/server/ directory)
-  /mobile\/server\//,
   // Block any file path containing 'prisma/' (mobile/prisma/ directory)
   /mobile\/prisma\//,
-  // Block server-only node_modules from being bundled into the client
-  /node_modules\/(?=.*((?<![a-z])prisma(?![a-z])|@prisma|(?<![a-z])hono(?![a-z])|@aws-sdk)).*/,
+  // Block server-only node_modules from being bundled into client code.
+  // NOTE: Server API routes running via Expo Router server output still need @prisma.
+  /node_modules\/(hono|@hono|@aws-sdk)(\/|$)/,
+];
+
+// ── ESM / .mjs support ───────────────────────────────────────────────────
+// better-auth and some of its dependencies ship only ESM (.mjs) files.
+// Metro does not resolve .mjs by default — add it to the extension list.
+const { sourceExts, assetExts } = config.resolver;
+config.resolver.sourceExts = [...sourceExts, 'mjs', 'cjs'];
+config.resolver.assetExts = assetExts.filter((ext) => ext !== 'svg');
+
+// Allow Metro to resolve the "default" export condition so that packages
+// that only ship an ESM "default" condition (like better-auth/adapters/*)
+// are resolved correctly in API routes.
+config.resolver.unstable_enablePackageExports = true;
+config.resolver.unstable_conditionNames = [
+  'require',
+  'import',
+  'default',
+  'react-native',
+  'browser',
 ];
 
 module.exports = config;

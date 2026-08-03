@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { AppState } from 'react-native';
 import 'react-native-reanimated';
 import * as Sentry from '@sentry/react-native';
@@ -15,6 +15,7 @@ import { queryClient, persister } from '@/src/lib/query-client';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useOtaUpdate } from '../src/hooks/useOtaUpdate';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { authClient } from '@/src/auth-client';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -29,18 +30,20 @@ export {
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  // Start at the welcome/index screen; the auth guard redirects logged-in users.
+  initialRouteName: 'index',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading and session resolution complete (#033b).
+// Prevent the splash screen from auto-hiding before asset loading and session resolution complete.
 SplashScreen.preventAutoHideAsync();
 
 function RootLayout() {
   useOtaUpdate();
   const [isAuthResolving, setIsAuthResolving] = useState(true);
+  const router = useRouter();
+  const hasRedirected = useRef(false);
 
-  // ── Online manager: refetch queries when network reconnects (#009c) ────────
+  // ── Online manager: refetch queries when network reconnects ────────────────
   useEffect(() => {
     return onlineManager.setEventListener((setOnline) => {
       const checkNetwork = async () => {
@@ -54,19 +57,29 @@ function RootLayout() {
     });
   }, []);
 
-  // ── Auth session hydration & splash gate (#033b) ──────────────────────────
+  // ── Auth session hydration + splash gate ──────────────────────────────────
+  // Check if a session already exists in SecureStore (persisted from a previous
+  // app launch). If yes, redirect straight to tabs so returning users never see
+  // the welcome screen. If not, stay on the welcome screen.
   useEffect(() => {
     const resolveAuthSession = async () => {
       try {
-        // Simulating session resolution / hydration
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        const session = await authClient.getSession();
+        if (session?.data?.user && !hasRedirected.current) {
+          hasRedirected.current = true;
+          // Returning logged-in user — go straight to dashboard.
+          router.replace('/(tabs)');
+        }
       } catch (err) {
-        console.warn('Session resolution error:', err);
+        // No session or network error — stay on welcome screen.
+        console.warn('[auth] Session resolution error:', err);
       } finally {
         setIsAuthResolving(false);
       }
     };
     resolveAuthSession();
+  // router is stable — only run on mount.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [loaded, error] = useFonts({
@@ -78,7 +91,7 @@ function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  // Hide splash screen ONLY when fonts are loaded AND session is resolved (#033b).
+  // Hide splash screen ONLY when fonts are loaded AND session is resolved.
   useEffect(() => {
     if (loaded && !isAuthResolving) {
       SplashScreen.hideAsync();
@@ -105,9 +118,11 @@ function RootLayoutNav() {
       >
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
+            {/* Welcome screen — shown to unauthenticated users only */}
+            <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            {/* Onboarding is a full-screen step outside tabs/auth stacks (#011) */}
+            {/* Onboarding is a full-screen step outside tabs/auth stacks */}
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
           </Stack>
