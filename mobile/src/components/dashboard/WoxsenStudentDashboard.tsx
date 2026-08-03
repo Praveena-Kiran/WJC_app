@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export interface WoxsenStudentDashboardProps {
   onNavigate?: (screen: string) => void;
@@ -27,7 +28,8 @@ export function WoxsenStudentDashboard({ onNavigate }: WoxsenStudentDashboardPro
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
       {/* Institutional Woxsen Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Woxsen University Portal • 禅語</Text>
@@ -92,11 +94,16 @@ export function WoxsenStudentDashboard({ onNavigate }: WoxsenStudentDashboardPro
           ))}
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
   container: {
     padding: 16,
     backgroundColor: '#f8fafc',

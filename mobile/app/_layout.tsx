@@ -14,6 +14,7 @@ import * as Network from 'expo-network';
 import { queryClient, persister } from '@/src/lib/query-client';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useOtaUpdate } from '../src/hooks/useOtaUpdate';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -97,19 +98,21 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{ persister }}
-    >
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          {/* Onboarding is a full-screen step outside tabs/auth stacks (#011) */}
-          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      </ThemeProvider>
-    </PersistQueryClientProvider>
+    <SafeAreaProvider>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister }}
+      >
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            {/* Onboarding is a full-screen step outside tabs/auth stacks (#011) */}
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          </Stack>
+        </ThemeProvider>
+      </PersistQueryClientProvider>
+    </SafeAreaProvider>
   );
 }

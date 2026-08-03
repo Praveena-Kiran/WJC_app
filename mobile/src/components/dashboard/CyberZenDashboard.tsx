@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export interface CyberZenDashboardProps {
   onNavigate?: (screen: string) => void;
@@ -13,7 +14,8 @@ export interface CyberZenDashboardProps {
 
 export function CyberZenDashboard({ onNavigate }: CyberZenDashboardProps) {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
       {/* Neon Cyber Header */}
       <View style={styles.header}>
         <Text style={styles.title}>CYBER ZEN SYSTEM // 禅語</Text>
@@ -75,11 +77,16 @@ export function CyberZenDashboard({ onNavigate }: CyberZenDashboardProps) {
           </TouchableOpacity>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     padding: 16,
     backgroundColor: '#0f172a',

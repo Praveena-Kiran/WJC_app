@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { STORIES, DuolingoStory, StoryOption } from './kaiwa-stories';
 
 export function KaiwaView() {
@@ -28,7 +29,9 @@ export function KaiwaView() {
   };
 
   const toggleSpeed = () => {
-    setSpeechSpeed((prev) => (prev === 0.75 ? 1.0 : prev === 1.0 ? 1.25 : 0.75));
+    if (speechSpeed === 0.75) setSpeechSpeed(1.0);
+    else if (speechSpeed === 1.0) setSpeechSpeed(1.25);
+    else setSpeechSpeed(0.75);
   };
 
   const handleSelectOption = (opt: StoryOption) => {
@@ -51,7 +54,8 @@ export function KaiwaView() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
       {/* Story Selection Screen */}
       {!activeStory && (
         <View>
@@ -208,11 +212,16 @@ export function KaiwaView() {
           </TouchableOpacity>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
   container: {
     padding: 16,
     backgroundColor: '#f8fafc',

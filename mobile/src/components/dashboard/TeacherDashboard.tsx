@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState<'roster' | 'upload'>('roster');
@@ -25,7 +26,8 @@ export function TeacherDashboard() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Teacher Portal • Sensei Control</Text>
         <Text style={styles.subtitle}>
@@ -88,11 +90,16 @@ export function TeacherDashboard() {
           </View>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
   container: {
     padding: 16,
     backgroundColor: '#f8fafc',

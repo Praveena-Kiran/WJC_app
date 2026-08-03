@@ -7,6 +7,7 @@ import {
   ScrollView,
   Switch,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { KANA_DATA, KanaItem } from './kana-data';
 import { KanaModal } from './KanaModal';
 import { FlashcardPanel } from './FlashcardPanel';
@@ -19,7 +20,8 @@ export function KanaTrainer() {
   const filteredKana = KANA_DATA.filter((k) => k.type === activeTab);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Kana Trainer</Text>
         <Text style={styles.subtitle}>
@@ -74,11 +76,16 @@ export function KanaTrainer() {
         kana={selectedKana}
         onClose={() => setSelectedKana(null)}
       />
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
   container: {
     padding: 16,
     backgroundColor: '#f8fafc',

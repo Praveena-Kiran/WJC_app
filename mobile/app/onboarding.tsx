@@ -23,6 +23,7 @@ import {
   ActivityIndicator,
   Pressable,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useSession } from '@/src/auth-client';
 import { apiFetch } from '@/src/lib/api-fetch';
@@ -106,7 +107,8 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logo}>禅語</Text>
@@ -206,12 +208,14 @@ export default function OnboardingScreen() {
           <Text style={styles.buttonText}>Start Learning →</Text>
         )}
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 // TODO: Replace with theme tokens from #016
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#0f172a' },
   flex: { flex: 1, backgroundColor: '#0f172a' },
   container: {
     paddingHorizontal: 24,

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { KanjiDrawingCanvas } from './drawing/KanjiDrawingCanvas';
 import { KANJI_DATA, KanjiItem } from './kanji-data';
 
@@ -17,13 +18,14 @@ export function KanjiBoard() {
   const filteredKanji = KANJI_DATA.filter((k) => k.level === levelFilter);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Kanji Practice Board</Text>
-        <Text style={styles.subtitle}>
-          Interactive stroke order drawing canvas, onyomi/kunyomi readings & accuracy feedback.
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Kanji Practice Board</Text>
+          <Text style={styles.subtitle}>
+            Interactive stroke order drawing canvas, onyomi/kunyomi readings & accuracy feedback.
+          </Text>
+        </View>
 
       {/* Level Toggle */}
       <View style={styles.levelRow}>
@@ -101,11 +103,16 @@ export function KanjiBoard() {
           </View>
         )}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
   container: {
     padding: 16,
     backgroundColor: '#f8fafc',

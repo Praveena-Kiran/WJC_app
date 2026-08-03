@@ -9,6 +9,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { apiFetch } from '@/src/lib/api-fetch';
 
 export interface QuizQuestion {
@@ -142,7 +143,8 @@ export function QuizView() {
       : 'Excellent!';
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.title}>Multiple Choice Quiz</Text>
         <Text style={styles.subtitle}>
@@ -267,11 +269,16 @@ export function QuizView() {
           </TouchableOpacity>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
   container: {
     padding: 16,
     backgroundColor: '#f8fafc',
