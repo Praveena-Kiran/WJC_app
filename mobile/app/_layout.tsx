@@ -40,8 +40,6 @@ SplashScreen.preventAutoHideAsync();
 function RootLayout() {
   useOtaUpdate();
   const [isAuthResolving, setIsAuthResolving] = useState(true);
-  const router = useRouter();
-  const hasRedirected = useRef(false);
 
   // ── Online manager: refetch queries when network reconnects ────────────────
   useEffect(() => {
@@ -51,35 +49,9 @@ function RootLayout() {
         setOnline(state.isConnected ?? true);
       };
       const subscription = AppState.addEventListener('change', checkNetwork);
-      // Fire once immediately to set initial state.
       void checkNetwork();
       return () => subscription.remove();
     });
-  }, []);
-
-  // ── Auth session hydration + splash gate ──────────────────────────────────
-  // Check if a session already exists in SecureStore (persisted from a previous
-  // app launch). If yes, redirect straight to tabs so returning users never see
-  // the welcome screen. If not, stay on the welcome screen.
-  useEffect(() => {
-    const resolveAuthSession = async () => {
-      try {
-        const session = await authClient.getSession();
-        if (session?.data?.user && !hasRedirected.current) {
-          hasRedirected.current = true;
-          // Returning logged-in user — go straight to dashboard.
-          router.replace('/(tabs)');
-        }
-      } catch (err) {
-        // No session or network error — stay on welcome screen.
-        console.warn('[auth] Session resolution error:', err);
-      } finally {
-        setIsAuthResolving(false);
-      }
-    };
-    resolveAuthSession();
-  // router is stable — only run on mount.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [loaded, error] = useFonts({
@@ -91,24 +63,46 @@ function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  // Hide splash screen ONLY when fonts are loaded AND session is resolved.
-  useEffect(() => {
-    if (loaded && !isAuthResolving) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, isAuthResolving]);
-
-  if (!loaded || isAuthResolving) {
+  if (!loaded) {
     return null;
   }
 
-  return <RootLayoutNav />;
+  // Session hydration & splash gate resolved in RootLayoutNav to ensure router mount before navigation.
+  // if (!loaded || isAuthResolving)
+
+  return <RootLayoutNav setIsAuthResolving={setIsAuthResolving} />;
 }
 
 export default process.env.NODE_ENV === 'development' ? RootLayout : Sentry.wrap(RootLayout);
 
-function RootLayoutNav() {
+function RootLayoutNav({ setIsAuthResolving }: { setIsAuthResolving: (val: boolean) => void }) {
   const colorScheme = useColorScheme();
+  const router = useRouter();
+  const hasResolvedRef = useRef(false);
+
+  // ── Auth session hydration + splash gate ──────────────────────────────────
+  // Check if a session already exists in SecureStore on cold boot.
+  // Performs router.replace('/(tabs)') when the Stack navigator is already mounted.
+  useEffect(() => {
+    if (hasResolvedRef.current) return;
+    hasResolvedRef.current = true;
+
+    const resolveAuthSession = async () => {
+      try {
+        const session = await authClient.getSession();
+        if (session?.data?.user) {
+          router.replace('/(tabs)');
+        }
+      } catch (err) {
+        console.warn('[auth] Session resolution error:', err);
+      } finally {
+        setIsAuthResolving(false);
+        await SplashScreen.hideAsync().catch(() => null);
+      }
+    };
+
+    void resolveAuthSession();
+  }, [router, setIsAuthResolving]);
 
   return (
     <SafeAreaProvider>

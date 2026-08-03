@@ -17,5 +17,65 @@
  */
 import { auth } from '@/src/server/auth';
 
-export const GET = auth.handler;
-export const POST = auth.handler;
+// Register a global error handler for uncaught stream errors caused by disconnected HTTP sockets
+// in Expo Server (expo-server vendor pipeline bug).
+if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+  process.on('unhandledRejection', (reason: any) => {
+    if (
+      reason?.message?.includes('Cannot pipe to a closed or destroyed stream') ||
+      reason?.code === 'ERR_STREAM_DESTROYED'
+    ) {
+      // Suppress benign client disconnect stream error so Metro server doesn't crash
+      return;
+    }
+    console.error('Unhandled Rejection:', reason);
+  });
+}
+
+async function handle(request: Request) {
+  // If the client aborted the connection before processing, return a body-less response
+  if (request.signal?.aborted) {
+    return new Response(null, { status: 499 });
+  }
+
+  try {
+    const response = await auth.handler(request);
+
+    // If client disconnected while handler was processing, return body-less response
+    if (request.signal?.aborted) {
+      return new Response(null, { status: 499 });
+    }
+
+    // Buffer response body to prevent stream piping errors in expo-server
+    const body = await response.arrayBuffer();
+
+    if (request.signal?.aborted) {
+      return new Response(null, { status: 499 });
+    }
+
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  } catch (error: any) {
+    if (
+      request.signal?.aborted ||
+      error?.name === 'AbortError' ||
+      error?.message?.includes('closed or destroyed stream')
+    ) {
+      return new Response(null, { status: 499 });
+    }
+
+    console.error('[auth api handler error]:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+export const GET = handle;
+export const POST = handle;
+
+
