@@ -94,17 +94,11 @@ export function DictionaryView() {
 
   return (
     <Screen scroll padding={SPACING.lg}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.lg }}>
-        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
-          <Text style={[TYPE.title, { color: theme.text }]}>Dictionary & Conjugator</Text>
-          <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
-            Search JLPT vocabulary, filter by tags, and conjugate verbs.
-          </Text>
-        </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Dictionary & Conjugator</Text>
         <TouchableOpacity
           onPress={() => router.push('/more/settings')}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          style={{ paddingTop: SPACING.xs }}
           accessibilityLabel="Settings"
         >
           <Icon name="sliders" size={20} color={theme.accent} />

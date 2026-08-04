@@ -25,17 +25,11 @@ export function ZenDashboard({ onNavigate }: ZenDashboardProps) {
 
   return (
     <Screen style={{ gap: SPACING.lg }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
-          <Text style={[TYPE.title, { color: theme.text }]}>Zen Student Dashboard</Text>
-          <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
-            Focused Japanese learning path with visual progress tracking.
-          </Text>
-        </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Zen Student Dashboard</Text>
         <TouchableOpacity
           onPress={() => nav('/more/settings')}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          style={{ paddingTop: SPACING.xs }}
           accessibilityLabel="Settings"
         >
           <Icon name="sliders" size={20} color={theme.accent} />

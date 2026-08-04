@@ -36,17 +36,11 @@ export function KanaTrainer() {
 
   return (
     <Screen scroll padding={SPACING.lg}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.lg }}>
-        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
-          <Text style={[TYPE.title, { color: theme.text }]}>Kana Trainer</Text>
-          <Text style={[TYPE.body, { fontSize: 13, color: theme.textMuted, marginTop: SPACING.xs }]}>
-            Master Hiragana and Katakana characters, practice pronunciation, and review SRS cards.
-          </Text>
-        </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Kana Trainer</Text>
         <TouchableOpacity
           onPress={() => router.push('/more/settings')}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          style={{ paddingTop: SPACING.xs }}
           accessibilityLabel="Settings"
         >
           <Icon name="sliders" size={20} color={theme.accent} />

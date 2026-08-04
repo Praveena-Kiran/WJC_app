@@ -152,17 +152,11 @@ export function QuizView() {
 
   return (
     <Screen>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.lg }}>
-        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
-          <Text style={[TYPE.title, { color: theme.text }]}>Multiple Choice Quiz</Text>
-          <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
-            Test your Hiragana, Katakana, and N5 Vocabulary skills.
-          </Text>
-        </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Multiple Choice Quiz</Text>
         <TouchableOpacity
           onPress={() => router.push('/more/settings')}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          style={{ paddingTop: SPACING.xs }}
           accessibilityLabel="Settings"
         >
           <Icon name="sliders" size={20} color={theme.accent} />
