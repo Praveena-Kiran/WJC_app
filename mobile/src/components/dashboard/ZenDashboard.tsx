@@ -53,38 +53,6 @@ export function ZenDashboard({ onNavigate }: ZenDashboardProps) {
         />
       </Card>
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm }}>
-        {[
-          { label: 'Kana', glyph: 'あ', route: '/(tabs)/kana' },
-          { label: 'Kanji', glyph: '漢', route: '/(tabs)/kanji' },
-          { label: 'Quiz', route: '/(tabs)/quiz' },
-          { label: 'Dict', route: '/(tabs)/dictionary' },
-        ].map((item) => (
-          <View key={item.label} style={{ width: '47%' }}>
-            <Card padding={SPACING.md}>
-              {item.glyph ? (
-                <Text style={[TYPE.glyph, { color: theme.accent, textAlign: 'center' }]}>
-                  {item.glyph}
-                </Text>
-              ) : (
-                <Text style={[TYPE.title, { color: theme.accent, textAlign: 'center' }]}>
-                  {item.label}
-                </Text>
-              )}
-              <Text style={[TYPE.bodyStrong, { color: theme.text, textAlign: 'center', marginTop: SPACING.xs }]}>
-                {item.glyph ? `${item.label} Trainer` : item.label}
-              </Text>
-              <Button
-                title="Open"
-                size="sm"
-                variant="secondary"
-                onPress={() => nav(item.route)}
-                style={{ marginTop: SPACING.sm }}
-              />
-            </Card>
-          </View>
-        ))}
-      </View>
 
       <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
         <View style={{ flex: 1 }}>
