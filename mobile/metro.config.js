@@ -24,8 +24,8 @@ config.resolver.blockList = [
   // Block any file path containing 'prisma/' (mobile/prisma/ directory)
   /mobile\/prisma\//,
   // Block server-only node_modules from being bundled into client code.
-  // NOTE: Server API routes running via Expo Router server output still need @prisma.
-  /node_modules\/(hono|@hono|@aws-sdk)(\/|$)/,
+  // hono & @aws-sdk excluded — API route files need them via Expo Router server.
+  // ESLint (.eslintrc.js) still enforces the client-boundary for these packages.
 ];
 
 // ── ESM / .mjs support ───────────────────────────────────────────────────
