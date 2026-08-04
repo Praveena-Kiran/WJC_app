@@ -22,4 +22,18 @@ describe('UI Primitives & Navigation (Issues #018, #019b, #020, #021, #030, #031
     expect(fs.existsSync(timelinePath)).toBe(true);
     expect(fs.existsSync(moreMenuPath)).toBe(true);
   });
+
+  it('verifies settings screen and layout contain return button handler', () => {
+    const settingsPath = path.resolve(__dirname, '../../app/more/settings.tsx');
+    const layoutPath = path.resolve(__dirname, '../../app/more/_layout.tsx');
+
+    const settingsContent = fs.readFileSync(settingsPath, 'utf-8');
+    const layoutContent = fs.readFileSync(layoutPath, 'utf-8');
+
+    expect(settingsContent).toContain('handleBack');
+    expect(settingsContent).toContain('headerLeft');
+    expect(layoutContent).toContain('renderBackButton');
+    expect(layoutContent).toContain('headerLeft: renderBackButton');
+  });
 });
+

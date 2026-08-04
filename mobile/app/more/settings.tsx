@@ -1,14 +1,14 @@
 import { useTheme, type ThemePreference } from '@/src/theme/ThemeContext';
 import { useApp } from '@/src/context/AppContext';
 import { Screen } from '@/src/components/ui/Screen';
-import { Button } from '@/src/components/ui/Button';
 import { Card } from '@/src/components/ui/Card';
 import { ListItem } from '@/src/components/ui/ListItem';
 import { SegmentedControl } from '@/src/components/ui/SegmentedControl';
 import { authClient } from '@/src/auth-client';
-import { useRouter } from 'expo-router';
-import { Text } from 'react-native';
-import { SPACING, TYPE } from '@/src/theme/tokens';
+import { useRouter, Stack } from 'expo-router';
+import { Text, TouchableOpacity } from 'react-native';
+import { SPACING, TYPE, RADIUS } from '@/src/theme/tokens';
+import { Icon } from '@/src/components/ui/Icon';
 
 const THEME_OPTIONS: { label: string; value: ThemePreference }[] = [
   { label: 'System', value: 'system' },
@@ -26,8 +26,37 @@ export default function SettingsScreen() {
   const { state, setStudyMode, signOut } = useApp();
   const router = useRouter();
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
+
   return (
     <Screen style={{ gap: SPACING.lg }}>
+      <Stack.Screen
+        options={{
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={handleBack}
+              style={{
+                width: 40,
+                height: 40,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel="Go back"
+              accessibilityRole="button"
+            >
+              <Icon name="arrow-left" size={22} color={theme.text} />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+
       <Card>
         <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.md }]}>
           Appearance
@@ -65,3 +94,5 @@ export default function SettingsScreen() {
     </Screen>
   );
 }
+
+
