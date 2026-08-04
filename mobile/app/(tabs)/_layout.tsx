@@ -27,7 +27,7 @@ export default function TabLayout() {
         ),
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="index" options={{ title: 'Home', headerShown: false }} />
       <Tabs.Screen name="kana" options={{ title: 'Kana' }} />
       <Tabs.Screen name="kanji" options={{ title: 'Kanji' }} />
       <Tabs.Screen name="dictionary" options={{ title: 'Dictionary' }} />

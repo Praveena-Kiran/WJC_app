@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { Screen, Card, Button } from '@/src/components/ui';
+import { Screen, Card, Button, Icon } from '@/src/components/ui';
 import { useApp } from '@/src/context/AppContext';
 import { useRouter } from 'expo-router';
 import { N5DeadlineCard } from './N5DeadlineCard';
@@ -25,11 +25,21 @@ export function ZenDashboard({ onNavigate }: ZenDashboardProps) {
 
   return (
     <Screen style={{ gap: SPACING.lg }}>
-      <View>
-        <Text style={[TYPE.title, { color: theme.text }]}>Zen Student Dashboard</Text>
-        <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
-          Focused Japanese learning path with visual progress tracking.
-        </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
+          <Text style={[TYPE.title, { color: theme.text }]}>Zen Student Dashboard</Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
+            Focused Japanese learning path with visual progress tracking.
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => nav('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ paddingTop: SPACING.xs }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
       </View>
 
       <Card>

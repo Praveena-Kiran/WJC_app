@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { Screen, Card, Badge, SegmentedControl, Button } from '@/src/components/ui';
+import { Screen, Card, Badge, SegmentedControl, Button, Icon } from '@/src/components/ui';
 import { useApp } from '@/src/context/AppContext';
 import { TYPE, SPACING } from '@/src/theme/tokens';
 
@@ -18,10 +19,20 @@ export function TeacherDashboard() {
   const { theme } = useTheme();
   const [tab, setTab] = useState<'roster' | 'upload'>('roster');
   const [students, setStudents] = useState<Student[]>(STUDENTS);
+  const router = useRouter();
 
   return (
     <Screen style={{ gap: SPACING.lg }}>
-      <Text style={[TYPE.title, { color: theme.text }]}>Teacher Portal</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Teacher Portal</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
+      </View>
 
       <SegmentedControl
         options={[

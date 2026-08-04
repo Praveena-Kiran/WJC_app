@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { Screen, Card, SegmentedControl, Badge, Button } from '@/src/components/ui';
+import { Screen, Card, SegmentedControl, Badge, Button, Icon } from '@/src/components/ui';
 import { TYPE, SPACING } from '@/src/theme/tokens';
 
 export function WoxsenStudentDashboard() {
   const { theme } = useTheme();
   const [tab, setTab] = useState<'attendance' | 'vault'>('attendance');
+  const router = useRouter();
 
   return (
     <Screen style={{ gap: SPACING.lg }}>
-      <Text style={[TYPE.title, { color: theme.text }]}>Woxsen University Portal</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Woxsen University Portal</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
+      </View>
 
       <SegmentedControl
         options={[
