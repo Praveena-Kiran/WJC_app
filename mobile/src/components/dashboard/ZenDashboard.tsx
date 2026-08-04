@@ -5,7 +5,6 @@ import { Screen, Card, Button, Icon } from '@/src/components/ui';
 import { useApp } from '@/src/context/AppContext';
 import { useRouter } from 'expo-router';
 import { N5DeadlineCard } from './N5DeadlineCard';
-import { BonsaiGarden } from './BonsaiGarden';
 import { PebbleTimeline } from './PebbleTimeline';
 import { TYPE, SPACING } from '@/src/theme/tokens';
 
@@ -36,16 +35,13 @@ export function ZenDashboard({ onNavigate }: ZenDashboardProps) {
         </TouchableOpacity>
       </View>
 
-      <Card>
-        <BonsaiGarden leaves={state.solvedLessons.length + 2} />
-      </Card>
-
       <N5DeadlineCard
         n5TargetDate={state.n5TargetDate}
         solvedCount={state.solvedLessons.length}
         kanaCount={state.masteredKana.length}
         kanjiCount={state.practicedKanji.length}
         starredVocabCount={state.starredVocab.length}
+        leavesGrown={state.solvedLessons.length + 2}
         onNavigateToRoadmap={() => nav('/more/planner')}
       />
 

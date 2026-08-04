@@ -29,4 +29,17 @@ describe('calculateN5Metrics (Issue #183)', () => {
     expect(metrics.statusLabel).toBe('Exam Ready');
     expect(metrics.status).toBe('exam-ready');
   });
+
+  it('verifies N5DeadlineCard component file exists and exports N5DeadlineCard', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const filePath = path.resolve(__dirname, '../components/dashboard/N5DeadlineCard.tsx');
+    expect(fs.existsSync(filePath)).toBe(true);
+
+    const code = fs.readFileSync(filePath, 'utf-8');
+    expect(code).toContain('export function N5DeadlineCard');
+    expect(code).toContain('displayLeaves');
+    expect(code).toContain('N5 Exam Target');
+    expect(code).toContain('View N5 Roadmap');
+  });
 });
