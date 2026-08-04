@@ -15,15 +15,17 @@ interface KanjiDrawingCanvasProps {
   guidePaths?: string[];
   strokeColor?: string;
   strokeWidth?: number;
+  viewBox?: number;
   onCheckResult?: (accuracyScore: number) => void;
 }
 
 const CANVAS_SIZE = 260;
-const VIEWBOX = 109;
+const DEFAULT_VIEWBOX = 109;
 
 export function KanjiDrawingCanvas({
   guidePaths = [],
   strokeWidth = 6,
+  viewBox = DEFAULT_VIEWBOX,
   onCheckResult,
 }: KanjiDrawingCanvasProps) {
   const { theme } = useTheme();
@@ -37,8 +39,8 @@ export function KanjiDrawingCanvas({
 
   const toSvgCoords = (x: number, y: number, boxWidth: number, boxHeight: number): Point => {
     return {
-      x: (x / boxWidth) * VIEWBOX,
-      y: (y / boxHeight) * VIEWBOX,
+      x: (x / boxWidth) * viewBox,
+      y: (y / boxHeight) * viewBox,
     };
   };
 
@@ -74,11 +76,11 @@ export function KanjiDrawingCanvas({
   }, []);
 
   const handleCheck = useCallback(() => {
-    const score = checkDrawing({ guidePaths, userStrokes: userStrokesRef.current });
+    const score = checkDrawing({ guidePaths, userStrokes: userStrokesRef.current, viewBox });
     if (onCheckResult) {
       onCheckResult(score);
     }
-  }, [guidePaths, onCheckResult]);
+  }, [guidePaths, viewBox, onCheckResult]);
 
   const allUserStrokes: Point[][] = [...userStrokesRef.current, currentStrokeRef.current];
 
@@ -96,7 +98,7 @@ export function KanjiDrawingCanvas({
         }}
         {...panResponder.panHandlers}
       >
-        <Svg width="100%" height="100%" viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}>
+        <Svg width="100%" height="100%" viewBox={`0 0 ${viewBox} ${viewBox}`}>
           {guidePaths.map((d, idx) => (
             <Path
               key={`guide-${idx}`}

@@ -10,6 +10,7 @@ import { useTheme } from '@/src/theme/ThemeContext';
 import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
 import { Badge } from '@/src/components/ui/Badge';
 import { Icon } from '@/src/components/ui/Icon';
+import { KanjiDrawingCanvas } from '@/src/components/drawing/KanjiDrawingCanvas';
 import { KanaItem } from './kana-data';
 
 interface KanaModalProps {
@@ -27,6 +28,7 @@ export function KanaModal({
 }: KanaModalProps) {
   const { theme } = useTheme();
   const [isMastered, setIsMastered] = useState(false);
+  const [accuracyScore, setAccuracyScore] = useState<number | null>(null);
 
   if (!kana) return null;
 
@@ -73,6 +75,41 @@ export function KanaModal({
               {kana.translation}
             </Text>
           </View>
+
+          {kana.strokes && kana.strokes.length > 0 && (
+            <View style={{ alignItems: 'center', marginBottom: SPACING.lg }}>
+              <KanjiDrawingCanvas
+                guidePaths={kana.strokes}
+                viewBox={100}
+                onCheckResult={(score) => setAccuracyScore(score)}
+              />
+            </View>
+          )}
+
+          {accuracyScore !== null && (
+            <View
+              style={{
+                marginBottom: SPACING.lg,
+                padding: SPACING.md,
+                borderRadius: RADIUS.sm,
+                backgroundColor: accuracyScore >= 60 ? theme.successMuted : theme.errorMuted,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: SPACING.sm,
+              }}
+            >
+              <Icon
+                name={accuracyScore >= 60 ? 'check-circle' : 'info'}
+                size={16}
+                color={accuracyScore >= 60 ? theme.success : theme.error}
+              />
+              <Text style={[TYPE.caption, { fontWeight: '700', color: theme.text }]}>
+                {accuracyScore >= 60
+                  ? `Great job! Stroke accuracy: ${accuracyScore}%`
+                  : `Stroke Accuracy: ${accuracyScore}%. Follow guide strokes carefully.`}
+              </Text>
+            </View>
+          )}
 
           <TouchableOpacity
             style={[
