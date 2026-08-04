@@ -6,6 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
+import { Badge } from '@/src/components/ui/Badge';
+import { Icon } from '@/src/components/ui/Icon';
 import { KanaItem } from './kana-data';
 
 interface KanaModalProps {
@@ -21,6 +25,7 @@ export function KanaModal({
   onClose,
   onToggleMastery,
 }: KanaModalProps) {
+  const { theme } = useTheme();
   const [isMastered, setIsMastered] = useState(false);
 
   if (!kana) return null;
@@ -39,36 +44,52 @@ export function KanaModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modalContent}>
-          {/* Header */}
+      <View style={[styles.overlay, { backgroundColor: 'rgba(15, 23, 42, 0.6)' }]}>
+        <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
           <View style={styles.header}>
-            <Text style={styles.typeBadge}>{kana.type.toUpperCase()}</Text>
+            <Badge label={kana.type.toUpperCase()} variant="accent" />
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeText}>✕</Text>
+              <Icon name="x" size={20} color={theme.textMuted} />
             </TouchableOpacity>
           </View>
 
-          {/* Character Box */}
-          <View style={styles.charBox}>
-            <Text style={styles.bigChar}>{kana.char}</Text>
-            <Text style={styles.romajiText}>{kana.romaji}</Text>
+          <View style={[styles.charBox, { backgroundColor: theme.surfaceAlt }]}>
+            <Text style={[TYPE.glyph, { fontSize: 72, color: theme.accent }]}>
+              {kana.char}
+            </Text>
+            <Text style={[TYPE.title, { fontSize: 24, color: theme.text, marginTop: SPACING.xs }]}>
+              {kana.romaji}
+            </Text>
           </View>
 
-          {/* Details */}
-          <View style={styles.infoBox}>
-            <Text style={styles.infoTitle}>Example Vocabulary</Text>
-            <Text style={styles.vocabText}>{kana.vocab}</Text>
-            <Text style={styles.translationText}>{kana.translation}</Text>
+          <View style={[styles.infoBox, { backgroundColor: theme.surfaceAlt }]}>
+            <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.xs }]}>
+              Example Vocabulary
+            </Text>
+            <Text style={[TYPE.bodyStrong, { fontSize: 16, color: theme.text }]}>
+              {kana.vocab}
+            </Text>
+            <Text style={[TYPE.body, { fontSize: 13, color: theme.textMuted }]}>
+              {kana.translation}
+            </Text>
           </View>
 
-          {/* Mastery Toggle */}
           <TouchableOpacity
-            style={[styles.masteryButton, isMastered && styles.masteryButtonActive]}
+            style={[
+              styles.masteryButton,
+              {
+                backgroundColor: isMastered ? theme.success : theme.surfaceAlt,
+              },
+            ]}
             onPress={handleToggleMastery}
           >
-            <Text style={[styles.masteryText, isMastered && styles.masteryTextActive]}>
-              {isMastered ? '✓ Mastered Character' : 'Mark as Mastered'}
+            <Text
+              style={[
+                TYPE.bodyStrong,
+                { fontSize: 13, color: isMastered ? theme.onAccent : theme.textMuted },
+              ]}
+            >
+              {isMastered ? 'Mastered Character' : 'Mark as Mastered'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -80,93 +101,37 @@ export function KanaModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     justifyContent: 'center',
-    padding: 20,
+    padding: SPACING.xl,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.xl,
     elevation: 5,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  typeBadge: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#5c60f5',
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    marginBottom: SPACING.lg,
   },
   closeButton: {
-    padding: 4,
-  },
-  closeText: {
-    fontSize: 18,
-    color: '#94a3b8',
-    fontWeight: '700',
+    padding: SPACING.xs,
   },
   charBox: {
     alignItems: 'center',
-    paddingVertical: 20,
-    backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  bigChar: {
-    fontSize: 72,
-    fontWeight: '800',
-    color: '#5c60f5',
-  },
-  romajiText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#0f172a',
-    marginTop: 4,
+    paddingVertical: SPACING.xl,
+    borderRadius: RADIUS.md,
+    marginBottom: SPACING.lg,
   },
   infoBox: {
-    backgroundColor: '#f8fafc',
     padding: 14,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  infoTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748b',
-    marginBottom: 4,
-  },
-  vocabText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  translationText: {
-    fontSize: 13,
-    color: '#64748b',
+    borderRadius: RADIUS.sm,
+    marginBottom: SPACING.lg,
   },
   masteryButton: {
-    paddingVertical: 12,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
+    paddingVertical: SPACING.md,
+    borderRadius: RADIUS.sm,
     alignItems: 'center',
-  },
-  masteryButtonActive: {
-    backgroundColor: '#10b981',
-  },
-  masteryText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  masteryTextActive: {
-    color: '#ffffff',
   },
 });

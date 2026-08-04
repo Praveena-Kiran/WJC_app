@@ -1,5 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { Icon } from '@/src/components/ui/Icon';
+import { TYPE, SPACING } from '@/src/theme/tokens';
 
 interface PebbleTimelineProps {
   solvedLessons?: number[];
@@ -12,105 +15,96 @@ export function PebbleTimeline({
   activeLessonId = 1,
   onSelectLesson,
 }: PebbleTimelineProps) {
+  const { theme } = useTheme();
   const totalLessons = 10;
+  const maxSolved = Math.max(...solvedLessons, 0);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Stepping Stones Timeline</Text>
-      <View style={styles.pebbleList}>
-        {Array.from({ length: totalLessons }, (_, i) => i + 1).map((lessonNum) => {
-          const isSolved = solvedLessons.includes(lessonNum);
-          const isActive = activeLessonId === lessonNum;
-          const isLocked = lessonNum > Math.max(...solvedLessons, 0) + 1;
+      <Text style={[TYPE.bodyStrong, { color: theme.text, marginBottom: SPACING.md }]}>
+        Stepping Stones
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={styles.timeline}>
+          {Array.from({ length: totalLessons }, (_, i) => i + 1).map((num, idx) => {
+            const isSolved = solvedLessons.includes(num);
+            const isActive = num === activeLessonId;
+            const isLocked = num > maxSolved + 1;
 
-          return (
-            <View key={lessonNum} style={styles.pebbleRow}>
-              <TouchableOpacity
-                style={[
-                  styles.pebbleCircle,
-                  isSolved && styles.pebbleSolved,
-                  isActive && styles.pebbleActive,
-                  isLocked && styles.pebbleLocked,
-                ]}
-                onPress={() => {
-                  if (!isLocked && onSelectLesson) {
-                    onSelectLesson(lessonNum);
-                  }
-                }}
-                disabled={isLocked}
-              >
-                <Text
+            return (
+              <React.Fragment key={num}>
+                {idx > 0 && (
+                  <View
+                    style={[
+                      styles.connector,
+                      { backgroundColor: isSolved ? theme.success : theme.border },
+                    ]}
+                  />
+                )}
+                <TouchableOpacity
                   style={[
-                    styles.pebbleText,
-                    (isSolved || isActive) && styles.pebbleTextActive,
-                    isLocked && styles.pebbleTextLocked,
+                    styles.pebble,
+                    {
+                      backgroundColor: isSolved
+                        ? theme.success
+                        : isActive
+                          ? theme.accent
+                          : isLocked
+                            ? theme.surfaceAlt
+                            : theme.surface,
+                      borderColor: isActive ? theme.accent : theme.border,
+                      transform: isActive ? [{ scale: 1.15 }] : undefined,
+                    },
                   ]}
+                  onPress={() => {
+                    if (!isLocked && onSelectLesson) onSelectLesson(num);
+                  }}
+                  disabled={isLocked}
                 >
-                  {isLocked ? '🔒' : `L${lessonNum}`}
-                </Text>
-              </TouchableOpacity>
-              {lessonNum < totalLessons && <View style={styles.connectorLine} />}
-            </View>
-          );
-        })}
-      </View>
+                  {isLocked ? (
+                    <Icon name="lock" size={12} color={theme.textMuted} />
+                  ) : isSolved ? (
+                    <Icon name="check" size={14} color="#FFFFFF" />
+                  ) : (
+                    <Text
+                      style={[
+                        TYPE.caption,
+                        { color: isActive ? '#FFFFFF' : theme.text, fontWeight: '700' },
+                      ]}
+                    >
+                      {num}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </React.Fragment>
+            );
+          })}
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 12,
+    marginVertical: SPACING.sm,
   },
-  title: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 12,
-  },
-  pebbleList: {
+  timeline: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: SPACING.sm,
   },
-  pebbleRow: {
-    alignItems: 'center',
-  },
-  pebbleCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#e2e8f0',
+  pebble: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#cbd5e1',
   },
-  pebbleSolved: {
-    backgroundColor: '#10b981',
-    borderColor: '#10b981',
-  },
-  pebbleActive: {
-    backgroundColor: '#5c60f5',
-    borderColor: '#5c60f5',
-  },
-  pebbleLocked: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#e2e8f0',
-  },
-  pebbleText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#475569',
-  },
-  pebbleTextActive: {
-    color: '#ffffff',
-  },
-  pebbleTextLocked: {
-    color: '#94a3b8',
-  },
-  connectorLine: {
-    width: 3,
-    height: 16,
-    backgroundColor: '#cbd5e1',
-    marginVertical: 2,
+  connector: {
+    width: 24,
+    height: 3,
+    borderRadius: 2,
   },
 });

@@ -3,11 +3,15 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
 } from 'react-native';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING, RADIUS, TYPE, CARD_SHADOW } from '@/src/theme/tokens';
+import { Screen } from '@/src/components/ui/Screen';
+import { Card } from '@/src/components/ui/Card';
+import { Icon } from '@/src/components/ui/Icon';
 
 export function N5PlannerView() {
+  const { theme } = useTheme();
   const [targetDays, setTargetDays] = useState<number>(60);
   const [checkedTasks, setCheckedTasks] = useState<string[]>([]);
 
@@ -34,35 +38,54 @@ export function N5PlannerView() {
     { id: 't5', label: `Take 1 N5 Multiple Choice Practice Quiz` },
   ];
 
+  const presetOptions = [14, 30, 60, 90];
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>N5 Exam & Learning Roadmap</Text>
-        <Text style={styles.subtitle}>
+    <Screen scroll padding={SPACING.lg}>
+      <View style={{ marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text }]}>N5 Exam & Learning Roadmap</Text>
+        <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
           Set your exam deadline, track daily pace goals, and complete today's study checklist.
         </Text>
       </View>
 
       {/* Target Deadline Banner */}
-      <View style={styles.bannerCard}>
-        <Text style={styles.bannerTag}>EXAM DEADLINE TARGET</Text>
-        <Text style={styles.bannerDays}>{targetDays} Days Remaining</Text>
-        <Text style={styles.bannerSubText}>Preset target options:</Text>
+      <View
+        style={{
+          backgroundColor: theme.surface,
+          borderRadius: RADIUS.md,
+          padding: SPACING.lg,
+          borderLeftWidth: 5,
+          borderLeftColor: theme.accent,
+          borderWidth: 1,
+          borderColor: theme.border,
+          ...CARD_SHADOW,
+          marginBottom: SPACING.lg,
+        }}
+      >
+        <Text style={[TYPE.caption, { fontWeight: '800', color: theme.accent }]}>EXAM DEADLINE TARGET</Text>
+        <Text style={[TYPE.display, { color: theme.text, marginVertical: SPACING.xs }]}>{targetDays} Days Remaining</Text>
+        <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm }]}>Preset target options:</Text>
 
-        <View style={styles.presetRow}>
-          {[14, 30, 60, 90].map((days) => (
+        <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+          {presetOptions.map((days) => (
             <TouchableOpacity
               key={days}
-              style={[
-                styles.presetButton,
-                targetDays === days && styles.presetButtonActive,
-              ]}
+              style={{
+                flex: 1,
+                paddingVertical: SPACING.sm,
+                backgroundColor: targetDays === days ? theme.accentMuted : theme.surfaceAlt,
+                borderRadius: RADIUS.sm,
+                borderWidth: 1,
+                borderColor: targetDays === days ? theme.accent : theme.border,
+                alignItems: 'center',
+              }}
               onPress={() => setTargetDays(days)}
             >
               <Text
                 style={[
-                  styles.presetText,
-                  targetDays === days && styles.presetTextActive,
+                  TYPE.caption,
+                  { fontWeight: '700', color: targetDays === days ? theme.accent : theme.textMuted },
                 ]}
               >
                 {days} Days
@@ -73,197 +96,92 @@ export function N5PlannerView() {
       </View>
 
       {/* Daily Pace Target Metrics */}
-      <View style={styles.metricsGrid}>
-        <View style={styles.metricCard}>
-          <Text style={styles.metricLabel}>Daily Kana Goal</Text>
-          <Text style={styles.metricVal}>{dailyKanaTarget} / day</Text>
-          <Text style={styles.metricSub}>{remainingKana} kana target</Text>
-        </View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm + 2, marginBottom: SPACING.lg }}>
+        <Card padding={SPACING.md + 2} style={{ width: '48%' as never, flexGrow: 1, minWidth: '45%' as never }}>
+          <Text style={[TYPE.caption, { fontWeight: '700', color: theme.textMuted }]}>Daily Kana Goal</Text>
+          <Text style={{ fontSize: 18, fontWeight: '800', color: theme.accent, marginVertical: SPACING.xs }}>
+            {dailyKanaTarget} / day
+          </Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted }]}>{remainingKana} kana target</Text>
+        </Card>
 
-        <View style={styles.metricCard}>
-          <Text style={styles.metricLabel}>Daily Kanji Goal</Text>
-          <Text style={styles.metricVal}>{dailyKanjiTarget} / day</Text>
-          <Text style={styles.metricSub}>{remainingKanji} kanji target</Text>
-        </View>
+        <Card padding={SPACING.md + 2} style={{ width: '48%' as never, flexGrow: 1, minWidth: '45%' as never }}>
+          <Text style={[TYPE.caption, { fontWeight: '700', color: theme.textMuted }]}>Daily Kanji Goal</Text>
+          <Text style={{ fontSize: 18, fontWeight: '800', color: theme.accent, marginVertical: SPACING.xs }}>
+            {dailyKanjiTarget} / day
+          </Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted }]}>{remainingKanji} kanji target</Text>
+        </Card>
 
-        <View style={styles.metricCard}>
-          <Text style={styles.metricLabel}>Daily Vocab Goal</Text>
-          <Text style={styles.metricVal}>{dailyVocabTarget} / day</Text>
-          <Text style={styles.metricSub}>800 N5 vocab target</Text>
-        </View>
+        <Card padding={SPACING.md + 2} style={{ width: '48%' as never, flexGrow: 1, minWidth: '45%' as never }}>
+          <Text style={[TYPE.caption, { fontWeight: '700', color: theme.textMuted }]}>Daily Vocab Goal</Text>
+          <Text style={{ fontSize: 18, fontWeight: '800', color: theme.accent, marginVertical: SPACING.xs }}>
+            {dailyVocabTarget} / day
+          </Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted }]}>800 N5 vocab target</Text>
+        </Card>
 
-        <View style={styles.metricCard}>
-          <Text style={styles.metricLabel}>Weekly Lessons</Text>
-          <Text style={styles.metricVal}>{weeklyLessonTarget} / week</Text>
-          <Text style={styles.metricSub}>{remainingLessons} lessons target</Text>
-        </View>
+        <Card padding={SPACING.md + 2} style={{ width: '48%' as never, flexGrow: 1, minWidth: '45%' as never }}>
+          <Text style={[TYPE.caption, { fontWeight: '700', color: theme.textMuted }]}>Weekly Lessons</Text>
+          <Text style={{ fontSize: 18, fontWeight: '800', color: theme.accent, marginVertical: SPACING.xs }}>
+            {weeklyLessonTarget} / week
+          </Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted }]}>{remainingLessons} lessons target</Text>
+        </Card>
       </View>
 
       {/* Today's Checklist */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>✅ Today's Action Checklist</Text>
+      <Card padding={SPACING.lg}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md, gap: SPACING.xs }}>
+          <Icon name="check-square" size={16} color={theme.text} />
+          <Text style={[TYPE.bodyStrong, { color: theme.text }]}>Today's Action Checklist</Text>
+        </View>
         {tasks.map((t) => {
           const isDone = checkedTasks.includes(t.id);
           return (
             <TouchableOpacity
               key={t.id}
-              style={styles.taskRow}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: SPACING.sm + 2,
+                borderBottomWidth: 1,
+                borderBottomColor: theme.border,
+                gap: SPACING.sm + 2,
+              }}
               onPress={() => toggleTask(t.id)}
             >
-              <View style={[styles.checkbox, isDone && styles.checkboxDone]}>
-                <Text style={styles.checkMark}>{isDone ? '✓' : ''}</Text>
+              <View
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 4,
+                  borderWidth: 2,
+                  borderColor: isDone ? theme.success : theme.border,
+                  backgroundColor: isDone ? theme.success : 'transparent',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                {isDone && <Icon name="check" size={12} color={theme.onAccent} />}
               </View>
-              <Text style={[styles.taskLabel, isDone && styles.taskLabelDone]}>
+              <Text
+                style={[
+                  TYPE.caption,
+                  {
+                    fontWeight: '600',
+                    color: isDone ? theme.textMuted : theme.text,
+                    flex: 1,
+                    textDecorationLine: isDone ? 'line-through' : 'none',
+                  },
+                ]}
+              >
                 {t.label}
               </Text>
             </TouchableOpacity>
           );
         })}
-      </View>
-    </ScrollView>
+      </Card>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  bannerCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 5,
-    borderLeftColor: '#5c60f5',
-    marginBottom: 16,
-    elevation: 2,
-  },
-  bannerTag: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#5c60f5',
-  },
-  bannerDays: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#0f172a',
-    marginVertical: 4,
-  },
-  bannerSubText: {
-    fontSize: 12,
-    color: '#64748b',
-    marginBottom: 8,
-  },
-  presetRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  presetButton: {
-    flex: 1,
-    paddingVertical: 8,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  presetButtonActive: {
-    backgroundColor: '#5c60f5',
-  },
-  presetText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  presetTextActive: {
-    color: '#ffffff',
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 16,
-  },
-  metricCard: {
-    width: '48%',
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 14,
-    elevation: 2,
-  },
-  metricLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748b',
-  },
-  metricVal: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#5c60f5',
-    marginVertical: 4,
-  },
-  metricSub: {
-    fontSize: 11,
-    color: '#94a3b8',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 12,
-  },
-  taskRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    gap: 10,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: '#cbd5e1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxDone: {
-    backgroundColor: '#10b981',
-    borderColor: '#10b981',
-  },
-  checkMark: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  taskLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#0f172a',
-    flex: 1,
-  },
-  taskLabelDone: {
-    textDecorationLine: 'line-through',
-    color: '#94a3b8',
-  },
-});

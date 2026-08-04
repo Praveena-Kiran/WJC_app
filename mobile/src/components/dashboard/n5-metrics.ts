@@ -1,10 +1,22 @@
+export type N5Status = 'on-track' | 'pace-needed' | 'exam-ready';
+
+export interface N5Metrics {
+  daysLeft: number;
+  overallPct: number;
+  dailyKana: number;
+  dailyKanji: number;
+  dailyVocab: number;
+  status: N5Status;
+  statusLabel: string;
+}
+
 export function calculateN5Metrics(
   n5TargetDate?: string | null,
   solvedCount = 0,
   kanaCount = 0,
   kanjiCount = 0,
   starredVocabCount = 0
-) {
+): N5Metrics {
   const targetDateStr = n5TargetDate || '2026-12-06';
   const target = new Date(targetDateStr);
   const now = new Date();
@@ -27,18 +39,15 @@ export function calculateN5Metrics(
   const dailyKanji = Math.ceil(remainingKanji / paceDays);
   const dailyVocab = Math.ceil(remainingVocab / paceDays);
 
-  let statusLabel = 'On Track 🟢';
-  let statusBg = 'rgba(16, 185, 129, 0.15)';
-  let statusColor = '#10b981';
+  let status: N5Status = 'on-track';
+  let statusLabel = 'On Track';
 
   if (overallPct < 25 && daysLeft < 15) {
-    statusLabel = 'Pace Boost Needed ⚡';
-    statusBg = 'rgba(239, 68, 68, 0.15)';
-    statusColor = '#ef4444';
+    status = 'pace-needed';
+    statusLabel = 'Pace Boost Needed';
   } else if (overallPct >= 80) {
-    statusLabel = 'Exam Ready 🎉';
-    statusBg = 'rgba(92, 96, 245, 0.15)';
-    statusColor = '#5c60f5';
+    status = 'exam-ready';
+    statusLabel = 'Exam Ready';
   }
 
   return {
@@ -47,8 +56,7 @@ export function calculateN5Metrics(
     dailyKana,
     dailyKanji,
     dailyVocab,
+    status,
     statusLabel,
-    statusBg,
-    statusColor,
   };
 }

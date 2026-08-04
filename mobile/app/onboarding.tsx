@@ -1,42 +1,24 @@
-/**
- * onboarding.tsx — Post-signup onboarding flow
- *
- * Collects display name, role, JLPT target level, and target deadline from
- * new users. Submits to PUT /api/progress to populate UserProfile, then
- * redirects to the main tabs.
- *
- * This screen is shown once after registration. On subsequent app opens,
- * the root layout checks for a UserProfile and skips to tabs.
- *
- * TODO: Replace hardcoded zen colors with theme tokens from #016.
- *
- * Closes #011
- */
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useSession } from '@/src/auth-client';
 import { apiFetch } from '@/src/lib/api-fetch';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+import { useApp } from '@/src/context/AppContext';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { Button } from '@/src/components/ui/Button';
+import { Input } from '@/src/components/ui/Input';
+import { Card } from '@/src/components/ui/Card';
+import { Icon } from '@/src/components/ui/Icon';
+import { TYPE, SPACING } from '@/src/theme/tokens';
 
 type Role = 'external' | 'woxsen-student' | 'teacher';
 type JlptLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
 
 const ROLES: { value: Role; label: string; icon: string; description: string }[] = [
-  { value: 'external', label: 'External Student', icon: '🌍', description: 'Self-studying Japanese' },
-  { value: 'woxsen-student', label: 'Woxsen Student', icon: '🎓', description: 'Enrolled at Woxsen University' },
-  { value: 'teacher', label: 'Instructor', icon: '👩‍🏫', description: 'Teaching Japanese at Woxsen' },
+  { value: 'external', label: 'External Student', icon: 'globe', description: 'Self-studying Japanese' },
+  { value: 'woxsen-student', label: 'Woxsen Student', icon: 'book-open', description: 'Enrolled at Woxsen University' },
+  { value: 'teacher', label: 'Instructor', icon: 'users', description: 'Teaching Japanese at Woxsen' },
 ];
 
 const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
@@ -52,11 +34,11 @@ function addDays(days: number): string {
   return d.toISOString().split('T')[0];
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
 export default function OnboardingScreen() {
+  const { theme } = useTheme();
   const router = useRouter();
   const { data: session } = useSession();
+  const { completeOnboarding } = useApp();
 
   const [name, setName] = useState(session?.user?.name ?? '');
   const [role, setRole] = useState<Role>('external');
@@ -97,6 +79,13 @@ export default function OnboardingScreen() {
         }),
       });
 
+      completeOnboarding({
+        name: name.trim(),
+        role: role as 'external' | 'woxsen-student' | 'teacher' | 'admin',
+        targetDate,
+        level: jlptLevel,
+      });
+
       router.replace('/(tabs)' as any);
     } catch (e) {
       setError('Failed to save your profile. Please try again.');
@@ -107,199 +96,136 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView style={styles.flex} contentContainerStyle={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.logo}>禅語</Text>
-        <Text style={styles.title}>Let's set up your profile</Text>
-        <Text style={styles.subtitle}>
-          We'll personalize your learning experience based on your answers.
-        </Text>
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={['top', 'left', 'right']}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <Text style={[styles.logo, { color: theme.accent }]}>禅語</Text>
+          <Text style={[TYPE.title, { color: theme.text, textAlign: 'center', marginBottom: SPACING.xs }]}>
+            Let's set up your profile
+          </Text>
+          <Text style={[TYPE.body, { color: theme.textMuted, textAlign: 'center' }]}>
+            We'll personalize your learning experience based on your answers.
+          </Text>
+        </View>
 
-      {/* Name */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>What should we call you?</Text>
-        <TextInput
-          style={styles.input}
+        <Input
+          label="What should we call you?"
           placeholder="Your name"
-          placeholderTextColor="#94a3b8"
           value={name}
           onChangeText={setName}
           autoCapitalize="words"
           textContentType="name"
         />
-      </View>
 
-      {/* Role */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>What's your role?</Text>
-        {ROLES.map((r) => (
-          <Pressable
-            key={r.value}
-            style={[styles.roleCard, role === r.value && styles.roleCardSelected]}
-            onPress={() => setRole(r.value)}
-          >
-            <Text style={styles.roleIcon}>{r.icon}</Text>
-            <View style={styles.roleTextContainer}>
-              <Text style={[styles.roleLabel, role === r.value && styles.roleLabelSelected]}>
-                {r.label}
-              </Text>
-              <Text style={styles.roleDescription}>{r.description}</Text>
-            </View>
-            {role === r.value && <Text style={styles.checkmark}>✓</Text>}
-          </Pressable>
-        ))}
-      </View>
-
-      {/* JLPT Level */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Target JLPT level</Text>
-        <View style={styles.levelRow}>
-          {JLPT_LEVELS.map((level) => (
+        <View style={{ marginBottom: SPACING.lg }}>
+          <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm, marginTop: SPACING.xs }]}>What's your role?</Text>
+          {ROLES.map((r) => (
             <Pressable
-              key={level}
-              style={[styles.levelChip, jlptLevel === level && styles.levelChipSelected]}
-              onPress={() => setJlptLevel(level)}
+              key={r.value}
+              style={[
+                styles.roleCard,
+                {
+                  borderColor: role === r.value ? theme.accent : theme.border,
+                  backgroundColor: role === r.value ? theme.accentMuted : theme.surface,
+                },
+              ]}
+              onPress={() => setRole(r.value)}
             >
-              <Text style={[styles.levelText, jlptLevel === level && styles.levelTextSelected]}>
-                {level}
-              </Text>
+              <Icon name={r.icon as 'globe' | 'book-open' | 'users'} size={22} color={role === r.value ? theme.accent : theme.textMuted} />
+              <View style={{ flex: 1, marginLeft: SPACING.md }}>
+                <Text style={[TYPE.bodyStrong, { color: role === r.value ? theme.accent : theme.text }]}>{r.label}</Text>
+                <Text style={[TYPE.caption, { color: theme.textMuted }]}>{r.description}</Text>
+              </View>
+              {role === r.value && <Icon name="check" size={18} color={theme.accent} />}
             </Pressable>
           ))}
         </View>
-      </View>
 
-      {/* Target Date */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Target date to pass {jlptLevel}</Text>
-        <View style={styles.presetRow}>
-          {TARGET_PRESETS.map((p) => (
-            <Pressable
-              key={p.days}
-              style={[styles.presetChip, selectedPreset === p.days && styles.presetChipSelected]}
-              onPress={() => selectPreset(p.days)}
-            >
-              <Text style={[styles.presetText, selectedPreset === p.days && styles.presetTextSelected]}>
-                {p.label}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={{ marginBottom: SPACING.lg }}>
+          <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm }]}>Target JLPT level</Text>
+          <View style={{ flexDirection: 'row', gap: SPACING.sm, flexWrap: 'wrap' }}>
+            {JLPT_LEVELS.map((level) => (
+              <Pressable
+                key={level}
+                style={{
+                  paddingHorizontal: SPACING.xl,
+                  paddingVertical: SPACING.sm,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: jlptLevel === level ? theme.accent : theme.border,
+                  backgroundColor: jlptLevel === level ? theme.accentMuted : theme.surfaceAlt,
+                }}
+                onPress={() => setJlptLevel(level)}
+              >
+                <Text style={[TYPE.bodyStrong, { color: jlptLevel === level ? theme.accent : theme.textMuted }]}>{level}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
-        <Text style={styles.targetDateDisplay}>
-          Target: <Text style={styles.targetDateValue}>{targetDate}</Text>
-        </Text>
-      </View>
 
-      {/* Error */}
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <View style={{ marginBottom: SPACING.lg }}>
+          <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm }]}>
+            Target date to pass {jlptLevel}
+          </Text>
+          <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+            {TARGET_PRESETS.map((p) => (
+              <Pressable
+                key={p.days}
+                style={{
+                  flex: 1,
+                  paddingVertical: SPACING.sm,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: selectedPreset === p.days ? theme.accent : theme.border,
+                  backgroundColor: selectedPreset === p.days ? theme.accentMuted : theme.surfaceAlt,
+                  alignItems: 'center',
+                }}
+                onPress={() => selectPreset(p.days)}
+              >
+                <Text style={[TYPE.caption, { color: selectedPreset === p.days ? theme.accent : theme.textMuted, fontWeight: '600' }]}>
+                  {p.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.sm }]}>
+            Target: <Text style={{ color: theme.accent, fontWeight: '700' }}>{targetDate}</Text>
+          </Text>
+        </View>
 
-      {/* Submit */}
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleSubmit}
-        disabled={loading}
-        activeOpacity={0.8}
-      >
-        {loading ? (
-          <ActivityIndicator color="#ffffff" size="small" />
-        ) : (
-          <Text style={styles.buttonText}>Start Learning →</Text>
-        )}
-      </TouchableOpacity>
+        {error ? (
+          <Text style={[TYPE.caption, { color: theme.error, textAlign: 'center', marginBottom: SPACING.md }]}>
+            {error}
+          </Text>
+        ) : null}
+
+        <Button title="Start Learning" onPress={handleSubmit} loading={loading} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-// TODO: Replace with theme tokens from #016
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#0f172a' },
-  flex: { flex: 1, backgroundColor: '#0f172a' },
   container: {
-    paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 48,
+    paddingHorizontal: SPACING.xxl,
+    paddingTop: SPACING.xxxl * 2,
+    paddingBottom: SPACING.xxxl,
   },
-  header: { alignItems: 'center', marginBottom: 36 },
-  logo: { fontSize: 48, color: '#818cf8', marginBottom: 12 },
-  title: { fontSize: 26, fontWeight: '800', color: '#f1f5f9', marginBottom: 8, textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#94a3b8', textAlign: 'center', lineHeight: 20 },
-
-  section: { marginBottom: 28 },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#e2e8f0', marginBottom: 12 },
-
-  input: {
-    backgroundColor: '#1e293b',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: '#f1f5f9',
+  header: {
+    alignItems: 'center',
+    marginBottom: SPACING.xxxl,
   },
-
+  logo: {
+    fontSize: 48,
+    fontWeight: '700',
+    marginBottom: SPACING.md,
+  },
   roleCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e293b',
     borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
-    gap: 12,
+    borderRadius: 10,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
   },
-  roleCardSelected: {
-    borderColor: '#6366f1',
-    backgroundColor: '#1e1b4b',
-  },
-  roleIcon: { fontSize: 24 },
-  roleTextContainer: { flex: 1 },
-  roleLabel: { fontSize: 15, fontWeight: '700', color: '#cbd5e1', marginBottom: 2 },
-  roleLabelSelected: { color: '#a5b4fc' },
-  roleDescription: { fontSize: 12, color: '#64748b' },
-  checkmark: { color: '#6366f1', fontSize: 18, fontWeight: '700' },
-
-  levelRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  levelChip: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-    backgroundColor: '#1e293b',
-  },
-  levelChipSelected: { borderColor: '#6366f1', backgroundColor: '#1e1b4b' },
-  levelText: { color: '#94a3b8', fontWeight: '600', fontSize: 15 },
-  levelTextSelected: { color: '#a5b4fc' },
-
-  presetRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  presetChip: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-    backgroundColor: '#1e293b',
-    alignItems: 'center',
-  },
-  presetChipSelected: { borderColor: '#6366f1', backgroundColor: '#1e1b4b' },
-  presetText: { color: '#94a3b8', fontWeight: '600', fontSize: 13 },
-  presetTextSelected: { color: '#a5b4fc' },
-  targetDateDisplay: { color: '#64748b', fontSize: 13 },
-  targetDateValue: { color: '#818cf8', fontWeight: '700' },
-
-  errorText: { color: '#f87171', fontSize: 13, textAlign: 'center', marginBottom: 12 },
-  button: {
-    backgroundColor: '#6366f1',
-    borderRadius: 12,
-    paddingVertical: 18,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#ffffff', fontSize: 17, fontWeight: '800' },
 });

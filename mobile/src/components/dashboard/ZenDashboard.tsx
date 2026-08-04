@@ -1,162 +1,125 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { Screen, Card, Button, Icon } from '@/src/components/ui';
+import { useApp } from '@/src/context/AppContext';
+import { useRouter } from 'expo-router';
 import { N5DeadlineCard } from './N5DeadlineCard';
 import { BonsaiGarden } from './BonsaiGarden';
 import { PebbleTimeline } from './PebbleTimeline';
+import { TYPE, SPACING } from '@/src/theme/tokens';
 
 export interface ZenDashboardProps {
   onNavigate?: (screen: string) => void;
 }
 
 export function ZenDashboard({ onNavigate }: ZenDashboardProps) {
-  const solvedCount = 3;
-  const totalLessons = 10;
+  const { theme } = useTheme();
+  const { state } = useApp();
+  const router = useRouter();
+
+  const nav = (route: string) => {
+    if (onNavigate) onNavigate(route);
+    else router.push(route as Parameters<typeof router.push>[0]);
+  };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Welcome Banner */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Zen Student Dashboard • 禅語</Text>
-          <Text style={styles.subtitle}>
-            Peaceful, focused Japanese learning path with visual progress tracking.
-          </Text>
+    <Screen style={{ gap: SPACING.lg }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Zen Student Dashboard</Text>
+        <TouchableOpacity
+          onPress={() => nav('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
+      </View>
+
+      <Card>
+        <BonsaiGarden leaves={state.solvedLessons.length + 2} />
+      </Card>
+
+      <N5DeadlineCard
+        n5TargetDate={state.n5TargetDate}
+        solvedCount={state.solvedLessons.length}
+        kanaCount={state.masteredKana.length}
+        kanjiCount={state.practicedKanji.length}
+        starredVocabCount={state.starredVocab.length}
+        onNavigateToRoadmap={() => nav('/more/planner')}
+      />
+
+      <Card>
+        <PebbleTimeline
+          solvedLessons={state.solvedLessons}
+          activeLessonId={state.activeLessonId}
+          onSelectLesson={(id) => nav(`/more/planner`)}
+        />
+      </Card>
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm }}>
+        {[
+          { label: 'Kana', glyph: 'あ', route: '/(tabs)/kana' },
+          { label: 'Kanji', glyph: '漢', route: '/(tabs)/kanji' },
+          { label: 'Quiz', route: '/(tabs)/quiz' },
+          { label: 'Dict', route: '/(tabs)/dictionary' },
+        ].map((item) => (
+          <View key={item.label} style={{ width: '47%' }}>
+            <Card padding={SPACING.md}>
+              {item.glyph ? (
+                <Text style={[TYPE.glyph, { color: theme.accent, textAlign: 'center' }]}>
+                  {item.glyph}
+                </Text>
+              ) : (
+                <Text style={[TYPE.title, { color: theme.accent, textAlign: 'center' }]}>
+                  {item.label}
+                </Text>
+              )}
+              <Text style={[TYPE.bodyStrong, { color: theme.text, textAlign: 'center', marginTop: SPACING.xs }]}>
+                {item.glyph ? `${item.label} Trainer` : item.label}
+              </Text>
+              <Button
+                title="Open"
+                size="sm"
+                variant="secondary"
+                onPress={() => nav(item.route)}
+                style={{ marginTop: SPACING.sm }}
+              />
+            </Card>
+          </View>
+        ))}
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+        <View style={{ flex: 1 }}>
+          <Card padding={SPACING.md}>
+            <Text style={[TYPE.bodyStrong, { color: theme.text, textAlign: 'center' }]}>
+              Kaiwa
+            </Text>
+            <Button
+              title="Practice"
+              size="sm"
+              variant="ghost"
+              onPress={() => nav('/more/kaiwa')}
+              style={{ marginTop: SPACING.xs }}
+            />
+          </Card>
         </View>
-
-        {/* Bonsai Garden SVG Progress Widget */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>🌱 Zen Garden Growth</Text>
-          <BonsaiGarden leaves={solvedCount + 2} />
+        <View style={{ flex: 1 }}>
+          <Card padding={SPACING.md}>
+            <Text style={[TYPE.bodyStrong, { color: theme.text, textAlign: 'center' }]}>
+              Radicals
+            </Text>
+            <Button
+              title="Build"
+              size="sm"
+              variant="ghost"
+              onPress={() => nav('/more/radicals')}
+              style={{ marginTop: SPACING.xs }}
+            />
+          </Card>
         </View>
-
-        {/* N5 Exam Deadline Card */}
-        <View style={{ marginVertical: 12 }}>
-          <N5DeadlineCard targetDays={60} />
-        </View>
-
-        {/* Pebble Stepping Stones Path */}
-        <View style={styles.card}>
-          <PebbleTimeline
-            solvedLessons={[1, 2, 3]}
-            activeLessonId={4}
-            onSelectLesson={(lessonId) => {
-              if (onNavigate) onNavigate(`lesson-${lessonId}`);
-            }}
-          />
-        </View>
-
-        {/* Quick Action Navigation Grid */}
-        <View style={styles.grid}>
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => onNavigate && onNavigate('kana')}
-          >
-            <Text style={styles.actionIcon}>🈠</Text>
-            <Text style={styles.actionTitle}>Kana Trainer</Text>
-            <Text style={styles.actionSub}>46 Hiragana & Katakana</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => onNavigate && onNavigate('kanji')}
-          >
-            <Text style={styles.actionIcon}>漢</Text>
-            <Text style={styles.actionTitle}>Kanji Board</Text>
-            <Text style={styles.actionSub}>N5 / N4 Stroke Order</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => onNavigate && onNavigate('quiz')}
-          >
-            <Text style={styles.actionIcon}>🎯</Text>
-            <Text style={styles.actionTitle}>N5 Quiz</Text>
-            <Text style={styles.actionSub}>Multiple Choice Practice</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => onNavigate && onNavigate('dictionary')}
-          >
-            <Text style={styles.actionIcon}>📖</Text>
-            <Text style={styles.actionTitle}>Dictionary</Text>
-            <Text style={styles.actionSub}>Vocab & Conjugator</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-    marginBottom: 12,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 8,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 8,
-  },
-  actionCard: {
-    width: '48%',
-    backgroundColor: '#ffffff',
-    padding: 14,
-    borderRadius: 12,
-    elevation: 2,
-    alignItems: 'center',
-  },
-  actionIcon: {
-    fontSize: 28,
-    marginBottom: 6,
-  },
-  actionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  actionSub: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 2,
-  },
-});

@@ -4,12 +4,11 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
-  StyleProp,
-  ViewStyle,
-  TextStyle,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
+import { Screen, Card, Button, SegmentedControl, Chip, Icon } from '@/src/components/ui';
 import { apiFetch } from '@/src/lib/api-fetch';
 
 export interface QuizQuestion {
@@ -54,7 +53,17 @@ const VOCAB_POOL = [
   { prompt: '空 (そら)', answer: 'Sky' },
 ];
 
+const DECK_OPTIONS: { label: string; value: 'hiragana' | 'katakana' | 'vocab' }[] = [
+  { label: 'Hiragana', value: 'hiragana' },
+  { label: 'Katakana', value: 'katakana' },
+  { label: 'Vocab', value: 'vocab' },
+];
+
+const COUNT_OPTIONS = [5, 10, 20];
+
 export function QuizView() {
+  const { theme } = useTheme();
+  const router = useRouter();
   const [deckType, setDeckType] = useState<'hiragana' | 'katakana' | 'vocab'>('hiragana');
   const [questionCount, setQuestionCount] = useState<number>(10);
   const [quizState, setQuizState] = useState<'lobby' | 'active' | 'finished'>('lobby');
@@ -118,7 +127,6 @@ export function QuizView() {
       setIsAnswered(false);
     } else {
       setQuizState('finished');
-      // Save QuizRun via API
       try {
         await apiFetch('/api/quiz', {
           method: 'POST',
@@ -143,293 +151,154 @@ export function QuizView() {
       : 'Excellent!';
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>Multiple Choice Quiz</Text>
-        <Text style={styles.subtitle}>
-          Test your Hiragana, Katakana, and N5 Vocabulary skills.
-        </Text>
+    <Screen>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Multiple Choice Quiz</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
       </View>
 
-      {/* State 1: Lobby */}
       {quizState === 'lobby' && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Configure Quiz</Text>
+        <Card>
+          <Text
+            style={[
+              TYPE.bodyStrong,
+              { color: theme.text, textAlign: 'center', marginBottom: SPACING.lg },
+            ]}
+          >
+            Configure Quiz
+          </Text>
 
-          <Text style={styles.label}>Select Deck</Text>
-          <View style={styles.btnGroup}>
-            {(['hiragana', 'katakana', 'vocab'] as const).map((type) => (
-              <TouchableOpacity
-                key={type}
-                style={[styles.tabButton, deckType === type && styles.tabButtonActive]}
-                onPress={() => setDeckType(type)}
-              >
-                <Text
-                  style={[styles.tabButtonText, deckType === type && styles.tabButtonTextActive]}
-                >
-                  {type.toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm }]}>
+            Select Deck
+          </Text>
+          <SegmentedControl
+            options={DECK_OPTIONS}
+            value={deckType}
+            onChange={setDeckType}
+          />
+
+          <View style={{ marginTop: SPACING.xl }}>
+            <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm }]}>
+              Question Count
+            </Text>
+            <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
+              {COUNT_OPTIONS.map((cnt) => (
+                <Chip
+                  key={cnt}
+                  label={`${cnt} Qs`}
+                  selected={questionCount === cnt}
+                  onPress={() => setQuestionCount(cnt)}
+                  style={{ flex: 1 }}
+                />
+              ))}
+            </View>
           </View>
 
-          <Text style={styles.label}>Question Count</Text>
-          <View style={styles.btnGroup}>
-            {[5, 10, 20].map((cnt) => (
-              <TouchableOpacity
-                key={cnt}
-                style={[styles.tabButton, questionCount === cnt && styles.tabButtonActive]}
-                onPress={() => setQuestionCount(cnt)}
-              >
-                <Text
-                  style={[styles.tabButtonText, questionCount === cnt && styles.tabButtonTextActive]}
-                >
-                  {cnt} Qs
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <TouchableOpacity style={styles.primaryButton} onPress={generateQuiz}>
-            <Text style={styles.primaryButtonText}>Start Challenge ▶</Text>
-          </TouchableOpacity>
-        </View>
+          <Button
+            title="Start Challenge"
+            onPress={generateQuiz}
+            style={{ marginTop: SPACING.xl }}
+          />
+        </Card>
       )}
 
-      {/* State 2: Active Game */}
       {quizState === 'active' && questions.length > 0 && (
-        <View style={styles.card}>
-          <View style={styles.quizHeader}>
-            <Text style={styles.questionTracker}>
+        <Card>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginBottom: SPACING.md,
+              paddingBottom: SPACING.md,
+              borderBottomWidth: 1,
+              borderBottomColor: theme.border,
+            }}
+          >
+            <Text style={[TYPE.caption, { color: theme.textMuted, fontWeight: '700' }]}>
               Question {currentIndex + 1} of {questions.length}
             </Text>
-            <Text style={styles.scoreText}>Score: {score}</Text>
+            <Text style={[TYPE.caption, { color: theme.accent, fontWeight: '700' }]}>
+              Score: {score}
+            </Text>
           </View>
 
-          <View style={styles.promptBox}>
-            <Text style={styles.promptText}>{questions[currentIndex].prompt}</Text>
+          <View style={{ alignItems: 'center', marginVertical: SPACING.xxl }}>
+            <Text style={[TYPE.glyph, { color: theme.accent }]}>
+              {questions[currentIndex].prompt}
+            </Text>
           </View>
 
-          <View style={styles.optionsGrid}>
+          <View style={{ gap: SPACING.sm, marginBottom: SPACING.lg }}>
             {questions[currentIndex].options.map((option, idx) => {
-              const buttonStyle: StyleProp<ViewStyle>[] = [styles.optionButton];
-              const textStyle: StyleProp<TextStyle>[] = [styles.optionText];
+              const correct = questions[currentIndex].correctAnswer;
+              let borderColor = theme.border;
+              let bg = theme.surfaceAlt;
+              let textColor = theme.text;
 
               if (isAnswered) {
-                if (option === questions[currentIndex].correctAnswer) {
-                  buttonStyle.push(styles.optionCorrect);
-                  textStyle.push(styles.optionTextCorrect);
+                if (option === correct) {
+                  borderColor = theme.success;
+                  bg = theme.successMuted;
+                  textColor = theme.success;
                 } else if (option === selectedOption) {
-                  buttonStyle.push(styles.optionIncorrect);
-                  textStyle.push(styles.optionTextIncorrect);
+                  borderColor = theme.error;
+                  bg = theme.errorMuted;
+                  textColor = theme.error;
                 }
               }
 
               return (
                 <TouchableOpacity
                   key={idx}
-                  style={buttonStyle}
                   onPress={() => handleOptionSelect(option)}
                   disabled={isAnswered}
+                  activeOpacity={0.7}
+                  style={{
+                    paddingVertical: SPACING.md,
+                    paddingHorizontal: SPACING.lg,
+                    backgroundColor: bg,
+                    borderWidth: 1,
+                    borderColor,
+                    borderRadius: RADIUS.sm,
+                    alignItems: 'center',
+                  }}
                 >
-                  <Text style={textStyle}>{option}</Text>
+                  <Text style={[TYPE.bodyStrong, { color: textColor }]}>{option}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
 
           {isAnswered && (
-            <TouchableOpacity style={styles.primaryButton} onPress={handleNextQuestion}>
-              <Text style={styles.primaryButtonText}>
-                {currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question →'}
-              </Text>
-            </TouchableOpacity>
+            <Button
+              title={currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+              onPress={handleNextQuestion}
+            />
           )}
-        </View>
+        </Card>
       )}
 
-      {/* State 3: Scoreboard */}
       {quizState === 'finished' && (
-        <View style={styles.card}>
-          <Text style={styles.trophyIcon}>🏆</Text>
-          <Text style={styles.sectionTitle}>Quiz Completed!</Text>
-
-          <Text style={styles.scoreResult}>
-            {score} / {questions.length} (
-            {Math.round((score / questions.length) * 100)}%)
+        <Card style={{ alignItems: 'center' }}>
+          <Icon name="award" size={48} color={theme.accent} />
+          <Text style={[TYPE.title, { color: theme.text, marginTop: SPACING.md }]}>
+            Quiz Completed!
           </Text>
-          <Text style={styles.feedbackText}>{feedbackMsg}</Text>
-
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => setQuizState('lobby')}
-          >
-            <Text style={styles.primaryButtonText}>Return to Lobby</Text>
-          </TouchableOpacity>
-        </View>
+          <Text style={[TYPE.display, { color: theme.accent, marginVertical: SPACING.sm }]}>
+            {score} / {questions.length} ({Math.round((score / questions.length) * 100)}%)
+          </Text>
+          <Text style={[TYPE.body, { color: theme.textMuted, marginBottom: SPACING.xl }]}>
+            {feedbackMsg}
+          </Text>
+          <Button title="Return to Lobby" onPress={() => setQuizState('lobby')} />
+        </Card>
       )}
-      </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  headerContainer: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1e293b',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#475569',
-    marginBottom: 8,
-  },
-  btnGroup: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 20,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 10,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  tabButtonActive: {
-    backgroundColor: '#5c60f5',
-  },
-  tabButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  tabButtonTextActive: {
-    color: '#ffffff',
-  },
-  primaryButton: {
-    backgroundColor: '#5c60f5',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  quizHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  questionTracker: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#64748b',
-  },
-  scoreText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#5c60f5',
-  },
-  promptBox: {
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  promptText: {
-    fontSize: 48,
-    fontWeight: '800',
-    color: '#5c60f5',
-  },
-  optionsGrid: {
-    gap: 10,
-    marginBottom: 16,
-  },
-  optionButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  optionCorrect: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    borderColor: '#10b981',
-  },
-  optionIncorrect: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-    borderColor: '#ef4444',
-  },
-  optionText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-  },
-  optionTextCorrect: {
-    color: '#10b981',
-  },
-  optionTextIncorrect: {
-    color: '#ef4444',
-  },
-  trophyIcon: {
-    fontSize: 48,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  scoreResult: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#5c60f5',
-    textAlign: 'center',
-    marginVertical: 8,
-  },
-  feedbackText: {
-    fontSize: 15,
-    color: '#64748b',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-});

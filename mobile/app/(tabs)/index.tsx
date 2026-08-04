@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
 import { ZenDashboard } from '../../src/components/dashboard/ZenDashboard';
 import { CyberZenDashboard } from '../../src/components/dashboard/CyberZenDashboard';
 import { WoxsenStudentDashboard } from '../../src/components/dashboard/WoxsenStudentDashboard';
 import { TeacherDashboard } from '../../src/components/dashboard/TeacherDashboard';
+import { useApp } from '@/src/context/AppContext';
 
 export default function HomeScreen() {
-  // In v1, role & mode are read from app context or state
-  const [userRole] = useState<'external' | 'woxsen-student' | 'teacher'>('external');
-  const [studyMode] = useState<'zen' | 'cyber'>('zen');
+  const { state } = useApp();
 
-  if (userRole === 'teacher') {
+  if (state.userRole === 'teacher') {
     return <TeacherDashboard />;
   }
 
-  if (userRole === 'woxsen-student') {
+  if (state.userRole === 'woxsen-student') {
     return <WoxsenStudentDashboard />;
   }
 
-  return studyMode === 'zen' ? <ZenDashboard /> : <CyberZenDashboard />;
+  return state.studyMode === 'zen' ? <ZenDashboard /> : <CyberZenDashboard />;
 }

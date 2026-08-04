@@ -7,6 +7,10 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
+import { ProgressBar } from '@/src/components/ui/ProgressBar';
+import { Icon } from '@/src/components/ui/Icon';
 
 export interface LessonData {
   id: number;
@@ -31,6 +35,7 @@ export function StudyModal({
   onClose,
   onFinishLesson,
 }: StudyModalProps) {
+  const { theme } = useTheme();
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
@@ -68,58 +73,73 @@ export function StudyModal({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modalContent}>
-          {/* Header */}
+      <View style={[styles.overlay, { backgroundColor: 'rgba(15, 23, 42, 0.6)' }]}>
+        <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.title}>
+              <Text style={[TYPE.title, { fontSize: 18, color: theme.text }]}>
                 Lesson {lesson.id}: {lesson.title}
               </Text>
               {Boolean(lesson.jpTitle) && (
-                <Text style={styles.jpTitle}>{lesson.jpTitle}</Text>
+                <Text style={[TYPE.body, { fontSize: 13, color: theme.accent, marginTop: 2 }]}>
+                  {lesson.jpTitle}
+                </Text>
               )}
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>✕</Text>
+              <Icon name="x" size={20} color={theme.textMuted} />
             </TouchableOpacity>
           </View>
 
-          {/* Progress Bar */}
           <View style={styles.progressRow}>
-            <View style={styles.progressBarTrack}>
-              <View
-                style={[
-                  styles.progressBarFill,
-                  { width: `${((slideIndex + 1) / totalSlides) * 100}%` },
-                ]}
-              />
+            <View style={{ flex: 1 }}>
+              <ProgressBar progress={(slideIndex + 1) / totalSlides} height={8} />
             </View>
-            <Text style={styles.progressText}>
+            <Text style={[TYPE.caption, { color: theme.textMuted, marginLeft: SPACING.sm }]}>
               Slide {slideIndex + 1} of {totalSlides}
             </Text>
           </View>
 
-          {/* Body */}
           <ScrollView style={styles.body}>
             {slideIndex === 0 && (
               <View>
-                <Text style={styles.slideTitle}>📖 Grammar & Key Patterns</Text>
+                <Text style={[TYPE.bodyStrong, { fontSize: 15, color: theme.text, marginBottom: SPACING.md }]}>
+                  Grammar & Key Patterns
+                </Text>
                 {grammarItems.length > 0 ? (
                   grammarItems.map((item, idx) => (
-                    <View key={idx} style={styles.cardItem}>
-                      <Text style={styles.cardItemText}>
+                    <View
+                      key={idx}
+                      style={[
+                        styles.cardItem,
+                        {
+                          backgroundColor: theme.surfaceAlt,
+                          borderLeftColor: theme.accent,
+                        },
+                      ]}
+                    >
+                      <Text style={[TYPE.bodyStrong, { fontSize: 14, color: theme.text }]}>
                         {item.replace(/^Grammar:/i, '').trim()}
                       </Text>
-                      <Text style={styles.cardItemSubText}>
+                      <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: 2 }]}>
                         Learn and apply this pattern in conversation.
                       </Text>
                     </View>
                   ))
                 ) : (
-                  <View style={styles.cardItem}>
-                    <Text style={styles.cardItemText}>Overview</Text>
-                    <Text style={styles.cardItemSubText}>{lesson.description}</Text>
+                  <View
+                    style={[
+                      styles.cardItem,
+                      {
+                        backgroundColor: theme.surfaceAlt,
+                        borderLeftColor: theme.accent,
+                      },
+                    ]}
+                  >
+                    <Text style={[TYPE.bodyStrong, { fontSize: 14, color: theme.text }]}>Overview</Text>
+                    <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: 2 }]}>
+                      {lesson.description}
+                    </Text>
                   </View>
                 )}
               </View>
@@ -127,16 +147,35 @@ export function StudyModal({
 
             {slideIndex === 1 && (
               <View>
-                <Text style={styles.slideTitle}>🔊 Vocabulary Spotlight</Text>
+                <Text style={[TYPE.bodyStrong, { fontSize: 15, color: theme.text, marginBottom: SPACING.md }]}>
+                  Vocabulary Spotlight
+                </Text>
                 {lesson.vocabulary && lesson.vocabulary.length > 0 ? (
                   lesson.vocabulary.map((vocab, idx) => (
-                    <View key={idx} style={styles.cardItem}>
-                      <Text style={styles.cardItemText}>{vocab}</Text>
+                    <View
+                      key={idx}
+                      style={[
+                        styles.cardItem,
+                        {
+                          backgroundColor: theme.surfaceAlt,
+                          borderLeftColor: theme.accent,
+                        },
+                      ]}
+                    >
+                      <Text style={[TYPE.bodyStrong, { fontSize: 14, color: theme.text }]}>{vocab}</Text>
                     </View>
                   ))
                 ) : (
-                  <View style={styles.cardItem}>
-                    <Text style={styles.cardItemSubText}>
+                  <View
+                    style={[
+                      styles.cardItem,
+                      {
+                        backgroundColor: theme.surfaceAlt,
+                        borderLeftColor: theme.accent,
+                      },
+                    ]}
+                  >
+                    <Text style={[TYPE.caption, { color: theme.textMuted }]}>
                       No vocabulary listed for this lesson.
                     </Text>
                   </View>
@@ -146,18 +185,36 @@ export function StudyModal({
 
             {slideIndex === 2 && (
               <View>
-                <Text style={styles.slideTitle}>✍️ Kanji Focus</Text>
+                <Text style={[TYPE.bodyStrong, { fontSize: 15, color: theme.text, marginBottom: SPACING.md }]}>
+                  Kanji Focus
+                </Text>
                 {lesson.kanji && lesson.kanji.length > 0 ? (
                   <View style={styles.kanjiGrid}>
                     {lesson.kanji.map((char, idx) => (
-                      <View key={idx} style={styles.kanjiBadge}>
-                        <Text style={styles.kanjiBadgeText}>{char}</Text>
+                      <View
+                        key={idx}
+                        style={[
+                          styles.kanjiBadge,
+                          { backgroundColor: theme.surfaceAlt },
+                        ]}
+                      >
+                        <Text style={[TYPE.glyph, { fontSize: 22, color: theme.accent }]}>
+                          {char}
+                        </Text>
                       </View>
                     ))}
                   </View>
                 ) : (
-                  <View style={styles.cardItem}>
-                    <Text style={styles.cardItemSubText}>
+                  <View
+                    style={[
+                      styles.cardItem,
+                      {
+                        backgroundColor: theme.surfaceAlt,
+                        borderLeftColor: theme.accent,
+                      },
+                    ]}
+                  >
+                    <Text style={[TYPE.caption, { color: theme.textMuted }]}>
                       No kanji required for this lesson.
                     </Text>
                   </View>
@@ -166,23 +223,37 @@ export function StudyModal({
             )}
           </ScrollView>
 
-          {/* Footer Controls */}
           <View style={styles.footer}>
             <TouchableOpacity
-              style={[styles.footerButton, slideIndex === 0 && styles.disabledButton]}
+              style={[
+                styles.footerButton,
+                { backgroundColor: theme.surfaceAlt },
+                slideIndex === 0 && styles.disabledButton,
+              ]}
               onPress={handlePrev}
               disabled={slideIndex === 0}
             >
-              <Text style={styles.footerButtonText}>← Previous</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
+                <Icon name="arrow-left" size={12} color={theme.textMuted} />
+                <Text style={[TYPE.bodyStrong, { fontSize: 13, color: theme.textMuted }]}>Previous</Text>
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.footerButton, styles.primaryButton]}
+              style={[
+                styles.footerButton,
+                { backgroundColor: theme.accent },
+              ]}
               onPress={handleNext}
             >
-              <Text style={styles.primaryButtonText}>
-                {slideIndex === totalSlides - 1 ? 'Finish Lesson 🎉' : 'Next →'}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs }}>
+                <Text style={[TYPE.bodyStrong, { fontSize: 13, color: theme.onAccent }]}>
+                  {slideIndex === totalSlides - 1 ? 'Finish Lesson' : 'Next'}
+                </Text>
+                {slideIndex < totalSlides - 1 && (
+                  <Icon name="arrow-right" size={12} color={theme.onAccent} />
+                )}
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -194,134 +265,63 @@ export function StudyModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     justifyContent: 'center',
-    padding: 16,
+    padding: SPACING.lg,
   },
   modalContent: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.xl,
     maxHeight: '80%',
     elevation: 5,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  jpTitle: {
-    fontSize: 13,
-    color: '#5c60f5',
-    marginTop: 2,
+    marginBottom: SPACING.md,
   },
   closeButton: {
-    padding: 8,
-  },
-  closeButtonText: {
-    fontSize: 18,
-    color: '#94a3b8',
-    fontWeight: '700',
+    padding: SPACING.sm,
   },
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 16,
-  },
-  progressBarTrack: {
-    flex: 1,
-    height: 8,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#10b981',
-  },
-  progressText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748b',
+    marginBottom: SPACING.lg,
   },
   body: {
     minHeight: 180,
     maxHeight: 280,
-    marginBottom: 16,
-  },
-  slideTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 12,
+    marginBottom: SPACING.lg,
   },
   cardItem: {
-    backgroundColor: '#f8fafc',
-    padding: 12,
-    borderRadius: 8,
+    padding: SPACING.md,
+    borderRadius: RADIUS.sm,
     borderLeftWidth: 4,
-    borderLeftColor: '#5c60f5',
-    marginBottom: 8,
-  },
-  cardItemText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  cardItemSubText: {
-    fontSize: 12,
-    color: '#64748b',
-    marginTop: 2,
+    marginBottom: SPACING.sm,
   },
   kanjiGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: SPACING.sm,
   },
   kanjiBadge: {
     width: 48,
     height: 48,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  kanjiBadgeText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#5c60f5',
-  },
   footer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: SPACING.md,
   },
   footerButton: {
     flex: 1,
-    paddingVertical: 12,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
+    paddingVertical: SPACING.md,
+    borderRadius: RADIUS.sm,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   disabledButton: {
     opacity: 0.4,
-  },
-  footerButtonText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  primaryButton: {
-    backgroundColor: '#5c60f5',
-  },
-  primaryButtonText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#ffffff',
   },
 });

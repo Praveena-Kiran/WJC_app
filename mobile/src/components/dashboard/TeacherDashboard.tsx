@@ -1,203 +1,100 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { Screen, Card, Badge, SegmentedControl, Button, Icon } from '@/src/components/ui';
+import { useApp } from '@/src/context/AppContext';
+import { TYPE, SPACING } from '@/src/theme/tokens';
+
+type Student = { id: number; name: string; status: 'present' | 'absent' | null };
+
+const STUDENTS: Student[] = [
+  { id: 1, name: 'Ananya Sharma', status: null },
+  { id: 2, name: 'Rohan Verma', status: null },
+  { id: 3, name: 'Priya Kapoor', status: null },
+  { id: 4, name: 'Vikram Patel', status: null },
+];
 
 export function TeacherDashboard() {
-  const [activeTab, setActiveTab] = useState<'roster' | 'upload'>('roster');
-  const [markedStudents, setMarkedStudents] = useState<string[]>(['s1', 's2']);
-
-  const students = [
-    { id: 's1', name: 'Tanaka Hiroshi', roll: 'WOX-2026-001' },
-    { id: 's2', name: 'Sato Yuka', roll: 'WOX-2026-002' },
-    { id: 's3', name: 'Suzuki Ken', roll: 'WOX-2026-003' },
-    { id: 's4', name: 'Takahashi Mei', roll: 'WOX-2026-004' },
-  ];
-
-  const toggleAttendance = (id: string) => {
-    setMarkedStudents((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  };
+  const { theme } = useTheme();
+  const [tab, setTab] = useState<'roster' | 'upload'>('roster');
+  const [students, setStudents] = useState<Student[]>(STUDENTS);
+  const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Teacher Portal • Sensei Control</Text>
-        <Text style={styles.subtitle}>
-          Mark daily class attendance & upload handouts to Woxsen Vault.
-        </Text>
-      </View>
-
-      {/* Tabs */}
-      <View style={styles.tabRow}>
+    <Screen style={{ gap: SPACING.lg }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Teacher Portal</Text>
         <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'roster' && styles.tabBtnActive]}
-          onPress={() => setActiveTab('roster')}
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Settings"
         >
-          <Text style={[styles.tabText, activeTab === 'roster' && styles.tabTextActive]}>
-            📋 Class Roster Attendance
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.tabBtn, activeTab === 'upload' && styles.tabBtnActive]}
-          onPress={() => setActiveTab('upload')}
-        >
-          <Text style={[styles.tabText, activeTab === 'upload' && styles.tabTextActive]}>
-            📤 Vault File Upload
-          </Text>
+          <Icon name="sliders" size={20} color={theme.accent} />
         </TouchableOpacity>
       </View>
 
-      {/* Roster Section */}
-      {activeTab === 'roster' && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Daily Class Roster (4 Students)</Text>
-          {students.map((student) => {
-            const isPresent = markedStudents.includes(student.id);
-            return (
-              <View key={student.id} style={styles.studentRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.studentName}>{student.name}</Text>
-                  <Text style={styles.studentRoll}>{student.roll}</Text>
-                </View>
+      <SegmentedControl
+        options={[
+          { label: 'Roster', value: 'roster' },
+          { label: 'Materials', value: 'upload' },
+        ]}
+        value={tab}
+        onChange={(v) => setTab(v as 'roster' | 'upload')}
+      />
 
+      {tab === 'roster' ? (
+        <Card>
+          <Text style={[TYPE.bodyStrong, { color: theme.text, marginBottom: SPACING.md }]}>
+            Attendance
+          </Text>
+          {students.map((s) => (
+            <View
+              key={s.id}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: SPACING.sm,
+                borderBottomWidth: 1,
+                borderBottomColor: theme.border,
+              }}
+            >
+              <Text style={[TYPE.body, { color: theme.text, flex: 1 }]}>{s.name}</Text>
+              {['present' as const, 'absent' as const].map((st) => (
                 <TouchableOpacity
-                  style={[styles.statusBtn, isPresent ? styles.btnPresent : styles.btnAbsent]}
-                  onPress={() => toggleAttendance(student.id)}
+                  key={st}
+                  onPress={() =>
+                    setStudents((prev) =>
+                      prev.map((p) => (p.id === s.id ? { ...p, status: p.status === st ? null : st } : p))
+                    )
+                  }
+                  style={{
+                    marginLeft: SPACING.sm,
+                    paddingHorizontal: SPACING.md,
+                    paddingVertical: SPACING.xs,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: s.status === st ? (st === 'present' ? theme.success : theme.error) : theme.border,
+                    backgroundColor: s.status === st ? (st === 'present' ? theme.successMuted : theme.errorMuted) : 'transparent',
+                  }}
                 >
-                  <Text style={styles.statusBtnText}>{isPresent ? 'Present ✓' : 'Absent ✕'}</Text>
+                  <Text style={[TYPE.caption, { color: s.status === st ? (st === 'present' ? theme.success : theme.error) : theme.textMuted }]}>
+                    {st === 'present' ? 'Present' : 'Absent'}
+                  </Text>
                 </TouchableOpacity>
-              </View>
-            );
-          })}
-        </View>
+              ))}
+            </View>
+          ))}
+          <Button title="Save Attendance" onPress={() => {}} style={{ marginTop: SPACING.md }} />
+        </Card>
+      ) : (
+        <Card style={{ alignItems: 'center', paddingVertical: SPACING.xxxl }}>
+          <Text style={[TYPE.body, { color: theme.textMuted, textAlign: 'center' }]}>
+            Upload materials for your students.
+          </Text>
+          <Button title="Select File" variant="secondary" onPress={() => {}} style={{ marginTop: SPACING.md }} />
+        </Card>
       )}
-
-      {/* Upload Section */}
-      {activeTab === 'upload' && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Upload Course Handout</Text>
-          <View style={styles.dropZone}>
-            <Text style={styles.dropText}>📄 Tap to select PDF or audio file for S3 upload</Text>
-          </View>
-        </View>
-      )}
-      </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  tabBtnActive: {
-    backgroundColor: '#5c60f5',
-  },
-  tabText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  tabTextActive: {
-    color: '#ffffff',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 12,
-  },
-  studentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  studentName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  studentRoll: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  statusBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  btnPresent: {
-    backgroundColor: '#10b981',
-  },
-  btnAbsent: {
-    backgroundColor: '#ef4444',
-  },
-  statusBtnText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  dropZone: {
-    padding: 30,
-    borderWidth: 2,
-    borderColor: '#cbd5e1',
-    borderStyle: 'dashed',
-    borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-  },
-  dropText: {
-    fontSize: 13,
-    color: '#64748b',
-    fontWeight: '600',
-  },
-});

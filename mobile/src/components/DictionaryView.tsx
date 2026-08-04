@@ -2,17 +2,27 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
   Share,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
+import { Screen } from '@/src/components/ui/Screen';
+import { Card } from '@/src/components/ui/Card';
+import { Button } from '@/src/components/ui/Button';
+import { Input } from '@/src/components/ui/Input';
+import { Chip } from '@/src/components/ui/Chip';
+import { Badge } from '@/src/components/ui/Badge';
+import { Icon } from '@/src/components/ui/Icon';
 import { conjugateVerb } from '../lib/conjugator';
-import { DICTIONARY_DATA, DictItem } from './dictionary-data';
+import { DICTIONARY_DATA } from './dictionary-data';
 
 export function DictionaryView() {
+  const { theme } = useTheme();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [starredWords, setStarredWords] = useState<string[]>([]);
@@ -68,316 +78,162 @@ export function DictionaryView() {
 
   const conjugationResult = conjugateVerb(selectedVerbObj);
 
-  return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Dictionary & Conjugator</Text>
-        <Text style={styles.subtitle}>
-          Search JLPT vocabulary, filter by tags, and conjugate verbs.
-        </Text>
-      </View>
+  const categoryChips = [
+    { key: 'all', label: 'ALL' },
+    { key: 'verbs', label: 'VERBS' },
+    { key: 'nouns', label: 'NOUNS' },
+    { key: 'adjectives', label: 'ADJECTIVES' },
+    { key: 'starred', label: `Starred (${starredWords.length})` },
+  ];
 
-      {/* Search Bar & CSV Export */}
-      <View style={styles.searchRow}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by English, Japanese, or Romaji..."
-          placeholderTextColor="#94a3b8"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        <TouchableOpacity style={styles.exportButton} onPress={exportCsv}>
-          <Text style={styles.exportButtonText}>📥 Export</Text>
+  const tagVariant = (tag: string): 'accent' | 'success' | 'warning' | 'muted' => {
+    if (tag === 'Verb') return 'success';
+    if (tag === 'Adjective') return 'warning';
+    return 'accent';
+  };
+
+  return (
+    <Screen scroll padding={SPACING.lg}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Dictionary & Conjugator</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
         </TouchableOpacity>
       </View>
 
+      {/* Search Bar & CSV Export */}
+      <View style={{ flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.md }}>
+        <View style={{ flex: 1 }}>
+          <Input
+            placeholder="Search by English, Japanese, or Romaji..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+        <Button title="Export" onPress={exportCsv} size="sm" variant="secondary" />
+      </View>
+
       {/* Category Chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
-        {['all', 'verbs', 'nouns', 'adjectives', 'starred'].map((cat) => {
-          const isActive = activeCategory === cat;
-          return (
-            <TouchableOpacity
-              key={cat}
-              style={[styles.chip, isActive && styles.chipActive]}
-              onPress={() => setActiveCategory(cat)}
-            >
-              <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
-                {cat === 'starred' ? `★ Starred (${starredWords.length})` : cat.toUpperCase()}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: SPACING.lg }}
+        contentContainerStyle={{ gap: SPACING.sm }}
+      >
+        {categoryChips.map((cat) => (
+          <Chip
+            key={cat.key}
+            label={cat.label}
+            selected={activeCategory === cat.key}
+            onPress={() => setActiveCategory(cat.key)}
+          />
+        ))}
       </ScrollView>
 
       {/* Vocabulary List */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Vocabulary Results ({filteredWords.length})</Text>
+      <Card padding={SPACING.lg} style={{ marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.bodyStrong, { color: theme.text, marginBottom: SPACING.md }]}>
+          Vocabulary Results ({filteredWords.length})
+        </Text>
         {filteredWords.length === 0 ? (
-          <Text style={styles.emptyText}>No matching vocabulary found.</Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted, textAlign: 'center', marginVertical: SPACING.lg }]}>
+            No matching vocabulary found.
+          </Text>
         ) : (
           filteredWords.map((item) => {
             const isStarred = starredWords.includes(item.word);
             return (
-              <View key={item.word} style={styles.wordRow}>
+              <View
+                key={item.word}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingVertical: SPACING.sm + 2,
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.border,
+                }}
+              >
                 <View style={{ flex: 1 }}>
-                  <View style={styles.wordHeader}>
-                    <Text style={styles.wordTitle}>{item.word}</Text>
-                    <Text style={styles.wordReading}>({item.reading})</Text>
-                    <View style={styles.tagBadge}>
-                      <Text style={styles.tagText}>{item.tag}</Text>
-                    </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs + 2 }}>
+                    <Text style={[TYPE.bodyStrong, { color: theme.text, fontSize: 16 }]}>{item.word}</Text>
+                    <Text style={[TYPE.caption, { color: theme.textMuted }]}>({item.reading})</Text>
+                    <Badge label={item.tag} variant={tagVariant(item.tag)} />
                   </View>
-                  <Text style={styles.wordEnglish}>{item.english}</Text>
+                  <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: 2 }]}>{item.english}</Text>
                 </View>
 
                 <TouchableOpacity
                   onPress={() => toggleStar(item.word)}
-                  style={styles.starButton}
+                  style={{ padding: SPACING.sm }}
                 >
-                  <Text style={styles.starIcon}>{isStarred ? '★' : '☆'}</Text>
+                  <Icon
+                    name="star"
+                    size={18}
+                    color={isStarred ? theme.warning : theme.textMuted}
+                  />
                 </TouchableOpacity>
               </View>
             );
           })
         )}
-      </View>
+      </Card>
 
       {/* Verb Conjugator Section */}
-      <View style={[styles.card, { marginTop: 16 }]}>
-        <Text style={styles.cardTitle}>⚙️ Verb Conjugator Engine</Text>
+      <Card padding={SPACING.lg}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.md, gap: SPACING.xs }}>
+          <Icon name="settings" size={16} color={theme.text} />
+          <Text style={[TYPE.bodyStrong, { color: theme.text }]}>Verb Conjugator Engine</Text>
+        </View>
 
-        <Text style={styles.label}>Select Verb</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.verbRow}>
+        <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm }]}>Select Verb</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginBottom: SPACING.md + 2 }}
+          contentContainerStyle={{ gap: SPACING.sm }}
+        >
           {DICTIONARY_DATA.filter((w) => w.tag === 'Verb').map((v) => (
-            <TouchableOpacity
+            <Chip
               key={v.word}
-              style={[
-                styles.verbChip,
-                conjugateInput === v.word && styles.verbChipActive,
-              ]}
+              label={`${v.word} (${v.reading})`}
+              selected={conjugateInput === v.word}
               onPress={() => setConjugateInput(v.word)}
-            >
-              <Text
-                style={[
-                  styles.verbChipText,
-                  conjugateInput === v.word && styles.verbChipTextActive,
-                ]}
-              >
-                {v.word} ({v.reading})
-              </Text>
-            </TouchableOpacity>
+            />
           ))}
         </ScrollView>
 
         {conjugationResult && (
-          <View style={styles.conjugationGrid}>
-            <View style={styles.gridRow}>
-              <Text style={styles.gridLabel}>Polite (Masu):</Text>
-              <Text style={styles.gridValue}>{conjugationResult.polite}</Text>
+          <View
+            style={{
+              backgroundColor: theme.surfaceAlt,
+              padding: SPACING.md,
+              borderRadius: RADIUS.sm,
+              gap: SPACING.sm,
+            }}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={[TYPE.caption, { fontWeight: '600', color: theme.textMuted }]}>Polite (Masu):</Text>
+              <Text style={[TYPE.caption, { fontWeight: '700', color: theme.accent }]}>{conjugationResult.polite}</Text>
             </View>
-            <View style={styles.gridRow}>
-              <Text style={styles.gridLabel}>Negative (Nai):</Text>
-              <Text style={styles.gridValue}>{conjugationResult.negative}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={[TYPE.caption, { fontWeight: '600', color: theme.textMuted }]}>Negative (Nai):</Text>
+              <Text style={[TYPE.caption, { fontWeight: '700', color: theme.accent }]}>{conjugationResult.negative}</Text>
             </View>
-            <View style={styles.gridRow}>
-              <Text style={styles.gridLabel}>Past (Ta):</Text>
-              <Text style={styles.gridValue}>{conjugationResult.past}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={[TYPE.caption, { fontWeight: '600', color: theme.textMuted }]}>Past (Ta):</Text>
+              <Text style={[TYPE.caption, { fontWeight: '700', color: theme.accent }]}>{conjugationResult.past}</Text>
             </View>
-            <View style={styles.gridRow}>
-              <Text style={styles.gridLabel}>Te Form:</Text>
-              <Text style={styles.gridValue}>{conjugationResult.te}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={[TYPE.caption, { fontWeight: '600', color: theme.textMuted }]}>Te Form:</Text>
+              <Text style={[TYPE.caption, { fontWeight: '700', color: theme.accent }]}>{conjugationResult.te}</Text>
             </View>
           </View>
         )}
-      </View>
-      </ScrollView>
-    </SafeAreaView>
+      </Card>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-  },
-  searchInput: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
-  },
-  exportButton: {
-    backgroundColor: '#5c60f5',
-    paddingHorizontal: 14,
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  exportButtonText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 16,
-    marginRight: 8,
-  },
-  chipActive: {
-    backgroundColor: '#5c60f5',
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  chipTextActive: {
-    color: '#ffffff',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 12,
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#94a3b8',
-    marginVertical: 16,
-  },
-  wordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  wordHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  wordTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  wordReading: {
-    fontSize: 13,
-    color: '#64748b',
-  },
-  tagBadge: {
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  tagText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#5c60f5',
-  },
-  wordEnglish: {
-    fontSize: 13,
-    color: '#334155',
-    marginTop: 2,
-  },
-  starButton: {
-    padding: 8,
-  },
-  starIcon: {
-    fontSize: 20,
-    color: '#f59e0b',
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#475569',
-    marginBottom: 8,
-  },
-  verbRow: {
-    flexDirection: 'row',
-    marginBottom: 14,
-  },
-  verbChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  verbChipActive: {
-    backgroundColor: '#5c60f5',
-  },
-  verbChipText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  verbChipTextActive: {
-    color: '#ffffff',
-  },
-  conjugationGrid: {
-    backgroundColor: '#f8fafc',
-    padding: 12,
-    borderRadius: 8,
-    gap: 8,
-  },
-  gridRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  gridLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#475569',
-  },
-  gridValue: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#5c60f5',
-  },
-});

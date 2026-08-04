@@ -4,148 +4,116 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
   Switch,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
+import { Screen } from '@/src/components/ui/Screen';
+import { Card } from '@/src/components/ui/Card';
+import { SegmentedControl } from '@/src/components/ui/SegmentedControl';
+import { Icon } from '@/src/components/ui/Icon';
 import { KANA_DATA, KanaItem } from './kana-data';
 import { KanaModal } from './KanaModal';
 import { FlashcardPanel } from './FlashcardPanel';
 
+type KanaTab = 'hiragana' | 'katakana' | 'flashcards';
+
+const TAB_OPTIONS: { label: string; value: KanaTab }[] = [
+  { label: 'HIRAGANA', value: 'hiragana' },
+  { label: 'KATAKANA', value: 'katakana' },
+  { label: 'FLASHCARDS', value: 'flashcards' },
+];
+
 export function KanaTrainer() {
-  const [activeTab, setActiveTab] = useState<'hiragana' | 'katakana' | 'flashcards'>('hiragana');
+  const { theme } = useTheme();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<KanaTab>('hiragana');
   const [showRomaji, setShowRomaji] = useState(true);
   const [selectedKana, setSelectedKana] = useState<KanaItem | null>(null);
 
   const filteredKana = KANA_DATA.filter((k) => k.type === activeTab);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Kana Trainer</Text>
-        <Text style={styles.subtitle}>
-          Master Hiragana and Katakana characters, practice pronunciation, and review SRS cards.
-        </Text>
+    <Screen scroll padding={SPACING.lg}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Kana Trainer</Text>
+        <TouchableOpacity
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
       </View>
 
-      {/* Tabs */}
-      <View style={styles.tabRow}>
-        {(['hiragana', 'katakana', 'flashcards'] as const).map((tab) => (
-          <TouchableOpacity
-            key={tab}
-            style={[styles.tabButton, activeTab === tab && styles.tabButtonActive]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-              {tab.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <SegmentedControl
+        options={TAB_OPTIONS}
+        value={activeTab}
+        onChange={setActiveTab}
+        style={{ marginBottom: SPACING.lg }}
+      />
 
-      {/* Kana Grid View */}
       {activeTab !== 'flashcards' && (
-        <View style={styles.card}>
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Show Romaji Readings</Text>
-            <Switch value={showRomaji} onValueChange={setShowRomaji} />
+        <Card>
+          <View style={[styles.toggleRow, { borderBottomColor: theme.border }]}>
+            <Text style={[TYPE.bodyStrong, { fontSize: 13, color: theme.text }]}>
+              Show Romaji Readings
+            </Text>
+            <Switch
+              value={showRomaji}
+              onValueChange={setShowRomaji}
+              trackColor={{ false: theme.surfaceAlt, true: theme.accentMuted }}
+              thumbColor={showRomaji ? theme.accent : theme.textMuted}
+            />
           </View>
 
           <View style={styles.grid}>
             {filteredKana.map((item) => (
               <TouchableOpacity
                 key={item.id}
-                style={styles.gridCell}
+                style={[
+                  styles.gridCell,
+                  {
+                    backgroundColor: theme.surfaceAlt,
+                    borderColor: theme.border,
+                  },
+                ]}
                 onPress={() => setSelectedKana(item)}
               >
-                <Text style={styles.cellChar}>{item.char}</Text>
-                {showRomaji && <Text style={styles.cellRomaji}>{item.romaji}</Text>}
+                <Text style={[TYPE.glyph, { fontSize: 24, color: theme.text }]}>
+                  {item.char}
+                </Text>
+                {showRomaji && (
+                  <Text style={[TYPE.caption, { fontSize: 10, color: theme.accent, marginTop: 2 }]}>
+                    {item.romaji}
+                  </Text>
+                )}
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </Card>
       )}
 
-      {/* Flashcards View */}
       {activeTab === 'flashcards' && <FlashcardPanel />}
 
-      {/* Kana Detail Spotlight Modal */}
       <KanaModal
         visible={Boolean(selectedKana)}
         kana={selectedKana}
         onClose={() => setSelectedKana(null)}
       />
-      </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 10,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  tabButtonActive: {
-    backgroundColor: '#5c60f5',
-  },
-  tabText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  tabTextActive: {
-    color: '#ffffff',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-  },
   toggleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 12,
+    marginBottom: SPACING.lg,
+    paddingBottom: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  toggleLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#334155',
   },
   grid: {
     flexDirection: 'row',
@@ -155,22 +123,9 @@ const styles = StyleSheet.create({
   gridCell: {
     width: 54,
     height: 64,
-    backgroundColor: '#f8fafc',
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  cellChar: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  cellRomaji: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#5c60f5',
-    marginTop: 2,
   },
 });
