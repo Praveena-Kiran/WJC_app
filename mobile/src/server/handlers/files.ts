@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { auth } from '../auth';
 import { prisma } from '../db';
-import { deleteS3Object, isS3Configured } from '../lib/s3';
+import { deleteS3Object, isS3Configured, createPresignedDownloadUrl } from '../lib/s3';
 
 export const filesRoute = new Hono();
 
@@ -164,6 +164,42 @@ filesRoute.post('/', async (c) => {
   } catch (err) {
     return c.json({ ok: false, error: 'Invalid payload' }, 400);
   }
+});
+
+// GET /api/files/:id/download — Generate presigned download URL
+filesRoute.get('/:id/download', async (c) => {
+  const { session, role } = await getAuthAndProfile(c);
+
+  if (!session || (role !== 'woxsen-student' && role !== 'teacher' && role !== 'admin' && role !== 'super_admin')) {
+    return c.json({ ok: false, error: 'Forbidden: Student access required' }, 403);
+  }
+
+  const id = c.req.param('id');
+
+  try {
+    const file = await prisma.uploadedFile.findUnique({
+      where: { id },
+    });
+
+    if (file) {
+      if (isS3Configured() && file.key) {
+        const downloadUrl = await createPresignedDownloadUrl(file.key);
+        if (downloadUrl) {
+          return c.json({ ok: true, downloadUrl });
+        }
+      }
+      return c.json({ ok: true, downloadUrl: file.fileUrl });
+    }
+  } catch (_err) {
+    // DB offline — check fallback registry
+  }
+
+  const fallback = fallbackFileRegistry.find((f) => f.id === id);
+  if (fallback) {
+    return c.json({ ok: true, downloadUrl: fallback.fileUrl || fallback.url || `/vault/${fallback.name}` });
+  }
+
+  return c.json({ ok: false, error: 'File not found' }, 404);
 });
 
 // DELETE /api/files?id=... — Remove file from DB and S3

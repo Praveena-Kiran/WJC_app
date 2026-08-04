@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export interface S3Config {
@@ -64,6 +64,23 @@ export async function createPresignedUploadUrl(
   const fileUrl = `https://${config.bucketName}.s3.${config.region}.amazonaws.com/${key}`;
 
   return { uploadUrl, fileUrl, key };
+}
+
+export async function createPresignedDownloadUrl(
+  key: string,
+  expiresIn: number = 3600
+): Promise<string | null> {
+  const config = getS3Config();
+  const s3Client = getS3Client();
+  if (!config || !s3Client) return null;
+
+  const command = new GetObjectCommand({
+    Bucket: config.bucketName,
+    Key: key,
+  });
+
+  const url = await getSignedUrl(s3Client, command, { expiresIn });
+  return url;
 }
 
 export async function uploadBufferToS3(
