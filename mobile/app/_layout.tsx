@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import { ThemeProvider as NavThemeProvider } from '@react-navigation/native';
+import { ThemeProvider as NavThemeProvider, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState, useRef } from 'react';
@@ -70,9 +70,12 @@ export default process.env.NODE_ENV === 'development' ? RootLayout : Sentry.wrap
 function NavThemeWrapper({ children }: { children: React.ReactNode }) {
   const { theme, themeName } = useTheme();
   const isDark = themeName === 'dark';
+  const baseTheme = isDark ? DarkTheme : DefaultTheme;
   const navTheme = {
-    ...(isDark ? { dark: true } : { dark: false }),
+    ...baseTheme,
+    dark: isDark,
     colors: {
+      ...baseTheme.colors,
       primary: theme.accent,
       background: theme.background,
       card: theme.surface,
@@ -80,8 +83,8 @@ function NavThemeWrapper({ children }: { children: React.ReactNode }) {
       border: theme.border,
       notification: theme.accent,
     },
-  } as const;
-  return <NavThemeProvider value={navTheme as Parameters<typeof NavThemeProvider>[0]['value']}>{children}</NavThemeProvider>;
+  };
+  return <NavThemeProvider value={navTheme}>{children}</NavThemeProvider>;
 }
 
 function RootLayoutNav({ setIsAuthResolving }: { setIsAuthResolving: (val: boolean) => void }) {

@@ -24,31 +24,32 @@ function resolveThemeName(preference: ThemePreference, systemScheme: ThemeName):
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useSystemScheme() ?? 'light';
   const [preference, setPreferenceRaw] = useState<ThemePreference>('system');
-  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(PREF_KEY).then((v) => {
-      if (v === 'light' || v === 'dark' || v === 'system') {
-        setPreferenceRaw(v);
-      }
-      setLoaded(true);
-    });
+    AsyncStorage.getItem(PREF_KEY)
+      .then((v) => {
+        if (v === 'light' || v === 'dark' || v === 'system') {
+          setPreferenceRaw(v);
+        }
+      })
+      .catch(() => null);
   }, []);
 
   const setPreference = useCallback((p: ThemePreference) => {
     setPreferenceRaw(p);
-    AsyncStorage.setItem(PREF_KEY, p);
+    AsyncStorage.setItem(PREF_KEY, p).catch(() => null);
   }, []);
 
   const themeName = resolveThemeName(preference, systemScheme as ThemeName);
   const theme = useMemo(() => getThemeTokens(themeName), [themeName]);
 
-  if (!loaded) {
-    return <>{children}</>;
-  }
+  const value = useMemo(
+    () => ({ theme, themeName, preference, setPreference }),
+    [theme, themeName, preference, setPreference]
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, themeName, preference, setPreference }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
