@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
 import { Screen, Card, Button, SegmentedControl, Chip, Icon } from '@/src/components/ui';
@@ -62,6 +63,7 @@ const COUNT_OPTIONS = [5, 10, 20];
 
 export function QuizView() {
   const { theme } = useTheme();
+  const router = useRouter();
   const [deckType, setDeckType] = useState<'hiragana' | 'katakana' | 'vocab'>('hiragana');
   const [questionCount, setQuestionCount] = useState<number>(10);
   const [quizState, setQuizState] = useState<'lobby' | 'active' | 'finished'>('lobby');
@@ -150,11 +152,21 @@ export function QuizView() {
 
   return (
     <Screen>
-      <View style={{ marginBottom: SPACING.lg }}>
-        <Text style={[TYPE.title, { color: theme.text }]}>Multiple Choice Quiz</Text>
-        <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
-          Test your Hiragana, Katakana, and N5 Vocabulary skills.
-        </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.lg }}>
+        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
+          <Text style={[TYPE.title, { color: theme.text }]}>Multiple Choice Quiz</Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
+            Test your Hiragana, Katakana, and N5 Vocabulary skills.
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ paddingTop: SPACING.xs }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
       </View>
 
       {quizState === 'lobby' && (

@@ -6,11 +6,13 @@ import {
   StyleSheet,
   Switch,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
 import { Screen } from '@/src/components/ui/Screen';
 import { Card } from '@/src/components/ui/Card';
 import { SegmentedControl } from '@/src/components/ui/SegmentedControl';
+import { Icon } from '@/src/components/ui/Icon';
 import { KANA_DATA, KanaItem } from './kana-data';
 import { KanaModal } from './KanaModal';
 import { FlashcardPanel } from './FlashcardPanel';
@@ -25,6 +27,7 @@ const TAB_OPTIONS: { label: string; value: KanaTab }[] = [
 
 export function KanaTrainer() {
   const { theme } = useTheme();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<KanaTab>('hiragana');
   const [showRomaji, setShowRomaji] = useState(true);
   const [selectedKana, setSelectedKana] = useState<KanaItem | null>(null);
@@ -33,11 +36,21 @@ export function KanaTrainer() {
 
   return (
     <Screen scroll padding={SPACING.lg}>
-      <View style={{ marginBottom: SPACING.lg }}>
-        <Text style={[TYPE.title, { color: theme.text }]}>Kana Trainer</Text>
-        <Text style={[TYPE.body, { fontSize: 13, color: theme.textMuted, marginTop: SPACING.xs }]}>
-          Master Hiragana and Katakana characters, practice pronunciation, and review SRS cards.
-        </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.lg }}>
+        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
+          <Text style={[TYPE.title, { color: theme.text }]}>Kana Trainer</Text>
+          <Text style={[TYPE.body, { fontSize: 13, color: theme.textMuted, marginTop: SPACING.xs }]}>
+            Master Hiragana and Katakana characters, practice pronunciation, and review SRS cards.
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ paddingTop: SPACING.xs }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
       </View>
 
       <SegmentedControl

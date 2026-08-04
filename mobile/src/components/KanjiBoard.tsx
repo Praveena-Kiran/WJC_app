@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
 import { Screen } from '@/src/components/ui/Screen';
@@ -15,6 +16,7 @@ import { KANJI_DATA, KanjiItem } from './kanji-data';
 
 export function KanjiBoard() {
   const { theme } = useTheme();
+  const router = useRouter();
   const [levelFilter, setLevelFilter] = useState<'N5' | 'N4'>('N5');
   const [selectedKanji, setSelectedKanji] = useState<KanjiItem>(KANJI_DATA[0]);
   const [accuracyScore, setAccuracyScore] = useState<number | null>(null);
@@ -23,11 +25,21 @@ export function KanjiBoard() {
 
   return (
     <Screen scroll padding={SPACING.lg}>
-      <View style={{ marginBottom: SPACING.lg }}>
-        <Text style={[TYPE.title, { color: theme.text }]}>Kanji Practice Board</Text>
-        <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
-          Interactive stroke order drawing canvas, onyomi/kunyomi readings & accuracy feedback.
-        </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.lg }}>
+        <View style={{ flex: 1, paddingRight: SPACING.sm }}>
+          <Text style={[TYPE.title, { color: theme.text }]}>Kanji Practice Board</Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
+            Interactive stroke order drawing canvas, onyomi/kunyomi readings & accuracy feedback.
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => router.push('/more/settings')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={{ paddingTop: SPACING.xs }}
+          accessibilityLabel="Settings"
+        >
+          <Icon name="sliders" size={20} color={theme.accent} />
+        </TouchableOpacity>
       </View>
 
       {/* Level Toggle */}

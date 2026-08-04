@@ -12,22 +12,10 @@ export default function TabLayout() {
     <Tabs
       tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: theme.background },
-        headerShadowVisible: false,
-        headerTintColor: theme.text,
-        headerTitleStyle: { fontWeight: '700' },
-        headerRight: () => (
-          <TouchableOpacity
-            onPress={() => router.push('/more/settings')}
-            style={{ marginRight: SPACING.lg }}
-          >
-            <Icon name="sliders" size={20} color={theme.accent} />
-          </TouchableOpacity>
-        ),
+        headerShown: false,
       }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Home', headerShown: false }} />
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
       <Tabs.Screen name="kana" options={{ title: 'Kana' }} />
       <Tabs.Screen name="kanji" options={{ title: 'Kanji' }} />
       <Tabs.Screen name="dictionary" options={{ title: 'Dictionary' }} />
