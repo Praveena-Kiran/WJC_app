@@ -1,29 +1,17 @@
-/**
- * forgot.tsx — Forgot password screen
- *
- * Allows users to request a password reset link via email.
- * Uses better-auth's forgetPassword with the zengo:// deep-link scheme
- * so the reset link opens the mobile app directly.
- *
- * TODO: Replace hardcoded zen colors with theme tokens from #016.
- *
- * Closes #010
- */
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { authClient } from '@/src/auth-client';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { Button } from '@/src/components/ui/Button';
+import { Input } from '@/src/components/ui/Input';
+import { Icon } from '@/src/components/ui/Icon';
+import { TYPE, SPACING } from '@/src/theme/tokens';
 
 export default function ForgotPasswordScreen() {
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,10 +28,8 @@ export default function ForgotPasswordScreen() {
     try {
       await (authClient as any).forgetPassword({
         email: email.trim().toLowerCase(),
-        // Deep-link URL — opens the app to the reset-password screen.
         redirectTo: 'zengo://reset-password',
       });
-      // Show success regardless of whether the email exists (security best practice).
       setSent(true);
     } catch (e) {
       setError('Failed to send reset link. Please check your connection and try again.');
@@ -55,115 +41,84 @@ export default function ForgotPasswordScreen() {
 
   if (sent) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.successIcon}>📬</Text>
-        <Text style={styles.title}>Check your inbox</Text>
-        <Text style={styles.subtitle}>
-          If an account exists for{' '}
-          <Text style={styles.emailHighlight}>{email}</Text>, you'll receive a
-          password reset link shortly.
-        </Text>
-        <Text style={styles.note}>
-          Tap the link in the email to open the Zengo app and reset your password.
-        </Text>
-        <Link href={"/(auth)/login" as any} style={styles.backLink}>
-          ← Back to login
-        </Link>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={['top', 'left', 'right']}>
+        <View style={styles.containerCentered}>
+          <Icon name="mail" size={48} color={theme.accent} />
+          <Text style={[TYPE.title, { color: theme.text, marginTop: SPACING.lg, textAlign: 'center' }]}>
+            Check your inbox
+          </Text>
+          <Text style={[TYPE.body, { color: theme.textMuted, marginTop: SPACING.md, textAlign: 'center', lineHeight: 22 }]}>
+            If an account exists for{' '}
+            <Text style={{ color: theme.accent, fontWeight: '600' }}>{email}</Text>, you'll receive a
+            password reset link shortly.
+          </Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted, textAlign: 'center', marginTop: SPACING.md, lineHeight: 20 }]}>
+            Tap the link in the email to open the Zengo app and reset your password.
+          </Text>
+          <Link href={'/(auth)/login' as any} style={{ color: theme.accent, fontWeight: '600', marginTop: SPACING.xxl, fontSize: 15 }}>
+            Back to login
+          </Link>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.logo}>🔐</Text>
-          <Text style={styles.title}>Reset password</Text>
-          <Text style={styles.subtitle}>
-            Enter the email address you used to create your account and we'll send you
-            a password reset link.
-          </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={['top', 'left', 'right']}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={styles.containerCentered}>
+          <View style={{ alignItems: 'center', marginBottom: SPACING.xxxl }}>
+            <Text style={[styles.logo, { color: theme.accent }]}>禅語</Text>
+            <Text style={[TYPE.title, { color: theme.text, marginBottom: SPACING.sm, textAlign: 'center' }]}>
+              Reset password
+            </Text>
+            <Text style={[TYPE.body, { color: theme.textMuted, textAlign: 'center', lineHeight: 22 }]}>
+              Enter the email address you used to create your account and we'll send you a password reset link.
+            </Text>
+          </View>
+
+          <View style={{ gap: SPACING.md, width: '100%' }}>
+            <Input
+              label="Email"
+              placeholder="you@example.com"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              returnKeyType="send"
+              onSubmitEditing={handleSendReset}
+              error={undefined}
+            />
+
+            {error ? (
+              <Text style={[TYPE.caption, { color: theme.error, textAlign: 'center' }]}>{error}</Text>
+            ) : null}
+
+            <Button title="Send Reset Link" onPress={handleSendReset} loading={loading} />
+
+            <Link href={'/(auth)/login' as any} style={{ color: theme.accent, fontWeight: '600', textAlign: 'center', fontSize: 14 }}>
+              Back to login
+            </Link>
+          </View>
         </View>
-
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="you@example.com"
-          placeholderTextColor="#94a3b8"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          textContentType="emailAddress"
-          returnKeyType="send"
-          onSubmitEditing={handleSendReset}
-        />
-
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleSendReset}
-          disabled={loading}
-          activeOpacity={0.8}
-        >
-          {loading ? (
-            <ActivityIndicator color="#ffffff" size="small" />
-          ) : (
-            <Text style={styles.buttonText}>Send Reset Link</Text>
-          )}
-        </TouchableOpacity>
-
-        <Link href={"/(auth)/login" as any} style={styles.backLink}>
-          ← Back to login
-        </Link>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
-// TODO: Replace with theme tokens from #016
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#0f172a' },
-  container: {
+  containerCentered: {
     flex: 1,
-    backgroundColor: '#0f172a',
-    paddingHorizontal: 24,
-    paddingVertical: 48,
     justifyContent: 'center',
-  },
-  header: { marginBottom: 32 },
-  logo: { fontSize: 40, marginBottom: 12, textAlign: 'center' },
-  title: { fontSize: 26, fontWeight: '800', color: '#f1f5f9', marginBottom: 10, textAlign: 'center' },
-  subtitle: { fontSize: 14, color: '#94a3b8', lineHeight: 22, textAlign: 'center' },
-  label: { fontSize: 13, fontWeight: '600', color: '#cbd5e1', marginBottom: 6, marginTop: 8 },
-  input: {
-    backgroundColor: '#1e293b',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: '#f1f5f9',
-  },
-  errorText: { color: '#f87171', fontSize: 13, marginTop: 8, textAlign: 'center' },
-  button: {
-    backgroundColor: '#6366f1',
-    borderRadius: 10,
-    paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 20,
+    paddingHorizontal: SPACING.xxl,
+    paddingVertical: SPACING.xxxl,
   },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
-  backLink: { color: '#818cf8', fontSize: 14, textAlign: 'center', marginTop: 20 },
-  successIcon: { fontSize: 56, textAlign: 'center', marginBottom: 16 },
-  emailHighlight: { color: '#818cf8', fontWeight: '600' },
-  note: { fontSize: 13, color: '#64748b', textAlign: 'center', marginTop: 12, lineHeight: 20 },
+  logo: {
+    fontSize: 48,
+    fontWeight: '700',
+    marginBottom: SPACING.md,
+  },
 });

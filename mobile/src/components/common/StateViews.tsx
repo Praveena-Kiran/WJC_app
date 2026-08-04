@@ -1,11 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { Icon } from '@/src/components/ui/Icon';
+import { SPACING, RADIUS, TYPE, CARD_SHADOW } from '@/src/theme/tokens';
 
 export function LoadingSkeleton({ message = 'Loading Japanese syllabus...' }: { message?: string }) {
+  const { theme } = useTheme();
   return (
     <View style={styles.centerBox}>
-      <ActivityIndicator size="large" color="#5c60f5" />
-      <Text style={styles.loadingText}>{message}</Text>
+      <ActivityIndicator size="large" color={theme.accent} />
+      <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.md }]}>
+        {message}
+      </Text>
     </View>
   );
 }
@@ -17,11 +23,14 @@ export function EmptyState({
   title?: string;
   subtitle?: string;
 }) {
+  const { theme } = useTheme();
   return (
     <View style={styles.centerBox}>
-      <Text style={styles.emptyIcon}>📂</Text>
-      <Text style={styles.emptyTitle}>{title}</Text>
-      <Text style={styles.emptySub}>{subtitle}</Text>
+      <Icon name="folder" size={36} color={theme.textMuted} />
+      <Text style={[TYPE.bodyStrong, { color: theme.text, marginTop: SPACING.sm }]}>{title}</Text>
+      <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs, textAlign: 'center' }]}>
+        {subtitle}
+      </Text>
     </View>
   );
 }
@@ -33,12 +42,39 @@ export function ErrorBanner({
   message?: string;
   onRetry?: () => void;
 }) {
+  const { theme } = useTheme();
   return (
-    <View style={styles.errorBox}>
-      <Text style={styles.errorText}>⚠️ {message}</Text>
+    <View
+      style={{
+        backgroundColor: theme.errorMuted,
+        padding: SPACING.md,
+        borderRadius: RADIUS.sm,
+        borderWidth: 1,
+        borderColor: theme.error,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginVertical: SPACING.sm,
+      }}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+        <Icon name="alert-triangle" size={14} color={theme.error} />
+        <Text style={[TYPE.caption, { color: theme.error, marginLeft: SPACING.sm, flex: 1 }]}>
+          {message}
+        </Text>
+      </View>
       {onRetry && (
-        <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
-          <Text style={styles.retryText}>Retry</Text>
+        <TouchableOpacity
+          onPress={onRetry}
+          style={{
+            backgroundColor: theme.error,
+            paddingHorizontal: SPACING.md,
+            paddingVertical: SPACING.xs,
+            borderRadius: RADIUS.sm - 2,
+            marginLeft: SPACING.sm,
+          }}
+        >
+          <Text style={[TYPE.caption, { color: theme.onAccent }]}>Retry</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -47,57 +83,8 @@ export function ErrorBanner({
 
 const styles = StyleSheet.create({
   centerBox: {
-    padding: 30,
+    padding: SPACING.xxxl,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  loadingText: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 12,
-    fontWeight: '600',
-  },
-  emptyIcon: {
-    fontSize: 36,
-    marginBottom: 8,
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  emptySub: {
-    fontSize: 12,
-    color: '#64748b',
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  errorBox: {
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ef4444',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginVertical: 8,
-  },
-  errorText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#ef4444',
-    flex: 1,
-  },
-  retryBtn: {
-    backgroundColor: '#ef4444',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  retryText: {
-    color: '#ffffff',
-    fontSize: 11,
-    fontWeight: '700',
   },
 });

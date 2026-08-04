@@ -13,13 +13,11 @@ describe('UI Primitives & Navigation (Issues #018, #019b, #020, #021, #030, #031
 
   it('verifies existence of UI components and screen routes', () => {
     const headerPath = path.resolve(__dirname, '../components/MobileHeader.tsx');
-    const bannerPath = path.resolve(__dirname, '../components/SoundBanner.tsx');
     const bonsaiPath = path.resolve(__dirname, '../components/dashboard/BonsaiGarden.tsx');
     const timelinePath = path.resolve(__dirname, '../components/dashboard/PebbleTimeline.tsx');
     const moreMenuPath = path.resolve(__dirname, '../../app/more/index.tsx');
 
     expect(fs.existsSync(headerPath)).toBe(true);
-    expect(fs.existsSync(bannerPath)).toBe(true);
     expect(fs.existsSync(bonsaiPath)).toBe(true);
     expect(fs.existsSync(timelinePath)).toBe(true);
     expect(fs.existsSync(moreMenuPath)).toBe(true);

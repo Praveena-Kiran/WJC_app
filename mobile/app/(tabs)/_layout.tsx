@@ -1,25 +1,30 @@
-/**
- * (tabs)/_layout.tsx — Tab bar navigator
- *
- * Secondary auth guard: if a user somehow reaches this layout without a
- * valid session, they are immediately redirected to the welcome screen.
- * The primary guard lives in the root _layout.tsx.
- *
- * Fix: render null while the session is still hydrating (isPending=true)
- * to avoid the race condition where a fresh login triggers the guard
- * before the session cookie has propagated to useSession().
- */
-import { Tabs } from 'expo-router';
-import { GlassmorphicTabBar } from '@/src/components/navigation/GlassmorphicTabBar';
+import { Tabs, router } from 'expo-router';
+import { TabBar } from '@/src/components/navigation/TabBar';
+import { TouchableOpacity } from 'react-native';
+import { Icon } from '@/src/components/ui/Icon';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING } from '@/src/theme/tokens';
 
 export default function TabLayout() {
+  const { theme } = useTheme();
+
   return (
     <Tabs
-      tabBar={(props) => <GlassmorphicTabBar {...props} />}
+      tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
-        headerShown: false,
-        // Transparent scene container so the floating pill overlaps content cleanly
-        sceneStyle: { backgroundColor: 'transparent' },
+        headerShown: true,
+        headerStyle: { backgroundColor: theme.background },
+        headerShadowVisible: false,
+        headerTintColor: theme.text,
+        headerTitleStyle: { fontWeight: '700' },
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={() => router.push('/more/settings')}
+            style={{ marginRight: SPACING.lg }}
+          >
+            <Icon name="sliders" size={20} color={theme.accent} />
+          </TouchableOpacity>
+        ),
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
@@ -27,7 +32,6 @@ export default function TabLayout() {
       <Tabs.Screen name="kanji" options={{ title: 'Kanji' }} />
       <Tabs.Screen name="dictionary" options={{ title: 'Dictionary' }} />
       <Tabs.Screen name="quiz" options={{ title: 'Quiz' }} />
-      <Tabs.Screen name="kaiwa" options={{ title: 'Kaiwa' }} />
     </Tabs>
   );
 }

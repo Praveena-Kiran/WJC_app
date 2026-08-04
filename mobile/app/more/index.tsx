@@ -1,80 +1,83 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { useApp } from '@/src/context/AppContext';
+import { Screen } from '@/src/components/ui/Screen';
+import { Card } from '@/src/components/ui/Card';
+import { ListItem } from '@/src/components/ui/ListItem';
+import { authClient } from '@/src/auth-client';
+import { Text } from 'react-native';
+import { TYPE, SPACING, CARD_SHADOW } from '@/src/theme/tokens';
+import { View } from 'react-native';
 
 export default function MoreMenuScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const { state, signOut } = useApp();
 
-  const menuItems = [
-    { title: '📅 JLPT N5 Planner & Roadmap', path: '/more/planner', icon: '🗺️' },
-    { title: '🎙️ Pronunciation & Pitch Coach', path: '/more/pronunciation', icon: '🎤' },
-    { title: '🧩 Kanji Radical Builder', path: '/more/radicals', icon: '🧩' },
-    { title: '⚡ Super Admin Portal', path: '/more/admin', icon: '⚙️' },
-  ];
+  const isAdmin = state.userRole === 'admin';
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>More Modules & Settings</Text>
-        <Text style={styles.subtitle}>Explore additional learning tools and system features.</Text>
-      </View>
+    <Screen style={{ gap: SPACING.lg }}>
+      <Text style={[TYPE.title, { color: theme.text, marginBottom: SPACING.xs }]}>
+        More
+      </Text>
 
-      {menuItems.map((item, idx) => (
-        <TouchableOpacity
-          key={idx}
-          style={styles.menuCard}
-          onPress={() => router.push(item.path as any)}
-        >
-          <Text style={styles.menuIcon}>{item.icon}</Text>
-          <Text style={styles.menuTitle}>{item.title}</Text>
-          <Text style={styles.arrowText}>→</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+      <Card>
+        <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm, paddingHorizontal: SPACING.md, paddingTop: SPACING.md }]}>
+          Practice
+        </Text>
+        <ListItem
+          icon="message-circle"
+          title="Kaiwa"
+          subtitle="Conversation practice"
+          onPress={() => router.push('/more/kaiwa')}
+        />
+        <ListItem
+          icon="calendar"
+          title="N5 Planner"
+          subtitle="Exam roadmap"
+          onPress={() => router.push('/more/planner')}
+        />
+        <ListItem
+          icon="grid"
+          title="Kanji Radicals"
+          subtitle="Build kanji from parts"
+          onPress={() => router.push('/more/radicals')}
+        />
+      </Card>
+
+      <Card>
+        <ListItem
+          icon="sliders"
+          title="Settings"
+          subtitle="Appearance, dashboard mode"
+          onPress={() => router.push('/more/settings')}
+        />
+      </Card>
+
+      {isAdmin && (
+        <Card>
+          <ListItem
+            icon="shield"
+            title="Admin Portal"
+            subtitle="User management, health, audit"
+            onPress={() => router.push('/more/admin')}
+          />
+        </Card>
+      )}
+
+      <Card>
+        <ListItem
+          icon="log-out"
+          title="Sign Out"
+          subtitle="Return to welcome screen"
+          onPress={async () => {
+            await authClient.signOut();
+            await signOut();
+            router.replace('/');
+          }}
+        />
+      </Card>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  menuCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    gap: 12,
-    elevation: 2,
-  },
-  menuIcon: {
-    fontSize: 24,
-  },
-  menuTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#0f172a',
-    flex: 1,
-  },
-  arrowText: {
-    fontSize: 16,
-    color: '#5c60f5',
-    fontWeight: '700',
-  },
-});

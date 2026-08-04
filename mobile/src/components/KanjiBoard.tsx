@@ -3,14 +3,18 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
+import { Screen } from '@/src/components/ui/Screen';
+import { Card } from '@/src/components/ui/Card';
+import { SegmentedControl } from '@/src/components/ui/SegmentedControl';
+import { Icon } from '@/src/components/ui/Icon';
 import { KanjiDrawingCanvas } from './drawing/KanjiDrawingCanvas';
 import { KANJI_DATA, KanjiItem } from './kanji-data';
 
 export function KanjiBoard() {
+  const { theme } = useTheme();
   const [levelFilter, setLevelFilter] = useState<'N5' | 'N4'>('N5');
   const [selectedKanji, setSelectedKanji] = useState<KanjiItem>(KANJI_DATA[0]);
   const [accuracyScore, setAccuracyScore] = useState<number | null>(null);
@@ -18,70 +22,93 @@ export function KanjiBoard() {
   const filteredKanji = KANJI_DATA.filter((k) => k.level === levelFilter);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Kanji Practice Board</Text>
-          <Text style={styles.subtitle}>
-            Interactive stroke order drawing canvas, onyomi/kunyomi readings & accuracy feedback.
-          </Text>
-        </View>
-
-      {/* Level Toggle */}
-      <View style={styles.levelRow}>
-        {(['N5', 'N4'] as const).map((lvl) => (
-          <TouchableOpacity
-            key={lvl}
-            style={[styles.levelBtn, levelFilter === lvl && styles.levelBtnActive]}
-            onPress={() => {
-              setLevelFilter(lvl);
-              const first = KANJI_DATA.find((k) => k.level === lvl);
-              if (first) setSelectedKanji(first);
-            }}
-          >
-            <Text style={[styles.levelText, levelFilter === lvl && styles.levelTextActive]}>
-              {lvl} Kanji ({KANJI_DATA.filter((k) => k.level === lvl).length})
-            </Text>
-          </TouchableOpacity>
-        ))}
+    <Screen scroll padding={SPACING.lg}>
+      <View style={{ marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text }]}>Kanji Practice Board</Text>
+        <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
+          Interactive stroke order drawing canvas, onyomi/kunyomi readings & accuracy feedback.
+        </Text>
       </View>
 
+      {/* Level Toggle */}
+      <SegmentedControl<'N5' | 'N4'>
+        options={[
+          { label: `N5 Kanji (${KANJI_DATA.filter((k) => k.level === 'N5').length})`, value: 'N5' },
+          { label: `N4 Kanji (${KANJI_DATA.filter((k) => k.level === 'N4').length})`, value: 'N4' },
+        ]}
+        value={levelFilter}
+        onChange={(lvl) => {
+          setLevelFilter(lvl);
+          const first = KANJI_DATA.find((k) => k.level === lvl);
+          if (first) setSelectedKanji(first);
+        }}
+        style={{ marginBottom: SPACING.lg }}
+      />
+
       {/* Kanji Selector Grid */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Select Kanji Character</Text>
-        <View style={styles.kanjiGrid}>
+      <Card padding={SPACING.lg} style={{ marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.bodyStrong, { color: theme.text, marginBottom: SPACING.md }]}>Select Kanji Character</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm + 2 }}>
           {filteredKanji.map((item) => {
             const isSelected = selectedKanji.char === item.char;
             return (
               <TouchableOpacity
                 key={item.char}
-                style={[styles.kanjiCell, isSelected && styles.kanjiCellSelected]}
+                style={{
+                  width: 52,
+                  height: 52,
+                  backgroundColor: isSelected ? theme.accent : theme.surfaceAlt,
+                  borderWidth: 1,
+                  borderColor: isSelected ? theme.accent : theme.border,
+                  borderRadius: RADIUS.sm,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
                 onPress={() => {
                   setSelectedKanji(item);
                   setAccuracyScore(null);
                 }}
               >
-                <Text style={[styles.kanjiCellChar, isSelected && styles.kanjiCellCharSelected]}>
+                <Text
+                  style={{
+                    fontSize: 22,
+                    fontWeight: '800',
+                    color: isSelected ? theme.onAccent : theme.text,
+                  }}
+                >
                   {item.char}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </View>
-      </View>
+      </Card>
 
       {/* Drawing Workspace */}
-      <View style={[styles.card, { marginTop: 16 }]}>
-        <Text style={styles.cardTitle}>
+      <Card padding={SPACING.lg}>
+        <Text style={[TYPE.bodyStrong, { color: theme.text, marginBottom: SPACING.md }]}>
           Workspace: {selectedKanji.char} ({selectedKanji.meaning})
         </Text>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Onyomi: <Text style={styles.infoVal}>{selectedKanji.onyomi}</Text></Text>
-          <Text style={styles.infoLabel}>Kunyomi: <Text style={styles.infoVal}>{selectedKanji.kunyomi}</Text></Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            marginBottom: SPACING.lg,
+            backgroundColor: theme.surfaceAlt,
+            padding: SPACING.sm + 2,
+            borderRadius: RADIUS.sm,
+          }}
+        >
+          <Text style={[TYPE.caption, { color: theme.textMuted }]}>
+            Onyomi: <Text style={{ color: theme.accent, fontWeight: '700', fontSize: 13 }}>{selectedKanji.onyomi}</Text>
+          </Text>
+          <Text style={[TYPE.caption, { color: theme.textMuted }]}>
+            Kunyomi: <Text style={{ color: theme.accent, fontWeight: '700', fontSize: 13 }}>{selectedKanji.kunyomi}</Text>
+          </Text>
         </View>
 
-        <View style={styles.drawingWrapper}>
+        <View style={{ alignItems: 'center', marginVertical: SPACING.sm }}>
           <KanjiDrawingCanvas
             guidePaths={selectedKanji.strokes || []}
             onCheckResult={(score) => setAccuracyScore(score)}
@@ -90,146 +117,29 @@ export function KanjiBoard() {
 
         {accuracyScore !== null && (
           <View
-            style={[
-              styles.accuracyBanner,
-              accuracyScore >= 70 ? styles.accuracyPass : styles.accuracyFail,
-            ]}
+            style={{
+              marginTop: SPACING.lg,
+              padding: SPACING.md,
+              borderRadius: RADIUS.sm,
+              backgroundColor: accuracyScore >= 70 ? theme.successMuted : theme.errorMuted,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: SPACING.sm,
+            }}
           >
-            <Text style={styles.accuracyBannerText}>
+            <Icon
+              name={accuracyScore >= 70 ? 'check-circle' : 'info'}
+              size={16}
+              color={accuracyScore >= 70 ? theme.success : theme.error}
+            />
+            <Text style={[TYPE.caption, { fontWeight: '700', color: theme.text }]}>
               {accuracyScore >= 70
-                ? `🎉 Great Job! Accuracy: ${accuracyScore}% (+Practiced!)`
-                : `💡 Stroke Accuracy: ${accuracyScore}%. Follow guide paths carefully.`}
+                ? `Great Job! Accuracy: ${accuracyScore}% (+Practiced!)`
+                : `Stroke Accuracy: ${accuracyScore}%. Follow guide paths carefully.`}
             </Text>
           </View>
         )}
-      </View>
-      </ScrollView>
-    </SafeAreaView>
+      </Card>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  levelRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  levelBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    backgroundColor: '#e2e8f0',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  levelBtnActive: {
-    backgroundColor: '#5c60f5',
-  },
-  levelText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#475569',
-  },
-  levelTextActive: {
-    color: '#ffffff',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1e293b',
-    marginBottom: 12,
-  },
-  kanjiGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  kanjiCell: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  kanjiCellSelected: {
-    backgroundColor: '#5c60f5',
-    borderColor: '#5c60f5',
-  },
-  kanjiCellChar: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  kanjiCellCharSelected: {
-    color: '#ffffff',
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
-    backgroundColor: '#f8fafc',
-    padding: 10,
-    borderRadius: 8,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: '#64748b',
-    fontWeight: '600',
-  },
-  infoVal: {
-    fontSize: 13,
-    color: '#5c60f5',
-    fontWeight: '700',
-  },
-  drawingWrapper: {
-    alignItems: 'center',
-    marginVertical: 8,
-  },
-  accuracyBanner: {
-    marginTop: 16,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  accuracyPass: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-  },
-  accuracyFail: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-  },
-  accuracyBannerText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-});

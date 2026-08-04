@@ -1,6 +1,5 @@
 import 'react-native-gesture-handler';
-import { useFonts } from 'expo-font';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState, useRef } from 'react';
@@ -12,10 +11,11 @@ import { onlineManager } from '@tanstack/react-query';
 import * as Network from 'expo-network';
 
 import { queryClient, persister } from '@/src/lib/query-client';
-import { useColorScheme } from '@/components/useColorScheme';
 import { useOtaUpdate } from '../src/hooks/useOtaUpdate';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { authClient } from '@/src/auth-client';
+import { ThemeProvider, useTheme } from '@/src/theme/ThemeContext';
+import { AppProvider } from '@/src/context/AppContext';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -25,23 +25,24 @@ Sentry.init({
 });
 
 export {
-  // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Start at the welcome/index screen; the auth guard redirects logged-in users.
   initialRouteName: 'index',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading and session resolution complete.
 SplashScreen.preventAutoHideAsync();
 
 function RootLayout() {
   useOtaUpdate();
   const [isAuthResolving, setIsAuthResolving] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
-  // ── Online manager: refetch queries when network reconnects ────────────────
+  useEffect(() => {
+    setLoaded(true);
+  }, []);
+
   useEffect(() => {
     return onlineManager.setEventListener((setOnline) => {
       const checkNetwork = async () => {
@@ -53,15 +54,6 @@ function RootLayout() {
       return () => subscription.remove();
     });
   }, []);
-
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
 
   if (!loaded) {
     return null;
@@ -75,14 +67,27 @@ function RootLayout() {
 
 export default process.env.NODE_ENV === 'development' ? RootLayout : Sentry.wrap(RootLayout);
 
+function NavThemeWrapper({ children }: { children: React.ReactNode }) {
+  const { theme, themeName } = useTheme();
+  const isDark = themeName === 'dark';
+  const navTheme = {
+    ...(isDark ? { dark: true } : { dark: false }),
+    colors: {
+      primary: theme.accent,
+      background: theme.background,
+      card: theme.surface,
+      text: theme.text,
+      border: theme.border,
+      notification: theme.accent,
+    },
+  } as const;
+  return <NavThemeProvider value={navTheme as Parameters<typeof NavThemeProvider>[0]['value']}>{children}</NavThemeProvider>;
+}
+
 function RootLayoutNav({ setIsAuthResolving }: { setIsAuthResolving: (val: boolean) => void }) {
-  const colorScheme = useColorScheme();
   const router = useRouter();
   const hasResolvedRef = useRef(false);
 
-  // ── Auth session hydration + splash gate ──────────────────────────────────
-  // Check if a session already exists in SecureStore on cold boot.
-  // Performs router.replace('/(tabs)') when the Stack navigator is already mounted.
   useEffect(() => {
     if (hasResolvedRef.current) return;
     hasResolvedRef.current = true;
@@ -110,16 +115,18 @@ function RootLayoutNav({ setIsAuthResolving }: { setIsAuthResolving: (val: boole
         client={queryClient}
         persistOptions={{ persister }}
       >
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            {/* Welcome screen — shown to unauthenticated users only */}
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            {/* Onboarding is a full-screen step outside tabs/auth stacks */}
-            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-          </Stack>
+        <ThemeProvider>
+          <AppProvider>
+            <NavThemeWrapper>
+              <Stack>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                <Stack.Screen name="more" options={{ headerShown: false }} />
+              </Stack>
+            </NavThemeWrapper>
+          </AppProvider>
         </ThemeProvider>
       </PersistQueryClientProvider>
     </SafeAreaProvider>

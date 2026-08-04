@@ -3,12 +3,17 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
 } from 'react-native';
-import { PUZZLES, RadicalPuzzle } from './radical-data';
+import { useTheme } from '@/src/theme/ThemeContext';
+import { SPACING, RADIUS, TYPE } from '@/src/theme/tokens';
+import { Screen } from '@/src/components/ui/Screen';
+import { Card } from '@/src/components/ui/Card';
+import { Button } from '@/src/components/ui/Button';
+import { Icon } from '@/src/components/ui/Icon';
+import { PUZZLES } from './radical-data';
 
 export function KanjiRadicalView() {
+  const { theme } = useTheme();
   const [puzzleIndex, setPuzzleIndex] = useState(0);
   const [selectedParts, setSelectedParts] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<{ isCorrect: boolean; text: string } | null>(null);
@@ -30,9 +35,9 @@ export function KanjiRadicalView() {
       currentPuzzle.radicals.every((r) => selectedParts.includes(r));
 
     if (isCorrect) {
-      setFeedback({ isCorrect: true, text: `🎉 Perfect! ${currentPuzzle.radicals.join(' + ')} = ${currentPuzzle.targetKanji} (${currentPuzzle.meaning})` });
+      setFeedback({ isCorrect: true, text: `Perfect! ${currentPuzzle.radicals.join(' + ')} = ${currentPuzzle.targetKanji} (${currentPuzzle.meaning})` });
     } else {
-      setFeedback({ isCorrect: false, text: `💡 Try again! Combine radicals to form ${currentPuzzle.targetKanji}.` });
+      setFeedback({ isCorrect: false, text: `Try again! Combine radicals to form ${currentPuzzle.targetKanji}.` });
     }
   };
 
@@ -43,42 +48,80 @@ export function KanjiRadicalView() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Kanji Radical Builder</Text>
-        <Text style={styles.subtitle}>
+    <Screen scroll padding={SPACING.lg}>
+      <View style={{ marginBottom: SPACING.lg }}>
+        <Text style={[TYPE.title, { color: theme.text }]}>Kanji Radical Builder</Text>
+        <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.xs }]}>
           Deconstruct & assemble Kanji characters from fundamental radical components (部首).
         </Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.targetTitle}>Target Kanji: {currentPuzzle.targetKanji}</Text>
-        <Text style={styles.targetMeaning}>Meaning: {currentPuzzle.meaning}</Text>
+      <Card padding={SPACING.lg}>
+        <Text style={[TYPE.display, { color: theme.accent, textAlign: 'center' }]}>{currentPuzzle.targetKanji}</Text>
+        <Text style={[TYPE.bodyStrong, { color: theme.textMuted, textAlign: 'center', marginBottom: SPACING.lg }]}>
+          Meaning: {currentPuzzle.meaning}
+        </Text>
 
-        <Text style={styles.sectionLabel}>Assembly Slot:</Text>
-        <View style={styles.slotRow}>
+        <Text style={[TYPE.caption, { fontWeight: '700', color: theme.text, marginBottom: SPACING.sm }]}>Assembly Slot:</Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: SPACING.sm,
+            minHeight: 52,
+            padding: SPACING.sm + 2,
+            backgroundColor: theme.surfaceAlt,
+            borderRadius: RADIUS.sm,
+            borderWidth: 1,
+            borderColor: theme.border,
+            marginBottom: SPACING.lg,
+          }}
+        >
           {selectedParts.length === 0 ? (
-            <Text style={styles.emptySlotText}>Tap radical parts below to assemble</Text>
+            <Text style={[TYPE.caption, { color: theme.textMuted }]}>Tap radical parts below to assemble</Text>
           ) : (
             selectedParts.map((p, idx) => (
-              <View key={idx} style={styles.selectedBadge}>
-                <Text style={styles.selectedBadgeText}>{p}</Text>
+              <View
+                key={idx}
+                style={{
+                  paddingHorizontal: SPACING.md,
+                  paddingVertical: SPACING.xs + 2,
+                  backgroundColor: theme.accent,
+                  borderRadius: RADIUS.sm - 2,
+                }}
+              >
+                <Text style={{ color: theme.onAccent, fontSize: 18, fontWeight: '800' }}>{p}</Text>
               </View>
             ))
           )}
         </View>
 
-        <Text style={styles.sectionLabel}>Available Radicals:</Text>
-        <View style={styles.optionsRow}>
+        <Text style={[TYPE.caption, { fontWeight: '700', color: theme.text, marginBottom: SPACING.sm }]}>Available Radicals:</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm + 2, marginBottom: SPACING.lg }}>
           {allOptions.map((part, idx) => {
             const isPicked = selectedParts.includes(part);
             return (
               <TouchableOpacity
                 key={idx}
-                style={[styles.partChip, isPicked && styles.partChipPicked]}
+                style={{
+                  width: 52,
+                  height: 52,
+                  backgroundColor: isPicked ? theme.accentMuted : theme.surfaceAlt,
+                  borderColor: isPicked ? theme.accent : theme.border,
+                  borderWidth: 1,
+                  borderRadius: RADIUS.sm,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
                 onPress={() => handleSelectPart(part)}
               >
-                <Text style={[styles.partText, isPicked && styles.partTextPicked]}>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: '800',
+                    color: isPicked ? theme.accent : theme.text,
+                  }}
+                >
                   {part}
                 </Text>
               </TouchableOpacity>
@@ -87,158 +130,34 @@ export function KanjiRadicalView() {
         </View>
 
         {feedback && (
-          <View style={[styles.banner, feedback.isCorrect ? styles.bannerPass : styles.bannerFail]}>
-            <Text style={styles.bannerText}>{feedback.text}</Text>
+          <View
+            style={{
+              padding: SPACING.md,
+              borderRadius: RADIUS.sm,
+              backgroundColor: feedback.isCorrect ? theme.successMuted : theme.errorMuted,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: SPACING.sm,
+              marginBottom: SPACING.lg,
+            }}
+          >
+            <Icon
+              name={feedback.isCorrect ? 'check-circle' : 'info'}
+              size={16}
+              color={feedback.isCorrect ? theme.success : theme.error}
+            />
+            <Text style={[TYPE.caption, { fontWeight: '700', color: theme.text, flex: 1 }]}>{feedback.text}</Text>
           </View>
         )}
 
-        <View style={styles.btnRow}>
-          <TouchableOpacity style={styles.btnPrimary} onPress={handleCheck}>
-            <Text style={styles.btnPrimaryText}>Check Assembly</Text>
-          </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: SPACING.sm + 2 }}>
+          <Button title="Check Assembly" onPress={handleCheck} style={{ flex: 1 }} />
 
           {feedback?.isCorrect && (
-            <TouchableOpacity style={[styles.btnPrimary, styles.btnNext]} onPress={handleNext}>
-              <Text style={styles.btnPrimaryText}>Next Puzzle →</Text>
-            </TouchableOpacity>
+            <Button title="Next Puzzle" onPress={handleNext} variant="secondary" style={{ flex: 1 }} />
           )}
         </View>
-      </View>
-    </ScrollView>
+      </Card>
+    </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: '#f8fafc',
-    flexGrow: 1,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-  },
-  targetTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#5c60f5',
-    textAlign: 'center',
-  },
-  targetMeaning: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#64748b',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#334155',
-    marginBottom: 8,
-  },
-  slotRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    minHeight: 52,
-    padding: 10,
-    backgroundColor: '#f8fafc',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    marginBottom: 16,
-  },
-  emptySlotText: {
-    fontSize: 12,
-    color: '#94a3b8',
-  },
-  selectedBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#5c60f5',
-    borderRadius: 6,
-  },
-  selectedBadgeText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  optionsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 16,
-  },
-  partChip: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  partChipPicked: {
-    backgroundColor: 'rgba(92, 96, 245, 0.15)',
-    borderColor: '#5c60f5',
-    borderWidth: 1,
-  },
-  partText: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  partTextPicked: {
-    color: '#5c60f5',
-  },
-  banner: {
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  bannerPass: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-  },
-  bannerFail: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-  },
-  bannerText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  btnRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  btnPrimary: {
-    flex: 1,
-    paddingVertical: 12,
-    backgroundColor: '#5c60f5',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  btnNext: {
-    backgroundColor: '#10b981',
-  },
-  btnPrimaryText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-});

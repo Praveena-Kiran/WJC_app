@@ -33,7 +33,6 @@ This document provides essential instructions for AI agents and human developers
 | `better-auth` / `@better-auth/expo` | ✓ | | Web & Expo plugin |
 | `expo-secure-store` | ✓ | | Secure cookie storage |
 | `expo-network` | ✓ | | Offline detection |
-| `expo-speech` | ✓ | | Japanese TTS |
 | `expo-audio` | ✓ | | SFX playback |
 | `expo-file-system` | ✓ | | File downloads |
 | `expo-sharing` | ✓ | | System file viewer |
@@ -46,6 +45,19 @@ This document provides essential instructions for AI agents and human developers
 | `@tanstack/react-query` | ✓ | | Data fetching & cache |
 | `svg-path-properties` | ✓ | | Pure JS path calculations |
 | Native WebRTC / Custom C++ Native Modules | ✗ | ✓ | Requires `npx expo prebuild` |
+
+---
+
+## 🎨 Design System (Theming & UI Primitives)
+
+All UI must use the centralized theme system. **Never hardcode hex colors or emojis.**
+
+- **Theme tokens**: `import { useTheme } from '@/src/theme/ThemeContext'` — provides `theme.background`, `theme.surface`, `theme.border`, `theme.text`, `theme.textMuted`, `theme.accent`, `theme.accentMuted`, `theme.onAccent`, `theme.success`, `theme.warning`, `theme.error`, etc.
+- **Layout tokens**: `import { SPACING, RADIUS, TYPE, CARD_SHADOW } from '@/src/theme/tokens'`
+- **UI primitives**: `import { Screen, Card, Button, Input, Chip, Badge, ProgressBar, Icon, ListItem, SegmentedControl } from '@/src/components/ui'`
+- **State views**: `import { LoadingSkeleton, EmptyState, ErrorBanner } from '@/src/components/common/StateViews'`
+- **Icons**: Use the `Icon` component (Feather glyphs). No emojis. Kana/Kanji tab icons use あ/漢 text glyphs.
+- **Theme preference** is persisted to AsyncStorage and supports system/light/dark with an in-app toggle in Settings.
 
 ---
 

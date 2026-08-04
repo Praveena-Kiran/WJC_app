@@ -7,7 +7,8 @@ describe('calculateN5Metrics (Issue #183)', () => {
 
     expect(metrics.overallPct).toBe(58);
     expect(metrics.daysLeft).toBeGreaterThan(0);
-    expect(metrics.statusLabel).toBe('On Track 🟢');
+    expect(metrics.statusLabel).toBe('On Track');
+    expect(metrics.status).toBe('on-track');
     expect(metrics.dailyKana).toBeGreaterThanOrEqual(0);
     expect(metrics.dailyKanji).toBeGreaterThanOrEqual(0);
   });
@@ -17,13 +18,15 @@ describe('calculateN5Metrics (Issue #183)', () => {
 
     expect(metrics.overallPct).toBe(5);
     expect(metrics.daysLeft).toBeLessThanOrEqual(6);
-    expect(metrics.statusLabel).toBe('Pace Boost Needed ⚡');
+    expect(metrics.statusLabel).toBe('Pace Boost Needed');
+    expect(metrics.status).toBe('pace-needed');
   });
 
   it('identifies exam ready for high readiness percentage', () => {
     const metrics = calculateN5Metrics('2028-12-31', 10, 92, 100, 20);
 
     expect(metrics.overallPct).toBe(100);
-    expect(metrics.statusLabel).toBe('Exam Ready 🎉');
+    expect(metrics.statusLabel).toBe('Exam Ready');
+    expect(metrics.status).toBe('exam-ready');
   });
 });
