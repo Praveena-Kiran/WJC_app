@@ -14,4 +14,15 @@ describe('Bottom Tabs Navigation Layout (Issue #150 / #019)', () => {
     expect(code).toContain('name="dictionary"');
     expect(code).toContain('name="quiz"');
   });
+
+  it('implements floating glassmorphic TabBar without haptic feedback', () => {
+    const tabBarPath = path.resolve(__dirname, '../components/navigation/TabBar.tsx');
+    expect(fs.existsSync(tabBarPath)).toBe(true);
+
+    const code = fs.readFileSync(tabBarPath, 'utf-8');
+    expect(code).toContain("import { BlurView } from 'expo-blur'");
+    expect(code).toContain("position: 'absolute'");
+    expect(code).toContain('borderRadius: 32');
+    expect(code).not.toContain('triggerHaptic');
+  });
 });
