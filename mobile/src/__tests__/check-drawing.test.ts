@@ -188,4 +188,42 @@ describe('checkDrawing() accuracy calculation', () => {
       expect(s).toBeLessThanOrEqual(100);
     }
   });
+
+  it('accurately scores Kanji 日 with compact negative numbers (e.g. c0,1.6-0.16)', () => {
+    const NICHI_STROKES = [
+      'M31.5,24.5c1.12,1.12,1.74,2.75,1.74,4.75c0,1.6-0.16,38.11-0.09,53.5c0.02,3.82,0.05,6.35,0.09,6.75',
+      'M33.48,26c0.8-0.05,37.67-3.01,40.77-3.25c3.19-0.25,5,1.75,5,4.25c0,4-0.22,40.84-0.23,56c0,3.48,0,5.72,0,6',
+      'M34.22,55.25c7.78-0.5,35.9-2.5,44.06-2.75',
+      'M34.23,86.5c10.52-0.75,34.15-2.12,43.81-2.25',
+    ];
+
+    const drawn日 = [
+      [{ x: 31.5, y: 24.5 }, { x: 32.5, y: 55 }, { x: 33, y: 89 }],
+      [{ x: 33.5, y: 26 }, { x: 74, y: 23 }, { x: 79, y: 25 }, { x: 79, y: 55 }, { x: 79, y: 88 }],
+      [{ x: 34, y: 55 }, { x: 78, y: 53 }],
+      [{ x: 34, y: 86 }, { x: 78, y: 84 }],
+    ];
+
+    const score = checkDrawing({ guidePaths: NICHI_STROKES, userStrokes: drawn日 });
+    expect(score).toBeGreaterThanOrEqual(80);
+  });
+
+  it('accurately parses and scores Kanji 水 with smooth curves (s/S)', () => {
+    const MIZU_STROKES = [
+      'M52.77,15.08c1.08,1.08,1.67,2.49,1.76,5.52c0.4,14.55-0.26,62.16-0.26,67.12c0,9.78-7.52,0.03-9.02-1.22',
+      'M17.5,45.75c1.75,0.62,3.73,0.43,5.25,0C25.88,44.88,36.09,41,38.59,40s4.47,1.24,3.75,3.5C39,54,28.25,69,19,74.75',
+      'M81.22,27.5c-0.22,1.25-0.72,2.25-1.52,2.97c-5.64,5.1-12.45,9.78-22.45,13.78',
+      'M57,46c8.82,10.73,19.23,21.46,28.42,27.42c2.16,1.4,4.52,3,7.08,3.58',
+    ];
+
+    const drawn水 = [
+      [{ x: 53, y: 15 }, { x: 54, y: 50 }, { x: 54, y: 85 }],
+      [{ x: 18, y: 46 }, { x: 38, y: 40 }, { x: 40, y: 44 }, { x: 25, y: 65 }, { x: 19, y: 75 }],
+      [{ x: 81, y: 28 }, { x: 60, y: 44 }],
+      [{ x: 57, y: 46 }, { x: 75, y: 65 }, { x: 88, y: 76 }],
+    ];
+
+    const score = checkDrawing({ guidePaths: MIZU_STROKES, userStrokes: drawn水 });
+    expect(score).toBeGreaterThanOrEqual(75);
+  });
 });

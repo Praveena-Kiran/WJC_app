@@ -3,17 +3,16 @@ export interface Point {
   y: number;
 }
 
+const NUMBER_REGEX = /[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?/g;
+
 function parseSvgPath(d: string): { type: string; values: number[] }[] {
   const commands: { type: string; values: number[] }[] = [];
   const cmdRe = /([MLHVCSQTAZmlhvcsqtaz])([^MLHVCSQTAZmlhvcsqtaz]*)/g;
   let match;
   while ((match = cmdRe.exec(d)) !== null) {
     const cmd = match[1];
-    const numbers = match[2]
-      .trim()
-      .split(/[\s,]+/)
-      .filter(Boolean)
-      .map(Number);
+    const rawNumbers = match[2].match(NUMBER_REGEX);
+    const numbers = rawNumbers ? rawNumbers.map(Number) : [];
     commands.push({ type: cmd, values: numbers });
   }
   return commands;
@@ -32,6 +31,9 @@ function samplePath(d: string, numSamples: number): Point[] {
   const segments: Segment[] = [];
   let prevX = 0;
   let prevY = 0;
+  let lastCp2X = 0;
+  let lastCp2Y = 0;
+  let lastCmd = '';
   let totalLength = 0;
 
   for (const cmd of commands) {
@@ -43,26 +45,7 @@ function samplePath(d: string, numSamples: number): Point[] {
         prevX = vals[0];
         prevY = vals[1];
         i = 2;
-        while (i < vals.length) {
-          prevX = vals[i];
-          prevY = vals[i + 1];
-          i += 2;
-        }
-        break;
-      }
-      case 'm': {
-        prevX += vals[0];
-        prevY += vals[1];
-        i = 2;
-        while (i < vals.length) {
-          prevX += vals[i];
-          prevY += vals[i + 1];
-          i += 2;
-        }
-        break;
-      }
-      case 'L': {
-        while (i < vals.length) {
+        while (i + 1 < vals.length) {
           const x1 = vals[i];
           const y1 = vals[i + 1];
           const segLen = dist(prevX, prevY, x1, y1);
@@ -76,10 +59,15 @@ function samplePath(d: string, numSamples: number): Point[] {
           prevY = y1;
           i += 2;
         }
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
         break;
       }
-      case 'l': {
-        while (i < vals.length) {
+      case 'm': {
+        prevX += vals[0];
+        prevY += vals[1];
+        i = 2;
+        while (i + 1 < vals.length) {
           const x1 = prevX + vals[i];
           const y1 = prevY + vals[i + 1];
           const segLen = dist(prevX, prevY, x1, y1);
@@ -93,6 +81,46 @@ function samplePath(d: string, numSamples: number): Point[] {
           prevY = y1;
           i += 2;
         }
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
+        break;
+      }
+      case 'L': {
+        while (i + 1 < vals.length) {
+          const x1 = vals[i];
+          const y1 = vals[i + 1];
+          const segLen = dist(prevX, prevY, x1, y1);
+          totalLength += segLen;
+          segments.push({
+            points: [{ x: prevX, y: prevY }, { x: x1, y: y1 }],
+            length: segLen,
+            cumulative: totalLength,
+          });
+          prevX = x1;
+          prevY = y1;
+          i += 2;
+        }
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
+        break;
+      }
+      case 'l': {
+        while (i + 1 < vals.length) {
+          const x1 = prevX + vals[i];
+          const y1 = prevY + vals[i + 1];
+          const segLen = dist(prevX, prevY, x1, y1);
+          totalLength += segLen;
+          segments.push({
+            points: [{ x: prevX, y: prevY }, { x: x1, y: y1 }],
+            length: segLen,
+            cumulative: totalLength,
+          });
+          prevX = x1;
+          prevY = y1;
+          i += 2;
+        }
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
         break;
       }
       case 'H': {
@@ -108,6 +136,8 @@ function samplePath(d: string, numSamples: number): Point[] {
           prevX = x1;
           i++;
         }
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
         break;
       }
       case 'h': {
@@ -123,6 +153,8 @@ function samplePath(d: string, numSamples: number): Point[] {
           prevX = x1;
           i++;
         }
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
         break;
       }
       case 'V': {
@@ -138,6 +170,8 @@ function samplePath(d: string, numSamples: number): Point[] {
           prevY = y1;
           i++;
         }
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
         break;
       }
       case 'v': {
@@ -153,10 +187,12 @@ function samplePath(d: string, numSamples: number): Point[] {
           prevY = y1;
           i++;
         }
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
         break;
       }
       case 'C': {
-        while (i < vals.length) {
+        while (i + 5 < vals.length) {
           const cp1x = vals[i];
           const cp1y = vals[i + 1];
           const cp2x = vals[i + 2];
@@ -179,12 +215,14 @@ function samplePath(d: string, numSamples: number): Point[] {
           });
           prevX = x1;
           prevY = y1;
+          lastCp2X = cp2x;
+          lastCp2Y = cp2y;
           i += 6;
         }
         break;
       }
       case 'c': {
-        while (i < vals.length) {
+        while (i + 5 < vals.length) {
           const cp1x = prevX + vals[i];
           const cp1y = prevY + vals[i + 1];
           const cp2x = prevX + vals[i + 2];
@@ -207,16 +245,85 @@ function samplePath(d: string, numSamples: number): Point[] {
           });
           prevX = x1;
           prevY = y1;
+          lastCp2X = cp2x;
+          lastCp2Y = cp2y;
           i += 6;
+        }
+        break;
+      }
+      case 'S': {
+        while (i + 3 < vals.length) {
+          const isPrevCubic = lastCmd === 'C' || lastCmd === 'c' || lastCmd === 'S' || lastCmd === 's';
+          const cp1x = isPrevCubic ? 2 * prevX - lastCp2X : prevX;
+          const cp1y = isPrevCubic ? 2 * prevY - lastCp2Y : prevY;
+          const cp2x = vals[i];
+          const cp2y = vals[i + 1];
+          const x1 = vals[i + 2];
+          const y1 = vals[i + 3];
+          const segLen = approximateCubicLength(
+            prevX, prevY, cp1x, cp1y, cp2x, cp2y, x1, y1,
+          );
+          totalLength += segLen;
+          segments.push({
+            points: [
+              { x: prevX, y: prevY },
+              { x: cp1x, y: cp1y },
+              { x: cp2x, y: cp2y },
+              { x: x1, y: y1 },
+            ],
+            length: segLen,
+            cumulative: totalLength,
+          });
+          prevX = x1;
+          prevY = y1;
+          lastCp2X = cp2x;
+          lastCp2Y = cp2y;
+          i += 4;
+        }
+        break;
+      }
+      case 's': {
+        while (i + 3 < vals.length) {
+          const isPrevCubic = lastCmd === 'C' || lastCmd === 'c' || lastCmd === 'S' || lastCmd === 's';
+          const cp1x = isPrevCubic ? 2 * prevX - lastCp2X : prevX;
+          const cp1y = isPrevCubic ? 2 * prevY - lastCp2Y : prevY;
+          const cp2x = prevX + vals[i];
+          const cp2y = prevY + vals[i + 1];
+          const x1 = prevX + vals[i + 2];
+          const y1 = prevY + vals[i + 3];
+          const segLen = approximateCubicLength(
+            prevX, prevY, cp1x, cp1y, cp2x, cp2y, x1, y1,
+          );
+          totalLength += segLen;
+          segments.push({
+            points: [
+              { x: prevX, y: prevY },
+              { x: cp1x, y: cp1y },
+              { x: cp2x, y: cp2y },
+              { x: x1, y: y1 },
+            ],
+            length: segLen,
+            cumulative: totalLength,
+          });
+          prevX = x1;
+          prevY = y1;
+          lastCp2X = cp2x;
+          lastCp2Y = cp2y;
+          i += 4;
         }
         break;
       }
       case 'Z':
       case 'z':
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
         break;
       default:
+        lastCp2X = prevX;
+        lastCp2Y = prevY;
         break;
     }
+    lastCmd = cmd.type;
   }
 
   if (totalLength === 0) return [];
