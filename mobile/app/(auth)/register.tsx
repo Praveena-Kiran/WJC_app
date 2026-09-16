@@ -7,8 +7,7 @@ import { authClient } from '@/src/auth-client';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { Button } from '@/src/components/ui/Button';
 import { Input } from '@/src/components/ui/Input';
-import { ProgressBar } from '@/src/components/ui/ProgressBar';
-import { TYPE, SPACING } from '@/src/theme/tokens';
+import { TYPE, SPACING, RADIUS } from '@/src/theme/tokens';
 
 export default function RegisterScreen() {
   const { theme } = useTheme();
@@ -20,17 +19,23 @@ export default function RegisterScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  function getPasswordStrength(pw: string): { label: string; progress: number } {
-    if (pw.length === 0) return { label: '', progress: 0 };
-    if (pw.length < 8) return { label: 'Too short', progress: 0.1 };
+  function getPasswordStrength(pw: string): {
+    label: string;
+    level: number; // 0 to 4
+    color: string;
+  } {
+    if (pw.length === 0) return { label: '', level: 0, color: theme.surfaceAlt };
+    if (pw.length < 8) return { label: 'Too short (min 8 chars)', level: 1, color: theme.error };
+
     const hasUpper = /[A-Z]/.test(pw);
     const hasDigit = /\d/.test(pw);
     const hasSpecial = /[^A-Za-z0-9]/.test(pw);
     const score = [hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
-    if (score === 0) return { label: 'Weak', progress: 0.25 };
-    if (score === 1) return { label: 'Fair', progress: 0.5 };
-    if (score === 2) return { label: 'Good', progress: 0.75 };
-    return { label: 'Strong', progress: 1 };
+
+    if (score === 0) return { label: 'Weak', level: 1, color: theme.error };
+    if (score === 1) return { label: 'Fair', level: 2, color: theme.warning };
+    if (score === 2) return { label: 'Good', level: 3, color: '#2563EB' }; // or informative blue
+    return { label: 'Strong', level: 4, color: theme.success };
   }
 
   const strength = getPasswordStrength(password);
@@ -85,9 +90,26 @@ export default function RegisterScreen() {
             <Input label="Password" placeholder="Min. 8 characters" value={password} onChangeText={setPassword} secureTextEntry textContentType="newPassword" returnKeyType="next" />
 
             {strength.label ? (
-              <View style={{ gap: 4 }}>
-                <ProgressBar progress={strength.progress} />
-                <Text style={[TYPE.caption, { color: theme.textMuted }]}>{strength.label}</Text>
+              <View style={styles.strengthContainer}>
+                <View style={styles.segmentsRow}>
+                  {[1, 2, 3, 4].map((seg) => {
+                    const isActive = seg <= strength.level;
+                    return (
+                      <View
+                        key={seg}
+                        style={[
+                          styles.segment,
+                          {
+                            backgroundColor: isActive ? strength.color : theme.surfaceAlt,
+                          },
+                        ]}
+                      />
+                    );
+                  })}
+                </View>
+                <Text style={[TYPE.caption, { color: strength.color, fontWeight: '600' }]}>
+                  {strength.label}
+                </Text>
               </View>
             ) : null}
 
@@ -129,5 +151,20 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: '700',
     marginBottom: SPACING.md,
+  },
+  strengthContainer: {
+    gap: 6,
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  segmentsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    width: '100%',
+  },
+  segment: {
+    flex: 1,
+    height: 4,
+    borderRadius: RADIUS.full,
   },
 });
