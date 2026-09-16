@@ -8,7 +8,6 @@ import { useApp } from '@/src/context/AppContext';
 import { Screen, Card, Button, Badge, ProgressBar, Icon } from '@/src/components/ui';
 import { LoadingSkeleton, EmptyState, ErrorBanner } from '@/src/components/common/StateViews';
 import { N5DeadlineCard } from './N5DeadlineCard';
-import { PebbleTimeline } from './PebbleTimeline';
 import { useApiQuery } from '@/src/lib/use-api-query';
 import { apiFetch } from '@/src/lib/api-fetch';
 import { getApiUrl } from '@/src/lib/api-url';
@@ -159,14 +158,6 @@ export function WoxsenStudentDashboard() {
         leavesGrown={state.solvedLessons.length + 2}
         onNavigateToRoadmap={() => nav('/more/planner')}
       />
-
-      <Card>
-        <PebbleTimeline
-          solvedLessons={state.solvedLessons}
-          activeLessonId={state.activeLessonId}
-          onSelectLesson={() => nav('/more/planner')}
-        />
-      </Card>
 
       <Card padding={SPACING.md}>
         <Text style={[TYPE.bodyStrong, { color: theme.text, marginBottom: SPACING.sm }]}>

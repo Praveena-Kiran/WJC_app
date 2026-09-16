@@ -5,7 +5,6 @@ import { Screen, Card, Button, Icon } from '@/src/components/ui';
 import { useApp } from '@/src/context/AppContext';
 import { useRouter } from 'expo-router';
 import { N5DeadlineCard } from './N5DeadlineCard';
-import { PebbleTimeline } from './PebbleTimeline';
 import { TYPE, SPACING } from '@/src/theme/tokens';
 
 export interface ZenDashboardProps {
@@ -44,14 +43,6 @@ export function ZenDashboard({ onNavigate }: ZenDashboardProps) {
         leavesGrown={state.solvedLessons.length + 2}
         onNavigateToRoadmap={() => nav('/more/planner')}
       />
-
-      <Card>
-        <PebbleTimeline
-          solvedLessons={state.solvedLessons}
-          activeLessonId={state.activeLessonId}
-          onSelectLesson={(id) => nav(`/more/planner`)}
-        />
-      </Card>
 
 
       <View style={{ flexDirection: 'row', gap: SPACING.sm }}>

@@ -13,11 +13,10 @@ describe('WoxsenStudentDashboard (Issue #160 / #027)', () => {
     expect(code).toContain('Woxsen University Portal');
   });
 
-  it('renders N5DeadlineCard and PebbleTimeline widgets', () => {
+  it('renders N5DeadlineCard widget and removes PebbleTimeline', () => {
     expect(code).toContain("import { N5DeadlineCard }");
-    expect(code).toContain("import { PebbleTimeline }");
     expect(code).toContain('<N5DeadlineCard');
-    expect(code).toContain('<PebbleTimeline');
+    expect(code).not.toContain('<PebbleTimeline');
   });
 
   it('wires real API data via useApiQuery', () => {
