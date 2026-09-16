@@ -202,6 +202,9 @@ export function QuizView() {
 
           <Button
             title="Start Challenge"
+            size="lg"
+            fullWidth
+            rightIcon="play"
             onPress={generateQuiz}
             style={{ marginTop: SPACING.xl }}
           />
@@ -220,36 +223,53 @@ export function QuizView() {
               borderBottomColor: theme.border,
             }}
           >
-            <Text style={[TYPE.caption, { color: theme.textMuted, fontWeight: '700' }]}>
+            <Text style={[TYPE.subhead, { color: theme.textMuted, fontWeight: '700' }]}>
               Question {currentIndex + 1} of {questions.length}
             </Text>
-            <Text style={[TYPE.caption, { color: theme.accent, fontWeight: '700' }]}>
-              Score: {score}
-            </Text>
+            <View
+              style={{
+                backgroundColor: theme.accentMuted,
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+                borderRadius: RADIUS.full,
+              }}
+            >
+              <Text style={[TYPE.micro, { color: theme.accent }]}>
+                SCORE: {score}
+              </Text>
+            </View>
           </View>
 
-          <View style={{ alignItems: 'center', marginVertical: SPACING.xxl }}>
-            <Text style={[TYPE.glyph, { color: theme.accent }]}>
+          <View style={{ alignItems: 'center', marginVertical: SPACING.xl }}>
+            <Text style={[TYPE.glyph, { color: theme.accent, fontSize: 56 }]}>
               {questions[currentIndex].prompt}
             </Text>
           </View>
 
+          {/* 4 Tactile Option Cards */}
           <View style={{ gap: SPACING.sm, marginBottom: SPACING.lg }}>
             {questions[currentIndex].options.map((option, idx) => {
+              const letter = ['A', 'B', 'C', 'D'][idx] || `${idx + 1}`;
               const correct = questions[currentIndex].correctAnswer;
               let borderColor = theme.border;
               let bg = theme.surfaceAlt;
               let textColor = theme.text;
+              let statusIcon: 'check-circle' | 'x-circle' | null = null;
+              let statusColor = theme.textMuted;
 
               if (isAnswered) {
                 if (option === correct) {
                   borderColor = theme.success;
                   bg = theme.successMuted;
                   textColor = theme.success;
+                  statusIcon = 'check-circle';
+                  statusColor = theme.success;
                 } else if (option === selectedOption) {
                   borderColor = theme.error;
                   bg = theme.errorMuted;
                   textColor = theme.error;
+                  statusIcon = 'x-circle';
+                  statusColor = theme.error;
                 }
               }
 
@@ -260,43 +280,131 @@ export function QuizView() {
                   disabled={isAnswered}
                   activeOpacity={0.7}
                   style={{
-                    paddingVertical: SPACING.md,
-                    paddingHorizontal: SPACING.lg,
-                    backgroundColor: bg,
-                    borderWidth: 1,
-                    borderColor,
-                    borderRadius: RADIUS.sm,
+                    flexDirection: 'row',
                     alignItems: 'center',
+                    paddingVertical: SPACING.md,
+                    paddingHorizontal: SPACING.md,
+                    backgroundColor: bg,
+                    borderWidth: 1.5,
+                    borderColor,
+                    borderRadius: RADIUS.md,
+                    minHeight: 56,
                   }}
                 >
-                  <Text style={[TYPE.bodyStrong, { color: textColor }]}>{option}</Text>
+                  <View
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      backgroundColor: isAnswered && (option === correct || option === selectedOption)
+                        ? (option === correct ? theme.success : theme.error)
+                        : theme.surface,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: SPACING.md,
+                    }}
+                  >
+                    <Text
+                      style={[
+                        TYPE.micro,
+                        {
+                          color: isAnswered && (option === correct || option === selectedOption)
+                            ? theme.surface
+                            : theme.textMuted,
+                          fontWeight: '800',
+                        },
+                      ]}
+                    >
+                      {letter}
+                    </Text>
+                  </View>
+
+                  <Text
+                    style={[
+                      TYPE.bodyStrong,
+                      { color: textColor, flex: 1, fontSize: 16 },
+                    ]}
+                  >
+                    {option}
+                  </Text>
+
+                  {statusIcon ? (
+                    <Icon name={statusIcon} size={20} color={statusColor} />
+                  ) : null}
                 </TouchableOpacity>
               );
             })}
           </View>
 
-          {isAnswered && (
-            <Button
-              title={currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
-              onPress={handleNextQuestion}
-            />
-          )}
+          {/* Action Button Container */}
+          <View style={{ minHeight: 48, justifyContent: 'center' }}>
+            {isAnswered ? (
+              <Button
+                title={
+                  currentIndex === questions.length - 1
+                    ? 'Finish Quiz'
+                    : 'Next Question'
+                }
+                size="lg"
+                fullWidth
+                rightIcon="arrow-right"
+                onPress={handleNextQuestion}
+              />
+            ) : (
+              <Text
+                style={[
+                  TYPE.caption,
+                  { color: theme.textMuted, textAlign: 'center' },
+                ]}
+              >
+                Select your answer to proceed
+              </Text>
+            )}
+          </View>
         </Card>
       )}
 
       {quizState === 'finished' && (
-        <Card style={{ alignItems: 'center' }}>
-          <Icon name="award" size={48} color={theme.accent} />
+        <Card style={{ alignItems: 'center', padding: SPACING.xl }}>
+          <View
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 36,
+              backgroundColor: theme.accentMuted,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon name="award" size={36} color={theme.accent} />
+          </View>
+
           <Text style={[TYPE.title, { color: theme.text, marginTop: SPACING.md }]}>
             Quiz Completed!
           </Text>
-          <Text style={[TYPE.display, { color: theme.accent, marginVertical: SPACING.sm }]}>
+          <Text style={[TYPE.display, { color: theme.accent, marginVertical: SPACING.xs }]}>
             {score} / {questions.length} ({Math.round((score / questions.length) * 100)}%)
           </Text>
           <Text style={[TYPE.body, { color: theme.textMuted, marginBottom: SPACING.xl }]}>
             {feedbackMsg}
           </Text>
-          <Button title="Return to Lobby" onPress={() => setQuizState('lobby')} />
+
+          <View style={{ width: '100%', gap: SPACING.sm }}>
+            <Button
+              title="Try Again"
+              size="lg"
+              fullWidth
+              leftIcon="rotate-ccw"
+              onPress={generateQuiz}
+            />
+            <Button
+              title="Return to Lobby"
+              variant="outline"
+              size="md"
+              fullWidth
+              onPress={() => setQuizState('lobby')}
+            />
+          </View>
         </Card>
       )}
     </Screen>

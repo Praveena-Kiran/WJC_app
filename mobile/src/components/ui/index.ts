@@ -8,3 +8,4 @@ export { ProgressBar } from './ProgressBar';
 export { ListItem } from './ListItem';
 export { Screen } from './Screen';
 export { SegmentedControl } from './SegmentedControl';
+export { ActionFooter } from './ActionFooter';

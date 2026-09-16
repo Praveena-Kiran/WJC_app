@@ -54,20 +54,23 @@ export function KanjiBoard() {
 
       {/* Kanji Selector Grid */}
       <Card padding={SPACING.lg} style={{ marginBottom: SPACING.lg }}>
-        <Text style={[TYPE.bodyStrong, { color: theme.text, marginBottom: SPACING.md }]}>Select Kanji Character</Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm + 2 }}>
+        <Text style={[TYPE.subhead, { color: theme.textMuted, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: SPACING.sm }]}>
+          Select Kanji Character
+        </Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm }}>
           {filteredKanji.map((item) => {
             const isSelected = selectedKanji.char === item.char;
             return (
               <TouchableOpacity
                 key={item.char}
+                activeOpacity={0.7}
                 style={{
                   width: 52,
                   height: 52,
                   backgroundColor: isSelected ? theme.accent : theme.surfaceAlt,
-                  borderWidth: 1,
+                  borderWidth: isSelected ? 2 : 1,
                   borderColor: isSelected ? theme.accent : theme.border,
-                  borderRadius: RADIUS.sm,
+                  borderRadius: RADIUS.md,
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}
@@ -78,7 +81,7 @@ export function KanjiBoard() {
               >
                 <Text
                   style={{
-                    fontSize: 22,
+                    fontSize: 24,
                     fontWeight: '800',
                     color: isSelected ? theme.onAccent : theme.text,
                   }}
@@ -93,26 +96,55 @@ export function KanjiBoard() {
 
       {/* Drawing Workspace */}
       <Card padding={SPACING.lg}>
-        <Text style={[TYPE.bodyStrong, { color: theme.text, marginBottom: SPACING.md }]}>
-          Workspace: {selectedKanji.char} ({selectedKanji.meaning})
-        </Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.md }}>
+          <Text style={[TYPE.titleSm, { color: theme.text, fontWeight: '700' }]}>
+            {selectedKanji.char} — {selectedKanji.meaning}
+          </Text>
+          <View style={{ backgroundColor: theme.accentMuted, paddingHorizontal: 8, paddingVertical: 2, borderRadius: RADIUS.full }}>
+            <Text style={[TYPE.micro, { color: theme.accent }]}>
+              {selectedKanji.strokes?.length ?? 0} STROKES
+            </Text>
+          </View>
+        </View>
 
         <View
           style={{
             flexDirection: 'row',
-            justifyContent: 'space-around',
+            gap: SPACING.sm,
             marginBottom: SPACING.lg,
-            backgroundColor: theme.surfaceAlt,
-            padding: SPACING.sm + 2,
-            borderRadius: RADIUS.sm,
           }}
         >
-          <Text style={[TYPE.caption, { color: theme.textMuted }]}>
-            Onyomi: <Text style={{ color: theme.accent, fontWeight: '700', fontSize: 13 }}>{selectedKanji.onyomi}</Text>
-          </Text>
-          <Text style={[TYPE.caption, { color: theme.textMuted }]}>
-            Kunyomi: <Text style={{ color: theme.accent, fontWeight: '700', fontSize: 13 }}>{selectedKanji.kunyomi}</Text>
-          </Text>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: theme.surfaceAlt,
+              paddingVertical: SPACING.sm,
+              paddingHorizontal: SPACING.md,
+              borderRadius: RADIUS.sm,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={[TYPE.micro, { color: theme.textMuted }]}>ONYOMI (音読み)</Text>
+            <Text style={[TYPE.bodyStrong, { color: theme.accent, marginTop: 2 }]}>
+              {selectedKanji.onyomi}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: theme.surfaceAlt,
+              paddingVertical: SPACING.sm,
+              paddingHorizontal: SPACING.md,
+              borderRadius: RADIUS.sm,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={[TYPE.micro, { color: theme.textMuted }]}>KUNYOMI (訓読み)</Text>
+            <Text style={[TYPE.bodyStrong, { color: theme.accent, marginTop: 2 }]}>
+              {selectedKanji.kunyomi}
+            </Text>
+          </View>
         </View>
 
         <View style={{ alignItems: 'center', marginVertical: SPACING.sm }}>
@@ -129,8 +161,10 @@ export function KanjiBoard() {
             style={{
               marginTop: SPACING.lg,
               padding: SPACING.md,
-              borderRadius: RADIUS.sm,
+              borderRadius: RADIUS.md,
               backgroundColor: accuracyScore >= 70 ? theme.successMuted : theme.errorMuted,
+              borderWidth: 1,
+              borderColor: accuracyScore >= 70 ? theme.success : theme.error,
               flexDirection: 'row',
               alignItems: 'center',
               gap: SPACING.sm,
@@ -138,13 +172,13 @@ export function KanjiBoard() {
           >
             <Icon
               name={accuracyScore >= 70 ? 'check-circle' : 'info'}
-              size={16}
+              size={18}
               color={accuracyScore >= 70 ? theme.success : theme.error}
             />
-            <Text style={[TYPE.caption, { fontWeight: '700', color: theme.text }]}>
+            <Text style={[TYPE.subhead, { fontWeight: '700', color: theme.text, flex: 1 }]}>
               {accuracyScore >= 70
-                ? `Great Job! Accuracy: ${accuracyScore}% (+Practiced!)`
-                : `Stroke Accuracy: ${accuracyScore}%. Follow guide paths carefully.`}
+                ? `Mastered! Stroke Accuracy: ${accuracyScore}% (+Recorded!)`
+                : `Stroke Accuracy: ${accuracyScore}%. Trace stroke directions carefully.`}
             </Text>
           </View>
         )}

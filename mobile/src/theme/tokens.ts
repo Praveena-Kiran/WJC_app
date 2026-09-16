@@ -64,12 +64,22 @@ export const SPACING = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24, xxxl: 32
 export const RADIUS = { sm: 8, md: 12, lg: 16, xl: 24, full: 999 } as const;
 
 export const TYPE = {
-  caption: { fontSize: 12, fontWeight: '500' as const },
+  micro: { fontSize: 10, lineHeight: 14, fontWeight: '700' as const, letterSpacing: 0.5 },
+  caption: { fontSize: 12, lineHeight: 16, fontWeight: '500' as const },
+  subhead: { fontSize: 13, lineHeight: 18, fontWeight: '500' as const },
   body: { fontSize: 15, lineHeight: 22 },
-  bodyStrong: { fontSize: 15, fontWeight: '600' as const },
-  title: { fontSize: 20, fontWeight: '700' as const },
-  display: { fontSize: 28, fontWeight: '700' as const },
-  glyph: { fontSize: 48, fontWeight: '700' as const },
+  bodyStrong: { fontSize: 15, lineHeight: 22, fontWeight: '600' as const },
+  titleSm: { fontSize: 17, lineHeight: 24, fontWeight: '600' as const },
+  title: { fontSize: 20, lineHeight: 28, fontWeight: '700' as const },
+  display: { fontSize: 28, lineHeight: 34, fontWeight: '700' as const },
+  glyph: { fontSize: 48, lineHeight: 56, fontWeight: '700' as const },
+} as const;
+
+export const BUTTON_SIZE = {
+  xs: { height: 30, paddingHorizontal: 10, fontSize: 12, radius: 8 },
+  sm: { height: 38, paddingHorizontal: 14, fontSize: 13, radius: 10 },
+  md: { height: 46, paddingHorizontal: 18, fontSize: 15, radius: 12 },
+  lg: { height: 54, paddingHorizontal: 24, fontSize: 16, radius: 14 },
 } as const;
 
 export const CARD_SHADOW = {
@@ -79,3 +89,15 @@ export const CARD_SHADOW = {
   shadowRadius: 6,
   elevation: 1,
 } as const;
+
+export const ELEVATION = {
+  subtle: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  card: CARD_SHADOW,
+} as const;
+

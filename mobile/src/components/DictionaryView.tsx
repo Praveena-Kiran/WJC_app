@@ -105,16 +105,24 @@ export function DictionaryView() {
         </TouchableOpacity>
       </View>
 
-      {/* Search Bar & CSV Export */}
-      <View style={{ flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.md }}>
+      {/* Search Bar & CSV Export - Perfectly Aligned */}
+      <View style={{ flexDirection: 'row', gap: SPACING.sm, marginBottom: SPACING.md, alignItems: 'center' }}>
         <View style={{ flex: 1 }}>
           <Input
-            placeholder="Search by English, Japanese, or Romaji..."
+            placeholder="Search English, Japanese, Romaji..."
+            leftIcon="search"
             value={searchQuery}
             onChangeText={setSearchQuery}
+            containerStyle={{ marginBottom: 0 }}
           />
         </View>
-        <Button title="Export" onPress={exportCsv} size="sm" variant="secondary" />
+        <Button
+          title="Export"
+          onPress={exportCsv}
+          size="md"
+          variant="tonal"
+          leftIcon="share-2"
+        />
       </View>
 
       {/* Category Chips */}
@@ -152,32 +160,42 @@ export function DictionaryView() {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  paddingVertical: SPACING.sm + 2,
+                  paddingVertical: SPACING.sm + 4,
                   borderBottomWidth: 1,
                   borderBottomColor: theme.border,
                 }}
               >
                 <View style={{ flex: 1 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs + 2 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: SPACING.xs + 4 }}>
                     <Text style={[TYPE.bodyStrong, { color: theme.text, fontSize: 16 }]}>{item.word}</Text>
                     <Text style={[TYPE.caption, { color: theme.textMuted }]}>({item.reading})</Text>
                     <Badge label={item.tag} variant={tagVariant(item.tag)} />
                   </View>
-                  <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: 2 }]}>{item.english}</Text>
+                  <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: 3 }]}>{item.english}</Text>
                 </View>
 
                 <TouchableOpacity
                   onPress={() => toggleStar(item.word)}
-                  style={{ padding: SPACING.sm }}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: isStarred ? theme.warningMuted : theme.surfaceAlt,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  accessibilityLabel="Star vocabulary"
                 >
                   <Icon
                     name="star"
-                    size={18}
+                    size={16}
                     color={isStarred ? theme.warning : theme.textMuted}
                   />
                 </TouchableOpacity>
               </View>
             );
+
           })
         )}
       </Card>

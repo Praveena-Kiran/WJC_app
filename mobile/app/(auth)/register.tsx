@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
@@ -7,6 +7,7 @@ import { authClient } from '@/src/auth-client';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { Button } from '@/src/components/ui/Button';
 import { Input } from '@/src/components/ui/Input';
+import { Icon } from '@/src/components/ui/Icon';
 import { TYPE, SPACING, RADIUS } from '@/src/theme/tokens';
 
 export default function RegisterScreen() {
@@ -16,6 +17,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,7 +36,7 @@ export default function RegisterScreen() {
 
     if (score === 0) return { label: 'Weak', level: 1, color: theme.error };
     if (score === 1) return { label: 'Fair', level: 2, color: theme.warning };
-    if (score === 2) return { label: 'Good', level: 3, color: '#2563EB' }; // or informative blue
+    if (score === 2) return { label: 'Good', level: 3, color: '#2563EB' };
     return { label: 'Strong', level: 4, color: theme.success };
   }
 
@@ -77,17 +79,64 @@ export default function RegisterScreen() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <View style={styles.header}>
-            <Text style={[styles.logo, { color: theme.accent }]}>禅語</Text>
-            <Text style={[TYPE.display, { color: theme.text, marginBottom: SPACING.xs }]}>Create account</Text>
+            <View style={[styles.sealBadge, { borderColor: theme.accent, backgroundColor: theme.accentMuted }]}>
+              <Text style={[styles.sealText, { color: theme.accent }]}>禅語</Text>
+            </View>
+            <Text style={[TYPE.display, { color: theme.text, marginTop: SPACING.md, marginBottom: SPACING.xs }]}>
+              Create account
+            </Text>
             <Text style={[TYPE.body, { color: theme.textMuted, textAlign: 'center' }]}>
               Start your Japanese learning journey
             </Text>
           </View>
 
-          <View style={{ gap: SPACING.sm }}>
-            <Input label="Name" placeholder="Your full name" value={name} onChangeText={setName} autoCapitalize="words" textContentType="name" returnKeyType="next" />
-            <Input label="Email" placeholder="you@example.com" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" textContentType="emailAddress" returnKeyType="next" />
-            <Input label="Password" placeholder="Min. 8 characters" value={password} onChangeText={setPassword} secureTextEntry textContentType="newPassword" returnKeyType="next" />
+          <View style={{ gap: SPACING.xs }}>
+            <Input
+              label="Full Name"
+              placeholder="Your name"
+              leftIcon="user"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              textContentType="name"
+              returnKeyType="next"
+            />
+
+            <Input
+              label="Email"
+              placeholder="you@example.com"
+              leftIcon="mail"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              textContentType="emailAddress"
+              returnKeyType="next"
+            />
+
+            <Input
+              label="Password"
+              placeholder="Min. 8 characters"
+              leftIcon="lock"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              textContentType="newPassword"
+              returnKeyType="next"
+              rightIcon={
+                <Pressable
+                  onPress={() => setShowPassword(!showPassword)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Icon
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={18}
+                    color={theme.textMuted}
+                  />
+                </Pressable>
+              }
+            />
 
             {strength.label ? (
               <View style={styles.strengthContainer}>
@@ -113,18 +162,37 @@ export default function RegisterScreen() {
               </View>
             ) : null}
 
-            <Input label="Confirm Password" placeholder="Re-enter password" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry textContentType="newPassword" returnKeyType="done" onSubmitEditing={handleRegister} error={confirmMatch === false ? 'Passwords do not match' : undefined} />
+            <Input
+              label="Confirm Password"
+              placeholder="Re-enter password"
+              leftIcon="shield"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showPassword}
+              textContentType="newPassword"
+              returnKeyType="done"
+              onSubmitEditing={handleRegister}
+              error={confirmMatch === false ? 'Passwords do not match' : undefined}
+            />
 
             {error ? (
-              <Text style={[TYPE.caption, { color: theme.error, textAlign: 'center' }]}>{error}</Text>
+              <Text style={[TYPE.caption, { color: theme.error, textAlign: 'center', marginBottom: SPACING.sm }]}>{error}</Text>
             ) : null}
 
-            <Button title="Create Account" onPress={handleRegister} loading={loading} />
+            <Button
+              title="Create Account"
+              size="lg"
+              fullWidth
+              rightIcon="arrow-right"
+              onPress={handleRegister}
+              loading={loading}
+              style={{ marginTop: SPACING.xs }}
+            />
 
-            <View style={{ alignItems: 'center', marginTop: SPACING.md }}>
+            <View style={{ alignItems: 'center', marginTop: SPACING.lg }}>
               <Text style={[TYPE.body, { color: theme.textMuted }]}>
                 Already have an account?{' '}
-                <Link href={'/(auth)/login' as any} style={{ color: theme.accent, fontWeight: '600' }}>
+                <Link href={'/(auth)/login' as any} style={{ color: theme.accent, fontWeight: '700' }}>
                   Sign in
                 </Link>
               </Text>
@@ -140,22 +208,28 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: SPACING.xxl,
-    paddingVertical: SPACING.xxxl * 2,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.xxxl,
   },
   header: {
     alignItems: 'center',
-    marginBottom: SPACING.xxxl,
+    marginBottom: SPACING.xxl,
   },
-  logo: {
-    fontSize: 48,
-    fontWeight: '700',
-    marginBottom: SPACING.md,
+  sealBadge: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderRadius: RADIUS.sm,
+    borderWidth: 1.5,
+  },
+  sealText: {
+    fontSize: 26,
+    fontWeight: '800',
+    letterSpacing: 2,
   },
   strengthContainer: {
     gap: 6,
     marginTop: 2,
-    marginBottom: 4,
+    marginBottom: SPACING.sm,
   },
   segmentsRow: {
     flexDirection: 'row',

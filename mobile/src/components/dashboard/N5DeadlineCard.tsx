@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '@/src/theme/ThemeContext';
-import { Card } from '@/src/components/ui';
+import { Card, Button } from '@/src/components/ui';
 import { calculateN5Metrics } from './n5-metrics';
 import { TYPE, SPACING, RADIUS } from '@/src/theme/tokens';
 
@@ -148,59 +148,43 @@ export function N5DeadlineCard({
         </View>
       </View>
 
-      {/* Horizontal Divider */}
-      <View style={{ height: 1, backgroundColor: theme.border, marginVertical: SPACING.sm }} />
-
-      {/* Full-Width 4 Column Grid */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <View style={{ alignItems: 'center', flex: 1 }}>
-          <Text style={{ fontSize: 12, color: theme.textMuted }}>Kana</Text>
-          <Text style={{ fontSize: 15, fontWeight: '700', color: theme.text, marginTop: 2 }}>
-            {kanaCount}/92
-          </Text>
-        </View>
-        <View style={{ width: 1, height: 20, backgroundColor: theme.border }} />
-        <View style={{ alignItems: 'center', flex: 1 }}>
-          <Text style={{ fontSize: 12, color: theme.textMuted }}>Lessons</Text>
-          <Text style={{ fontSize: 15, fontWeight: '700', color: theme.text, marginTop: 2 }}>
-            {solvedCount}/10
-          </Text>
-        </View>
-        <View style={{ width: 1, height: 20, backgroundColor: theme.border }} />
-        <View style={{ alignItems: 'center', flex: 1 }}>
-          <Text style={{ fontSize: 12, color: theme.textMuted }}>Kanji</Text>
-          <Text style={{ fontSize: 15, fontWeight: '700', color: theme.text, marginTop: 2 }}>
-            {kanjiCount}/100
-          </Text>
-        </View>
-        <View style={{ width: 1, height: 20, backgroundColor: theme.border }} />
-        <View style={{ alignItems: 'center', flex: 1 }}>
-          <Text style={{ fontSize: 12, color: theme.textMuted }}>Vocab</Text>
-          <Text style={{ fontSize: 15, fontWeight: '700', color: theme.text, marginTop: 2 }}>
-            ~800
-          </Text>
-        </View>
+      {/* Full-Width 4 Column Metric Tiles */}
+      <View style={{ flexDirection: 'row', gap: SPACING.xs + 2, marginVertical: SPACING.md }}>
+        {[
+          { label: 'KANA', value: `${kanaCount}/92` },
+          { label: 'LESSONS', value: `${solvedCount}/10` },
+          { label: 'KANJI', value: `${kanjiCount}/100` },
+          { label: 'VOCAB', value: '~800' },
+        ].map((m) => (
+          <View
+            key={m.label}
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              backgroundColor: theme.surfaceAlt,
+              paddingVertical: SPACING.sm,
+              borderRadius: RADIUS.sm,
+            }}
+          >
+            <Text style={[TYPE.micro, { color: theme.textMuted }]}>{m.label}</Text>
+            <Text style={[TYPE.bodyStrong, { color: theme.text, marginTop: 2 }]}>
+              {m.value}
+            </Text>
+          </View>
+        ))}
       </View>
 
       {/* Action CTA Button */}
       {onNavigateToRoadmap && (
-        <TouchableOpacity
+        <Button
+          title="View N5 Roadmap"
+          variant="tonal"
+          size="md"
+          fullWidth
+          rightIcon="chevron-right"
           onPress={onNavigateToRoadmap}
-          style={{
-            marginTop: SPACING.sm,
-            paddingVertical: 10,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: theme.accentMuted,
-            borderRadius: RADIUS.md,
-          }}
-        >
-          <Text style={{ fontSize: 14, fontWeight: '600', color: theme.accent, marginRight: 4 }}>
-            View N5 Roadmap
-          </Text>
-          <Feather name="chevron-right" size={16} color={theme.accent} />
-        </TouchableOpacity>
+          style={{ marginTop: SPACING.xs }}
+        />
       )}
     </Card>
   );
