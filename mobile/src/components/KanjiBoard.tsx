@@ -20,11 +20,12 @@ export function KanjiBoard() {
   const [levelFilter, setLevelFilter] = useState<'N5' | 'N4'>('N5');
   const [selectedKanji, setSelectedKanji] = useState<KanjiItem>(KANJI_DATA[0]);
   const [accuracyScore, setAccuracyScore] = useState<number | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
 
   const filteredKanji = KANJI_DATA.filter((k) => k.level === levelFilter);
 
   return (
-    <Screen scroll padding={SPACING.lg}>
+    <Screen scroll scrollEnabled={!isDrawing} padding={SPACING.lg}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg }}>
         <Text style={[TYPE.title, { color: theme.text, flex: 1 }]}>Kanji Practice Board</Text>
         <TouchableOpacity
@@ -118,6 +119,8 @@ export function KanjiBoard() {
           <KanjiDrawingCanvas
             guidePaths={selectedKanji.strokes || []}
             onCheckResult={(score) => setAccuracyScore(score)}
+            onDrawingStart={() => setIsDrawing(true)}
+            onDrawingEnd={() => setIsDrawing(false)}
           />
         </View>
 

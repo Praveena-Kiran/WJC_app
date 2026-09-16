@@ -5,11 +5,13 @@ import { SPACING } from '@/src/theme/tokens';
 export function Screen({
   children,
   scroll = true,
+  scrollEnabled = true,
   padding = SPACING.lg,
   style,
 }: {
   children: React.ReactNode;
   scroll?: boolean;
+  scrollEnabled?: boolean;
   padding?: number;
   style?: ViewStyle;
 }) {
@@ -25,6 +27,7 @@ export function Screen({
     >
       {scroll ? (
         <ScrollView
+          scrollEnabled={scrollEnabled}
           contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"

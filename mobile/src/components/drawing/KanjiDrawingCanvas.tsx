@@ -17,6 +17,8 @@ interface KanjiDrawingCanvasProps {
   strokeWidth?: number;
   viewBox?: number;
   onCheckResult?: (accuracyScore: number) => void;
+  onDrawingStart?: () => void;
+  onDrawingEnd?: () => void;
 }
 
 const CANVAS_SIZE = 260;
@@ -27,15 +29,22 @@ export function KanjiDrawingCanvas({
   strokeWidth = 6,
   viewBox = DEFAULT_VIEWBOX,
   onCheckResult,
+  onDrawingStart,
+  onDrawingEnd,
 }: KanjiDrawingCanvasProps) {
   const { theme } = useTheme();
   const strokeColor = '#5c60f5';
 
   const userStrokesRef = useRef<Point[][]>([]);
   const currentStrokeRef = useRef<Point[]>([]);
+  const [isDrawingActive, setIsDrawingActive] = React.useState(false);
   const [, setRenderTick] = React.useState(0);
 
   const triggerRender = () => setRenderTick((t) => t + 1);
+
+  // Keep latest callbacks in ref to avoid recreating PanResponder
+  const callbacksRef = useRef({ onDrawingStart, onDrawingEnd });
+  callbacksRef.current = { onDrawingStart, onDrawingEnd };
 
   const toSvgCoords = (x: number, y: number, boxWidth: number, boxHeight: number): Point => {
     return {
@@ -47,8 +56,14 @@ export function KanjiDrawingCanvas({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
       onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
       onPanResponderGrant: (evt) => {
+        setIsDrawingActive(true);
+        callbacksRef.current.onDrawingStart?.();
         const { locationX, locationY } = evt.nativeEvent;
         const svgPt = toSvgCoords(locationX, locationY, CANVAS_SIZE, CANVAS_SIZE);
         currentStrokeRef.current = [svgPt];
@@ -60,6 +75,17 @@ export function KanjiDrawingCanvas({
         triggerRender();
       },
       onPanResponderRelease: () => {
+        setIsDrawingActive(false);
+        callbacksRef.current.onDrawingEnd?.();
+        if (currentStrokeRef.current.length > 0) {
+          userStrokesRef.current = [...userStrokesRef.current, currentStrokeRef.current];
+          currentStrokeRef.current = [];
+          triggerRender();
+        }
+      },
+      onPanResponderTerminate: () => {
+        setIsDrawingActive(false);
+        callbacksRef.current.onDrawingEnd?.();
         if (currentStrokeRef.current.length > 0) {
           userStrokesRef.current = [...userStrokesRef.current, currentStrokeRef.current];
           currentStrokeRef.current = [];
@@ -92,7 +118,7 @@ export function KanjiDrawingCanvas({
           height: CANVAS_SIZE,
           backgroundColor: theme.surface,
           borderWidth: 2,
-          borderColor: theme.border,
+          borderColor: isDrawingActive ? theme.accent : theme.border,
           borderRadius: RADIUS.md,
           overflow: 'hidden',
         }}
