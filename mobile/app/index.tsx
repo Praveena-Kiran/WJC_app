@@ -40,9 +40,6 @@ export default function WelcomeScreen() {
           />
         </View>
 
-        <Text style={[TYPE.caption, { color: theme.textMuted, textAlign: 'center' }]}>
-          Free to start — No credit card required
-        </Text>
       </View>
     </SafeAreaView>
   );
