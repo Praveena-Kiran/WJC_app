@@ -7,32 +7,18 @@ import { apiFetch } from '@/src/lib/api-fetch';
 import { useApp } from '@/src/context/AppContext';
 import { useTheme } from '@/src/theme/ThemeContext';
 import { Button } from '@/src/components/ui/Button';
-import { Input } from '@/src/components/ui/Input';
-import { Card } from '@/src/components/ui/Card';
 import { Icon } from '@/src/components/ui/Icon';
 import { TYPE, SPACING } from '@/src/theme/tokens';
 
-type Role = 'external' | 'woxsen-student' | 'teacher';
+type Role = 'external' | 'woxsen-student';
 type JlptLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
 
 const ROLES: { value: Role; label: string; icon: string; description: string }[] = [
   { value: 'external', label: 'External Student', icon: 'globe', description: 'Self-studying Japanese' },
   { value: 'woxsen-student', label: 'Woxsen Student', icon: 'book-open', description: 'Enrolled at Woxsen University' },
-  { value: 'teacher', label: 'Instructor', icon: 'users', description: 'Teaching Japanese at Woxsen' },
 ];
 
 const JLPT_LEVELS: JlptLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
-
-const TARGET_PRESETS = [
-  { label: '15 days', days: 15 },
-  { label: '30 days', days: 30 },
-  { label: '60 days', days: 60 },
-];
-
-function addDays(days: number): string {
-  const d = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-  return d.toISOString().split('T')[0];
-}
 
 export default function OnboardingScreen() {
   const { theme } = useTheme();
@@ -40,31 +26,16 @@ export default function OnboardingScreen() {
   const { data: session } = useSession();
   const { completeOnboarding } = useApp();
 
-  const [name, setName] = useState(session?.user?.name ?? '');
   const [role, setRole] = useState<Role>('external');
   const [jlptLevel, setJlptLevel] = useState<JlptLevel>('N5');
-  const [selectedPreset, setSelectedPreset] = useState<number | null>(30);
-  const [targetDate, setTargetDate] = useState(addDays(30));
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  function selectPreset(days: number) {
-    setSelectedPreset(days);
-    setTargetDate(addDays(days));
-  }
-
   async function handleSubmit() {
-    if (!name.trim()) {
-      setError('Please enter your name.');
-      return;
-    }
-    if (!targetDate || targetDate < new Date().toISOString().split('T')[0]) {
-      setError('Please pick a target date in the future.');
-      return;
-    }
-
     setError(null);
     setLoading(true);
+
+    const userName = session?.user?.name || '';
 
     try {
       await apiFetch('/api/progress', {
@@ -73,16 +44,15 @@ export default function OnboardingScreen() {
           profile: {
             role,
             targetJlptLevel: jlptLevel,
-            n5TargetDate: targetDate,
             studyMode: 'zen',
           },
         }),
       });
 
       completeOnboarding({
-        name: name.trim(),
+        name: userName,
         role: role as 'external' | 'woxsen-student' | 'teacher' | 'admin',
-        targetDate,
+        targetDate: '',
         level: jlptLevel,
       });
 
@@ -103,19 +73,10 @@ export default function OnboardingScreen() {
           <Text style={[TYPE.title, { color: theme.text, textAlign: 'center', marginBottom: SPACING.xs }]}>
             Let's set up your profile
           </Text>
-          <Text style={[TYPE.body, { color: theme.textMuted, textAlign: 'center' }]}>
+          {/* <Text style={[TYPE.body, { color: theme.textMuted, textAlign: 'center' }]}>
             We'll personalize your learning experience based on your answers.
-          </Text>
+          </Text> */}
         </View>
-
-        <Input
-          label="What should we call you?"
-          placeholder="Your name"
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-          textContentType="name"
-        />
 
         <View style={{ marginBottom: SPACING.lg }}>
           <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm, marginTop: SPACING.xs }]}>What's your role?</Text>
@@ -131,7 +92,7 @@ export default function OnboardingScreen() {
               ]}
               onPress={() => setRole(r.value)}
             >
-              <Icon name={r.icon as 'globe' | 'book-open' | 'users'} size={22} color={role === r.value ? theme.accent : theme.textMuted} />
+              <Icon name={r.icon as 'globe' | 'book-open'} size={22} color={role === r.value ? theme.accent : theme.textMuted} />
               <View style={{ flex: 1, marginLeft: SPACING.md }}>
                 <Text style={[TYPE.bodyStrong, { color: role === r.value ? theme.accent : theme.text }]}>{r.label}</Text>
                 <Text style={[TYPE.caption, { color: theme.textMuted }]}>{r.description}</Text>
@@ -141,7 +102,7 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        <View style={{ marginBottom: SPACING.lg }}>
+        <View style={{ marginBottom: SPACING.xl }}>
           <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm }]}>Target JLPT level</Text>
           <View style={{ flexDirection: 'row', gap: SPACING.sm, flexWrap: 'wrap' }}>
             {JLPT_LEVELS.map((level) => (
@@ -161,36 +122,6 @@ export default function OnboardingScreen() {
               </Pressable>
             ))}
           </View>
-        </View>
-
-        <View style={{ marginBottom: SPACING.lg }}>
-          <Text style={[TYPE.caption, { color: theme.textMuted, marginBottom: SPACING.sm }]}>
-            Target date to pass {jlptLevel}
-          </Text>
-          <View style={{ flexDirection: 'row', gap: SPACING.sm }}>
-            {TARGET_PRESETS.map((p) => (
-              <Pressable
-                key={p.days}
-                style={{
-                  flex: 1,
-                  paddingVertical: SPACING.sm,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: selectedPreset === p.days ? theme.accent : theme.border,
-                  backgroundColor: selectedPreset === p.days ? theme.accentMuted : theme.surfaceAlt,
-                  alignItems: 'center',
-                }}
-                onPress={() => selectPreset(p.days)}
-              >
-                <Text style={[TYPE.caption, { color: selectedPreset === p.days ? theme.accent : theme.textMuted, fontWeight: '600' }]}>
-                  {p.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-          <Text style={[TYPE.caption, { color: theme.textMuted, marginTop: SPACING.sm }]}>
-            Target: <Text style={{ color: theme.accent, fontWeight: '700' }}>{targetDate}</Text>
-          </Text>
         </View>
 
         {error ? (
